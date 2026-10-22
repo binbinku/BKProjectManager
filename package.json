@@ -1,6 +1,6 @@
 {
   "name": "bk-project-manager",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "A local workspace for all your projects",
   "main": "electron/main.cjs",
@@ -25,7 +25,8 @@
     "dist:mac": "npm run build && electron-builder --mac --arm64 --x64 --publish never",
     "dist:win": "npm run build && electron-builder --win --x64 --publish never",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "icons:generate": "node scripts/generate-icons.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
@@ -33,6 +34,7 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.4",
@@ -54,7 +56,8 @@
       "dist/**/*",
       "electron/**/*",
       "LICENSE",
-      "package.json"
+      "package.json",
+      "build/*.png"
     ],
     "asar": true,
     "mac": {
@@ -62,17 +65,24 @@
       "target": [
         "dmg",
         "zip"
-      ]
+      ],
+      "icon": "build/icon.icns"
     },
     "win": {
       "target": [
         "nsis",
         "zip"
-      ]
+      ],
+      "icon": "build/icon.ico"
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico"
+    },
+    "dmg": {
+      "icon": "build/icon.icns"
     }
   },
   "engines": {

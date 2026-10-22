@@ -72,13 +72,13 @@
 
 | 平台                            | 安装包                                                                                                                 | ZIP 归档                                                                                                               |
 | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| macOS · Apple Silicon（M 系列） | [DMG](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.0/BKProjectManager-0.1.0-mac-arm64.dmg)      | [ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.0/BKProjectManager-0.1.0-mac-arm64.zip)      |
-| macOS · Intel                   | [DMG](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.0/BKProjectManager-0.1.0-mac-x64.dmg)        | [ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.0/BKProjectManager-0.1.0-mac-x64.zip)        |
-| Windows · x64                   | [EXE 安装包](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.0/BKProjectManager-0.1.0-win-x64.exe) | [免安装 ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.0/BKProjectManager-0.1.0-win-x64.zip) |
+| macOS · Apple Silicon（M 系列） | [DMG](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.1/BKProjectManager-0.1.1-mac-arm64.dmg)      | [ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.1/BKProjectManager-0.1.1-mac-arm64.zip)      |
+| macOS · Intel                   | [DMG](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.1/BKProjectManager-0.1.1-mac-x64.dmg)        | [ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.1/BKProjectManager-0.1.1-mac-x64.zip)        |
+| Windows · x64                   | [EXE 安装包](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.1/BKProjectManager-0.1.1-win-x64.exe) | [免安装 ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.1/BKProjectManager-0.1.1-win-x64.zip) |
 
 macOS 打开 DMG 后将应用拖入 Applications；Windows 运行 EXE 安装，或解压 ZIP 后启动应用。首次启动时选择工作空间即可。
 
-> v0.1.0 未配置开发者代码签名和 macOS 公证，系统可能显示信任提示。Release 附带 `SHA256SUMS.txt`，可用于核对下载文件。
+> v0.1.1 未配置开发者代码签名和 macOS 公证，系统可能显示信任提示。Release 附带 `SHA256SUMS.txt`，可用于核对下载文件。
 
 <a id="quick-start"></a>
 
@@ -206,7 +206,7 @@ npm run dist:mac   # macOS：DMG + ZIP
 npm run dist:win   # Windows：NSIS 安装包
 ```
 
-产物位于 `release/`。建议在目标系统上构建；当前打包默认使用 Electron 图标，正式分发时还需配置代码签名与 macOS 公证。暂未接入自动更新。
+产物位于 `release/`。建议在目标系统上构建；应用、Dock 与安装器使用项目自己的标志；图标由 `docs/assets/logo.svg` 生成，运行 `npm run icons:generate` 可重新生成 PNG、macOS ICNS 和 Windows ICO（支持在两种系统上执行）。分发包尚未配置代码签名与 macOS 公证。暂未接入自动更新。
 
 ### 代码结构
 

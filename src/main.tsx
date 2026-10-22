@@ -30,7 +30,9 @@ import {
 import type { AppState, Project, ThemePreference } from './types';
 import { ThemeSelector } from './ThemeSelector';
 import './styles.css';
+import { version as appVersion } from '../package.json';
 
+const logo = new URL('../docs/assets/logo.svg', import.meta.url).href;
 const api = window.workspaceAPI;
 const palette = ['purple', 'blue', 'green', 'orange', 'pink', 'teal'];
 const typeColors: Record<string, string> = {
@@ -228,7 +230,7 @@ function App() {
         <div className="sidebar-drag" />
         <div className="brand">
           <span className="brand-mark">
-            <Layers3 size={22} />
+            <img src={logo} alt="BK Project Manager" width="32" height="32" />
           </span>
           <div>
             Project Manager<span>本地项目工作台</span>
@@ -295,7 +297,7 @@ function App() {
           <button className="nav-item" onClick={() => setSettings(true)}>
             <Settings2 size={17} />
             <span>设置</span>
-            <span className="version">v0.1.0</span>
+            <span className="version">v{appVersion}</span>
           </button>
         </div>
       </aside>
@@ -326,7 +328,7 @@ function App() {
           {!state?.settings.workspace ? (
             <section className="onboarding">
               <div className="welcome-icon">
-                <FolderOpen size={32} strokeWidth={1.5} />
+                <img src={logo} alt="BK Project Manager" width="64" height="64" />
               </div>
               <h1>从一个工作空间开始</h1>
               <p>
@@ -665,7 +667,7 @@ function App() {
               <p className="editor-path">{state.settings.customEditor}</p>
             )}
             <div className="settings-bottom">
-              <span>BK Project Manager · 0.1.0</span>
+              <span>BK Project Manager · {appVersion}</span>
               <button className="primary-button" onClick={() => setSettings(false)}>
                 完成
                 <Check size={15} />

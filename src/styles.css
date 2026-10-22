@@ -127,9 +127,13 @@ h3 {
 .brand-mark {
   display: grid;
   place-items: center;
-  width: 30px;
+  width: 32px;
   height: 32px;
   color: var(--text);
+}
+.brand-mark img,
+.welcome-icon img {
+  display: block;
 }
 .brand span:not(.brand-mark) {
   display: block;
@@ -867,10 +871,6 @@ select option {
 .welcome-icon {
   width: 64px;
   height: 64px;
-  border: 1px solid var(--border);
-  border-radius: 15px;
-  background: var(--surface-soft);
-  color: var(--text);
   display: grid;
   place-items: center;
   margin-bottom: 15px;

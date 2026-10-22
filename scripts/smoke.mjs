@@ -78,6 +78,20 @@ try {
   await page
     .getByRole('button', { name: '选择工作空间', exact: true })
     .waitFor({ state: 'visible' });
+  await page.waitForFunction(() => {
+    const logo = document.querySelector('.brand-mark img');
+    return logo?.complete && logo.naturalWidth > 0;
+  });
+  const nativeIcon = await app.evaluate(({ app, nativeImage }) => {
+    const filename = process.platform === 'darwin' ? 'icon-mac.png' : 'icon.png';
+    const icon = nativeImage.createFromPath(`${app.getAppPath()}/build/${filename}`);
+    return { empty: icon.isEmpty(), size: icon.getSize() };
+  });
+  assert.deepEqual(nativeIcon, { empty: false, size: { width: 1024, height: 1024 } });
+  assert.equal(
+    await page.locator('.version').textContent(),
+    `v${await app.evaluate(({ app }) => app.getVersion())}`,
+  );
   await chooseTheme(page, 'light');
   await page.screenshot({ path: 'artifacts/welcome.png' });
   await page.emulateMedia({ colorScheme: 'dark' });

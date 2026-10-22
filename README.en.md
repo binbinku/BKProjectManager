@@ -72,13 +72,13 @@ Choose your platform from the [latest release](https://github.com/binbinku/BKPro
 
 | Platform                         | Installer                                                                                                                 | ZIP archive                                                                                                                |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| macOS · Apple Silicon (M series) | [DMG](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.0/BKProjectManager-0.1.0-mac-arm64.dmg)         | [ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.0/BKProjectManager-0.1.0-mac-arm64.zip)          |
-| macOS · Intel                    | [DMG](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.0/BKProjectManager-0.1.0-mac-x64.dmg)           | [ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.0/BKProjectManager-0.1.0-mac-x64.zip)            |
-| Windows · x64                    | [EXE installer](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.0/BKProjectManager-0.1.0-win-x64.exe) | [No-install ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.0/BKProjectManager-0.1.0-win-x64.zip) |
+| macOS · Apple Silicon (M series) | [DMG](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.1/BKProjectManager-0.1.1-mac-arm64.dmg)         | [ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.1/BKProjectManager-0.1.1-mac-arm64.zip)          |
+| macOS · Intel                    | [DMG](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.1/BKProjectManager-0.1.1-mac-x64.dmg)           | [ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.1/BKProjectManager-0.1.1-mac-x64.zip)            |
+| Windows · x64                    | [EXE installer](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.1/BKProjectManager-0.1.1-win-x64.exe) | [No-install ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.1/BKProjectManager-0.1.1-win-x64.zip) |
 
 On macOS, open the DMG and drag the app into Applications. On Windows, run the installer or extract the ZIP and launch the application. Choose a workspace on first launch.
 
-> v0.1.0 does not have developer code signing or macOS notarization, so your operating system may display trust prompts. Each release includes `SHA256SUMS.txt` for download verification.
+> v0.1.1 does not have developer code signing or macOS notarization, so your operating system may display trust prompts. Each release includes `SHA256SUMS.txt` for download verification.
 
 <a id="quick-start"></a>
 
@@ -206,7 +206,7 @@ npm run dist:mac   # macOS: DMG + ZIP
 npm run dist:win   # Windows: NSIS installer
 ```
 
-Output is written to `release/`. Build on the target operating system where possible. Packaging currently uses the default Electron icon; public distribution also needs code signing and macOS notarization. Automatic updates are not implemented yet.
+Output is written to `release/`. Build on the target operating system where possible. The application, Dock and installers use the project logo. Run `npm run icons:generate` on macOS or Windows to regenerate PNG, macOS ICNS and Windows ICO assets from `docs/assets/logo.svg`. Distribution packages do not yet have code signing or macOS notarization. Automatic updates are not implemented yet.
 
 ### Project structure
 

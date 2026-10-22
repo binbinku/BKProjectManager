@@ -8,6 +8,11 @@ const { scanWorkspace } = require('./scanner.cjs');
 const { Store } = require('./store.cjs');
 
 app.setName('BK Project Manager');
+const appIcon = path.join(
+  __dirname,
+  '../build',
+  process.platform === 'darwin' ? 'icon-mac.png' : 'icon.png',
+);
 if (process.platform === 'win32') app.setAppUserModelId('com.bk.projectmanager');
 if (process.env.BKPM_USER_DATA) app.setPath('userData', process.env.BKPM_USER_DATA);
 let window,
@@ -202,6 +207,7 @@ function createWindow() {
     minHeight: 660,
     backgroundColor: nativeTheme.shouldUseDarkColors ? '#191919' : '#ffffff',
     title: 'BK Project Manager',
+    icon: appIcon,
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
@@ -218,6 +224,7 @@ function createWindow() {
 app
   .whenReady()
   .then(async () => {
+    if (process.platform === 'darwin') app.dock.setIcon(appIcon);
     store = new Store(app.getPath('userData'));
     await store.load();
     applyTheme(store.data.theme);
