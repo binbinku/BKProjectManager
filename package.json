@@ -22,8 +22,8 @@
     "test:smoke": "node scripts/smoke.mjs",
     "docs:screenshots": "npm run build && node scripts/readme-screenshots.mjs",
     "pack": "npm run build && electron-builder --dir",
-    "dist:mac": "npm run build && electron-builder --mac",
-    "dist:win": "npm run build && electron-builder --win",
+    "dist:mac": "npm run build && electron-builder --mac --arm64 --x64 --publish never",
+    "dist:win": "npm run build && electron-builder --win --x64 --publish never",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
