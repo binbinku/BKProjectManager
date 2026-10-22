@@ -1,67 +1,224 @@
-# BK Project Manager
+<p align="center">
+  <img src="docs/assets/logo.svg" alt="BK Project Manager 标志" width="80" height="80" />
+</p>
 
-面向 macOS 和 Windows 11 的本地项目管理器，使用 Electron、React、TypeScript 和 Vite。
+<h1 align="center">BK Project Manager</h1>
 
-使用 [MIT 许可证](LICENSE)开源。
+<p align="center">
+  <strong>项目各归其位，开始更轻松。</strong><br />
+  <sub>Your projects. One workspace.</sub>
+</p>
 
-## 开发与运行
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/binbinku/BKProjectManager?style=flat-square&amp;color=525252" alt="MIT License" /></a>
+  <a href="package.json"><img src="https://img.shields.io/badge/version-0.1.0-525252?style=flat-square" alt="Version 0.1.0" /></a>
+  <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%2011-525252?style=flat-square" alt="macOS / Windows 11" />
+  <img src="https://img.shields.io/badge/Electron-44-47848F?style=flat-square" alt="Electron 44" />
+  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square" alt="TypeScript 5" />
+</p>
 
-需要 Node.js 22.12+（或 24 LTS）和 npm。
+<p align="center">
+  <strong>简体中文</strong> · <a href="README.en.md">English</a>
+</p>
+
+<p align="center">
+  <a href="#quick-start">快速开始</a> ·
+  <a href="#features">功能一览</a> ·
+  <a href="#previews">界面预览</a> ·
+  <a href="#scanning">扫描规则</a> ·
+  <a href="#development">开发与构建</a>
+</p>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/workspace-dark.png" />
+  <source media="(prefers-color-scheme: light)" srcset="docs/assets/workspace-light.png" />
+  <img src="docs/assets/workspace-light.png" alt="BK Project Manager：按分类浏览项目，支持搜索、收藏与一键打开" width="1360" />
+</picture>
+
+<p align="center">
+  <sub>跟随 GitHub 外观展示亮暗主题 · 截图使用示例项目</sub><br />
+  <a href="docs/assets/workspace-light.png">☀️ 亮色预览</a> · <a href="docs/assets/workspace-dark.png">🌙 暗色预览</a>
+</p>
+
+为 **macOS 与 Windows 11** 设计的本地项目工作台。选择一个工作空间，自动整理目录中的项目，在同一个入口搜索、收藏，并打开编辑器、终端或文件管理器。
+
+界面采用受 Codex 启发的中性灰阶、细边框和简洁排版。你的目录结构照旧，工作入口更集中。
+
+<a id="features"></a>
+
+## ✨ 功能一览
+
+<table>
+  <tr>
+    <td width="50%"><strong>🗂️ 自动整理</strong><br />一级目录作为分类，自动收纳 Projects 下的项目；也支持直接放在分类里的项目。</td>
+    <td width="50%"><strong>🔎 快速定位</strong><br />按名称、分类、技术类型或相对路径搜索，使用 ⌘ / Ctrl + K 聚焦搜索框。</td>
+  </tr>
+  <tr>
+    <td><strong>⭐ 随手收藏</strong><br />收藏常用项目，通过「最近打开」快速回到手头的工作。</td>
+    <td><strong>🚀 一键继续</strong><br />打开 Finder / 资源管理器、项目终端、VS Code、Cursor，或自选编辑器。</td>
+  </tr>
+  <tr>
+    <td><strong>🌗 亮暗随心</strong><br />亮色、暗色、跟随系统三种外观，搭配卡片与列表视图。</td>
+    <td><strong>🔒 数据留在本机</strong><br />设置本地保存，扫描不移动或删除项目文件，无需云端账户。</td>
+  </tr>
+</table>
+
+<a id="quick-start"></a>
+
+## 🚀 快速开始
+
+需要 **Node.js 22.12+** 和 **npm**，建议使用 Node.js 24 LTS。
 
 ```sh
 git clone https://github.com/binbinku/BKProjectManager.git
 cd BKProjectManager
-npm install
+npm ci
 npm run dev
 ```
 
-首次启动选择工作空间，例如 macOS 的 `~/Workspace` 或 Windows 的 `D:\Workspace`。工作空间路径和收藏等偏好保存在 Electron 的 `userData/settings.json`，不向项目目录写入配置。
+1. 首次启动，选择工作空间，例如 `~/Workspace` 或 `D:\Workspace`。
+2. 应用读取目录结构，自动生成分类和项目列表。
+3. 搜索项目，点击星标收藏，或在设置中选择默认编辑器。
 
-```sh
-npm test          # 扫描规则和配置持久化测试
-npm run build    # TypeScript 检查与生产前端构建
-npm start        # 加载已经构建的桌面应用
-npm run test:smoke # 真实 Electron UI 测试，使用临时工作空间与配置
+新增或移动项目后，点击 **重新扫描**。更换工作空间可在 **设置** 中完成。
+
+> **当前状态**：提供源码运行与本地打包。macOS 已完成构建和桌面交互验证；Windows 11 的实现与安装包配置已就绪，仍待实机验证。首次启动可能需要联网下载 Electron 运行时。
+
+<a id="previews"></a>
+
+## 🖼️ 界面预览
+
+首页截图会随 GitHub 的亮暗外观自动切换，也可以点击上方链接查看另一种主题。
+
+<details>
+<summary><strong>列表视图 · 更紧凑地浏览项目</strong></summary>
+
+<br />
+<img src="docs/assets/list-dark.png" alt="暗色列表视图，展示项目名称、类型、路径和快捷操作" width="1360" />
+
+</details>
+
+<details>
+<summary><strong>外观设置 · 即时预览，自动保存</strong></summary>
+
+<p align="center">
+  <br />
+  <img src="docs/assets/settings-dark.png" alt="设置弹窗：亮色、暗色和跟随系统三种主题，以及工作空间和默认编辑器选项" width="500" />
+</p>
+
+</details>
+
+<details>
+<summary><strong>首次启动 · 从一个工作空间开始</strong></summary>
+
+<br />
+<img src="docs/assets/welcome.png" alt="首次启动页面，引导用户选择工作空间" width="1360" />
+
+</details>
+
+<a id="scanning"></a>
+
+## 🗂️ 熟悉的目录，清晰的分类
+
+无需重新组织磁盘文件。下面这样的目录，可以直接作为工作空间：
+
+```text
+Workspace/
+├── WebDev/                   → 分类：WebDev
+│   └── Projects/             → 展示时收纳这一层
+│       ├── AtlasWeb/         → 项目
+│       └── DesignSystem/     → 项目
+├── GameDev/                  → 分类：GameDev
+│   ├── Engine/               → 有 Projects 时，不扫描这个同级目录
+│   └── Projects/
+│       └── OrbitGame/        → 项目
+└── TestDev/                  → 分类：TestDev
+    └── DevTools/             → 没有 Projects 时，直接识别子目录
 ```
 
-可通过 `BKPM_SMOKE_WORKSPACE=/your/Workspace npm run test:smoke` 对真实目录额外进行只读扫描和截图。所有测试偏好仍保存到临时目录，项目打开操作使用替身，不启动外部编辑器。
+**扫描顺序**：识别一级目录自身是否为工程 → 查找分类下的 `Projects` → 扫描容器的直接子目录。`Projects` 自身已是工程时，也会作为一个完整项目收纳。
 
-## 扫描规则
+例如 `AndroidDev/Projects` 中含有 `settings.gradle.kts`，会将整个目录识别为 Android 项目，避免把 `app`、`build`、`gradle` 分别列为项目。
 
-- 工作空间的一级目录作为分类。
-- 分类自身有已知工程标记时，整个分类作为一个项目。
-- 否则，分类下有 `Projects`（名称忽略大小写）时只扫描其直接子目录，没有时扫描分类的直接子目录。
-- `Projects` 自身包含已知工程标记时，将其作为一个项目，显示名称使用分类名称。例如 `AndroidDev/Projects/settings.gradle.kts` 不会将 `app`、`gradle` 当成独立项目。
-- 未识别类型的目录保留为“文件夹”。不会为了查找项目而无限递归。
-- 跳过文件、隐藏目录、符号链接，以及 `node_modules`、`build`、`dist`、`target` 等生成目录。
-- 识别 Unity、Unreal、Android、Flutter、JavaScript、Rust、Go、Python、.NET、Java 和 Git 标记。
-- 修改时间指项目根目录的文件系统时间，不代表整个工程最新文件的修改时间。
+<details>
+<summary><strong>项目类型识别与过滤规则</strong></summary>
 
-支持分类、搜索、收藏、最近打开、名称或目录修改时间排序、卡片和列表视图。默认使用 Finder/资源管理器打开，可切换 VS Code、Cursor 或选择自己的编辑器；也支持打开项目终端。新增或移动项目后点击“重新扫描”。
+| 类型            | 识别标记                                   |
+| --------------- | ------------------------------------------ |
+| Unity / Tuanjie | `Assets` + `ProjectSettings`，显示为 Unity |
+| Unreal Engine   | `*.uproject`                               |
+| Android         | `settings.gradle` / `settings.gradle.kts`  |
+| Flutter         | `pubspec.yaml`                             |
+| JavaScript      | `package.json`                             |
+| Rust / Go       | `Cargo.toml` / `go.mod`                    |
+| Python          | `pyproject.toml` / `requirements.txt`      |
+| .NET            | `*.sln` / `*.slnx` / `*.csproj`            |
+| Java            | `pom.xml`                                  |
+| 其他目录        | 保留为「文件夹」                           |
 
-外观提供亮色、暗色和跟随系统三种模式。可在侧栏底部快速切换，或在设置中查看主题预览。主题选择自动保存，跟随系统时会响应系统外观变化；窗口底色和原生控件也同步更新。界面采用中性灰阶、细边框和紧凑排版。
+- `Projects` 名称匹配不区分大小写；不会无限递归扫描。
+- 默认跳过文件、隐藏目录、符号链接，以及 `node_modules`、`build`、`dist`、`target`、`vendor` 等生成目录。
+- 检测到 `.git` 标记时显示 Git 标签。
+- 「修改时间」指项目根目录的文件系统时间，不代表工程内所有文件的最新修改时间。
 
-## 打包
+</details>
+
+<a id="development"></a>
+
+## 🛠️ 开发与构建
+
+**Electron · React · TypeScript · Vite**
+
+| 命令                       | 用途                               |
+| -------------------------- | ---------------------------------- |
+| `npm run dev`              | 启动开发环境                       |
+| `npm run build`            | TypeScript 检查并构建前端          |
+| `npm start`                | 运行已构建的桌面应用               |
+| `npm test`                 | 验证扫描规则与配置持久化           |
+| `npm run test:smoke`       | 在真实 Electron 窗口中验证主要交互 |
+| `npm run format:check`     | 检查代码格式                       |
+| `npm run docs:screenshots` | 构建应用并使用示例数据更新文档截图 |
+
+桌面交互测试和截图生成需要可用的桌面会话。它们使用临时工作空间和独立配置，不覆盖你的使用偏好；文档截图不会读取你的项目目录。
+
+### 本地打包
 
 ```sh
-npm run pack       # 当前平台的未签名应用目录
-npm run dist:mac   # macOS DMG + ZIP（在 macOS 构建）
-npm run dist:win   # Windows NSIS 安装包（建议在 Windows 构建）
+npm run pack       # 当前平台的应用目录
+npm run dist:mac   # macOS：DMG + ZIP
+npm run dist:win   # Windows：NSIS 安装包
 ```
 
-输出位于 `release/`。正式分发还需配置应用图标、macOS 签名与公证以及 Windows 代码签名。当前默认使用 Electron 图标，没有接入自动更新。
+产物位于 `release/`。建议在目标系统上构建；当前打包默认使用 Electron 图标，正式分发时还需配置代码签名与 macOS 公证。暂未接入自动更新。
 
-## 结构
+### 代码结构
 
-- `electron/main.cjs`：窗口、受限 IPC、系统打开操作。
-- `electron/preload.cjs`：隔离环境中的最小 API。
-- `electron/scanner.cjs`：只读扫描与项目类型识别。
-- `electron/store.cjs`：JSON 偏好与串行原子写入。
-- `src/`：React 界面。
-- `tests/`、`scripts/smoke.mjs`：扫描与桌面集成测试。
+```text
+electron/     # 窗口、受限 IPC、目录扫描与本地配置
+src/          # React 界面与主题
+scripts/      # 开发启动、桌面测试与截图生成
+tests/        # 扫描与持久化测试
+docs/assets/  # 文档 SVG 与演示截图
+```
 
-渲染进程关闭 Node 集成，开启 context isolation 和 sandbox；系统操作只接受已扫描的项目 ID，不接受任意路径或命令。扫描不修改、移动或删除项目文件。`BKPM_USER_DATA` 可为开发与测试指定隔离配置目录。
+设置保存在 Electron 的 `userData/settings.json`。可使用 `BKPM_USER_DATA` 指定独立配置目录；渲染进程关闭 Node 集成，启用 context isolation 与 sandbox，系统操作通过项目 ID 调用受限 IPC。
 
-## 开源许可证
+<a id="contributing"></a>
 
-Copyright (c) 2026 binbinku。项目采用 [MIT License](LICENSE)，允许使用、修改和分发，请保留原有版权及许可声明。
+## 🤝 一起完善
+
+欢迎提交 [Issue](https://github.com/binbinku/BKProjectManager/issues) 或 [Pull Request](https://github.com/binbinku/BKProjectManager/pulls)。
+
+- **反馈问题**：请附上操作系统、复现步骤，以及脱敏后的目录结构。
+- **提交改进**：说明改动目的，运行 `npm test`、`npm run build` 和 `npm run format:check`；涉及界面时补充截图。
+- **改进文档**：请同步更新中文版与英文版，保持说明一致。
+
+<a id="license"></a>
+
+## 📄 开源许可证
+
+采用 [MIT License](LICENSE) 开源。你可以使用、修改和分发本项目，请保留版权与许可声明。
+
+<p align="center">
+  <sub>Copyright © 2026 <a href="https://github.com/binbinku">binbinku</a></sub>
+</p>
