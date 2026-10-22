@@ -1,0 +1,111 @@
+name: Build and publish release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag matching package.json (for example v0.1.0)
+        required: true
+        default: v0.1.0
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ inputs.tag }}
+  cancel-in-progress: false
+
+env:
+  RELEASE_TAG: ${{ inputs.tag }}
+  CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    name: Build ${{ matrix.id }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - id: mac-arm64
+            os: macos-15
+            args: --mac dmg zip --arm64
+            executable: release/mac-arm64/BK Project Manager.app/Contents/MacOS/BK Project Manager
+          - id: mac-x64
+            os: macos-15-intel
+            args: --mac dmg zip --x64
+            executable: release/mac/BK Project Manager.app/Contents/MacOS/BK Project Manager
+          - id: win-x64
+            os: windows-2025
+            args: --win nsis zip --x64
+            executable: release/win-unpacked/BK Project Manager.exe
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Validate release version
+        run: |
+          node -e 'const fs = require("node:fs"); const tag = "v" + require("./package.json").version; if (process.env.RELEASE_TAG !== tag) throw new Error("Release tag must match " + tag); if (!fs.existsSync("docs/releases/" + tag + ".md")) throw new Error("Release notes are missing");'
+      - run: npm ci
+      - run: npm test
+      - run: npm run format:check
+      - run: npm run build
+      - name: Package application
+        run: npx --no-install electron-builder ${{ matrix.args }} --publish never
+      - name: Test packaged application
+        env:
+          BKPM_SMOKE_EXECUTABLE: ${{ matrix.executable }}
+        run: npm run test:smoke
+      - name: Verify macOS disk image
+        if: runner.os == 'macOS'
+        run: hdiutil verify release/*.dmg
+      - name: Save installers and archives
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-${{ matrix.id }}
+          path: |
+            release/*.dmg
+            release/*.zip
+            release/*.exe
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
+
+  publish:
+    name: Publish GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: release-*
+          path: release-assets
+          merge-multiple: true
+      - name: Verify assets and generate SHA-256 checksums
+        run: node scripts/release-assets.mjs release-assets
+      - name: Upload all assets, then publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release create "$RELEASE_TAG" release-assets/* \
+            --target "$GITHUB_SHA" \
+            --title "BK Project Manager $RELEASE_TAG" \
+            --notes-file "docs/releases/$RELEASE_TAG.md" \
+            --draft
+          gh release edit "$RELEASE_TAG" --draft=false --latest

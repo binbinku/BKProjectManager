@@ -45,6 +45,7 @@
   },
   "build": {
     "appId": "com.bk.projectmanager",
+    "artifactName": "BKProjectManager-${version}-${os}-${arch}.${ext}",
     "productName": "BK Project Manager",
     "directories": {
       "output": "release"
@@ -65,7 +66,8 @@
     },
     "win": {
       "target": [
-        "nsis"
+        "nsis",
+        "zip"
       ]
     },
     "nsis": {

@@ -21,7 +21,9 @@ let app;
 const errors = [];
 async function launch() {
   app = await electron.launch({
-    executablePath: process.env.BKPM_SMOKE_EXECUTABLE || undefined,
+    executablePath: process.env.BKPM_SMOKE_EXECUTABLE
+      ? path.resolve(process.env.BKPM_SMOKE_EXECUTABLE)
+      : undefined,
     args: process.env.BKPM_SMOKE_EXECUTABLE ? [] : ['.'],
     env: {
       ...process.env,
@@ -30,6 +32,7 @@ async function launch() {
     },
   });
   const page = await app.firstWindow();
+  page.setDefaultTimeout(30000);
   page.on('pageerror', (error) => errors.push(error.message));
   await page.waitForLoadState('domcontentloaded');
   return page;
