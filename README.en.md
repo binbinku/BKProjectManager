@@ -11,7 +11,7 @@
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/github/license/binbinku/BKProjectManager?style=flat-square&amp;color=525252" alt="MIT License" /></a>
-  <a href="package.json"><img src="https://img.shields.io/badge/version-0.1.0-525252?style=flat-square" alt="Version 0.1.0" /></a>
+  <a href="https://github.com/binbinku/BKProjectManager/releases/latest"><img src="https://img.shields.io/github/v/release/binbinku/BKProjectManager?style=flat-square&amp;color=525252" alt="Latest release" /></a>
   <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%2011-525252?style=flat-square" alt="macOS / Windows 11" />
   <img src="https://img.shields.io/badge/Electron-44-47848F?style=flat-square" alt="Electron 44" />
   <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square" alt="TypeScript 5" />
@@ -22,7 +22,8 @@
 </p>
 
 <p align="center">
-  <a href="#quick-start">Quick start</a> ·
+  <a href="#downloads">Downloads</a> ·
+  <a href="#quick-start">Run from source</a> ·
   <a href="#features">Features</a> ·
   <a href="#previews">Screenshots</a> ·
   <a href="#scanning">Discovery rules</a> ·
@@ -63,9 +64,25 @@ A Codex-inspired interface brings together neutral colors, subtle borders, and c
   </tr>
 </table>
 
+<a id="downloads"></a>
+
+## 📦 Downloads
+
+Choose your platform from the [latest release](https://github.com/binbinku/BKProjectManager/releases/latest):
+
+| Platform                         | Installer                                                                                                                 | ZIP archive                                                                                                                |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| macOS · Apple Silicon (M series) | [DMG](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.0/BKProjectManager-0.1.0-mac-arm64.dmg)         | [ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.0/BKProjectManager-0.1.0-mac-arm64.zip)          |
+| macOS · Intel                    | [DMG](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.0/BKProjectManager-0.1.0-mac-x64.dmg)           | [ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.0/BKProjectManager-0.1.0-mac-x64.zip)            |
+| Windows · x64                    | [EXE installer](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.0/BKProjectManager-0.1.0-win-x64.exe) | [No-install ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.0/BKProjectManager-0.1.0-win-x64.zip) |
+
+On macOS, open the DMG and drag the app into Applications. On Windows, run the installer or extract the ZIP and launch the application. Choose a workspace on first launch.
+
+> v0.1.0 does not have developer code signing or macOS notarization, so your operating system may display trust prompts. Each release includes `SHA256SUMS.txt` for download verification.
+
 <a id="quick-start"></a>
 
-## 🚀 Quick start
+## 🚀 Run from source
 
 Requires **Node.js 22.12+** and **npm**. Node.js 24 LTS is recommended.
 
@@ -82,7 +99,7 @@ npm run dev
 
 Click **Rescan** after adding or moving projects. You can switch workspaces in **Settings**.
 
-> **Status:** Run from source or build locally. Builds and desktop interactions have been verified on macOS. Windows 11 implementation and installer configuration are in place, but testing on a Windows machine is still pending. First launch may require an internet connection to download the Electron runtime.
+> **Validation scope:** macOS Apple Silicon / Intel and Windows x64 packages are built locally. macOS apps are tested on the host (Intel through Rosetta 2); Windows is cross-built and still awaits Windows 11 runtime testing. First launch from source may require an internet connection to download the Electron runtime.
 
 <a id="previews"></a>
 

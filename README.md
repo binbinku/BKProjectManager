@@ -11,7 +11,7 @@
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/github/license/binbinku/BKProjectManager?style=flat-square&amp;color=525252" alt="MIT License" /></a>
-  <a href="package.json"><img src="https://img.shields.io/badge/version-0.1.0-525252?style=flat-square" alt="Version 0.1.0" /></a>
+  <a href="https://github.com/binbinku/BKProjectManager/releases/latest"><img src="https://img.shields.io/github/v/release/binbinku/BKProjectManager?style=flat-square&amp;color=525252" alt="Latest release" /></a>
   <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%2011-525252?style=flat-square" alt="macOS / Windows 11" />
   <img src="https://img.shields.io/badge/Electron-44-47848F?style=flat-square" alt="Electron 44" />
   <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square" alt="TypeScript 5" />
@@ -22,7 +22,8 @@
 </p>
 
 <p align="center">
-  <a href="#quick-start">快速开始</a> ·
+  <a href="#downloads">下载安装</a> ·
+  <a href="#quick-start">源码运行</a> ·
   <a href="#features">功能一览</a> ·
   <a href="#previews">界面预览</a> ·
   <a href="#scanning">扫描规则</a> ·
@@ -63,9 +64,25 @@
   </tr>
 </table>
 
+<a id="downloads"></a>
+
+## 📦 下载安装
+
+从 [最新 Release](https://github.com/binbinku/BKProjectManager/releases/latest) 下载对应平台的版本：
+
+| 平台                            | 安装包                                                                                                                 | ZIP 归档                                                                                                               |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| macOS · Apple Silicon（M 系列） | [DMG](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.0/BKProjectManager-0.1.0-mac-arm64.dmg)      | [ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.0/BKProjectManager-0.1.0-mac-arm64.zip)      |
+| macOS · Intel                   | [DMG](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.0/BKProjectManager-0.1.0-mac-x64.dmg)        | [ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.0/BKProjectManager-0.1.0-mac-x64.zip)        |
+| Windows · x64                   | [EXE 安装包](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.0/BKProjectManager-0.1.0-win-x64.exe) | [免安装 ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.0/BKProjectManager-0.1.0-win-x64.zip) |
+
+macOS 打开 DMG 后将应用拖入 Applications；Windows 运行 EXE 安装，或解压 ZIP 后启动应用。首次启动时选择工作空间即可。
+
+> v0.1.0 未配置开发者代码签名和 macOS 公证，系统可能显示信任提示。Release 附带 `SHA256SUMS.txt`，可用于核对下载文件。
+
 <a id="quick-start"></a>
 
-## 🚀 快速开始
+## 🚀 从源码启动
 
 需要 **Node.js 22.12+** 和 **npm**，建议使用 Node.js 24 LTS。
 
@@ -82,7 +99,7 @@ npm run dev
 
 新增或移动项目后，点击 **重新扫描**。更换工作空间可在 **设置** 中完成。
 
-> **当前状态**：提供源码运行与本地打包。macOS 已完成构建和桌面交互验证；Windows 11 的实现与安装包配置已就绪，仍待实机验证。首次启动可能需要联网下载 Electron 运行时。
+> **验证范围**：本地构建 macOS Apple Silicon / Intel 与 Windows x64 安装包；macOS 应用在本机运行测试（Intel 版通过 Rosetta 2），Windows 版为交叉构建，尚待 Windows 11 实机验证。源码首次启动可能需要联网下载 Electron 运行时。
 
 <a id="previews"></a>
 
