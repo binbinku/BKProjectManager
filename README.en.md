@@ -25,23 +25,25 @@
   <a href="#downloads">Downloads</a> ·
   <a href="#quick-start">Run from source</a> ·
   <a href="#features">Features</a> ·
+  <a href="#controls">Controls</a> ·
   <a href="#previews">Screenshots</a> ·
   <a href="#scanning">Discovery rules</a> ·
   <a href="#development">Development</a>
 </p>
 
+> **Current source: v0.2.0 workbench preview.** The screenshot below shows the latest source. Published v0.1.1 installers still provide the project manager. To try the file tree, code viewer and built-in terminal, [run from source](#quick-start).
+
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/workspace-dark.png" />
-  <source media="(prefers-color-scheme: light)" srcset="docs/assets/workspace-light.png" />
-  <img src="docs/assets/workspace-light.png" alt="BK Project Manager showing categorized projects, search, favorites, and quick actions" width="1360" />
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/workbench-dark.png" />
+  <img src="docs/assets/workbench-light.png" alt="BK Project Manager workbench with Material file icons, a full-height read-only viewer and interactive terminal" width="1360" />
 </picture>
 
 <p align="center">
-  <sub>Preview follows your GitHub appearance · Screenshots use sample projects · The app UI is currently in Chinese</sub><br />
-  <a href="docs/assets/workspace-light.png">☀️ Light preview</a> · <a href="docs/assets/workspace-dark.png">🌙 Dark preview</a>
+  <sub>Project files · Read-only code · Interactive terminal · Sample projects · The app UI is currently in Chinese</sub><br />
+  <a href="docs/assets/workbench-light.png">☀️ Light workbench</a> · <a href="docs/assets/workbench-dark.png">🌙 Dark workbench</a>
 </p>
 
-A local project workspace designed for **macOS and Windows 11**. Choose a workspace folder, discover and categorize its projects, then search, bookmark, and open them in your editor, terminal, or file manager.
+A local project workspace designed for **macOS and Windows 11**. Discover and categorize projects, then open one to browse files, preview code and use a terminal in the same window. Your preferred external editor is still one click away.
 
 A Codex-inspired interface brings together neutral colors, subtle borders, and compact layouts. Keep your directory structure and bring your project entry points together.
 
@@ -59,6 +61,10 @@ A Codex-inspired interface brings together neutral colors, subtle borders, and c
     <td><strong>🚀 Get back to work</strong><br />Open Finder / File Explorer, a project terminal, VS Code, Cursor, or a custom editor.</td>
   </tr>
   <tr>
+    <td><strong>📄 Focused browsing</strong><br />One read-only file at a time, with line numbers and VS Code default syntax colors. No file tabs.</td>
+    <td><strong>⌨️ Built-in terminal</strong><br />Run commands in the project directory, with ANSI true color, scrollback and process interruption.</td>
+  </tr>
+  <tr>
     <td><strong>🌗 Choose your appearance</strong><br />Light, dark, and system themes, with both card and list views.</td>
     <td><strong>🔒 Local by design</strong><br />Preferences stay on your computer. Scanning does not move or delete projects, and no cloud account is required.</td>
   </tr>
@@ -68,24 +74,36 @@ A Codex-inspired interface brings together neutral colors, subtle borders, and c
 
 The v0.2.0 source opens projects in a three-panel workbench. Published v0.1.1 installers do not include this feature yet.
 
-- **Left:** a compact top row with Back, the project name and the external app icon, followed by a file tree with Material Icon Theme file and folder icons. Use View → Refresh Files in the native menu after changing files in the terminal.
+- **Left:** a fixed header contains Back, the project name and the actual icon of your default external app. The tree starts below it and scrolls behind its translucent frosted surface. Bundled Material Icon Theme icons support folder expansion and light/dark appearance.
 - **Center:** a viewer extending from the top to the bottom of the window, showing one read-only file at a time, with line numbers and VS Code Light+ / Dark+ syntax highlighting. No file tabs or editing controls. Common images can also be previewed.
 - **Right:** an interactive terminal extending from the top to the bottom of the window, starting in the project directory, with scrolling, Ctrl+C, clear and restart. Clear and restart are available in the native Terminal menu. macOS uses your login shell; Windows 11 uses PowerShell.
-- Resize the side panels, switch light/dark themes through Settings in the native menu, return to the project list, or use the existing external opener. Returning closes the project's terminal.
-- Scrollbars are hidden throughout the app; mouse-wheel, trackpad and horizontal scrolling remain available.
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/workbench-dark.png" />
-  <img src="docs/assets/workbench-light.png" alt="Project file tree, read-only code preview and interactive terminal" width="1360" />
-</picture>
+- **Compact layout:** the viewer and terminal extend to the top and bottom edges. Visible 1px dividers retain a wider drag area for resizing. Returning to the project list closes the project's terminal.
+- **Scrolling and appearance:** scrollbars are hidden; mouse-wheel, trackpad and horizontal scrolling remain available. Light, dark and system appearance are available through Settings in the native menu.
 
 Preview supports UTF-8 and UTF-16 text and common images up to 2 MiB. Files over 200,000 characters use plain-text preview. Binary or unsupported files show an explanation. Project browsing stays within the selected project; symbolic links are not expandable in the tree.
+
+<a id="controls"></a>
+
+## 🎛️ Controls and shortcuts
+
+Settings, file refresh and terminal actions live in the native menu bar. Menu labels below match the app's current Chinese interface.
+
+| Action                       | Menu or entry point                                      | macOS    | Windows 11 |
+| ---------------------------- | -------------------------------------------------------- | -------- | ---------- |
+| Open Settings                | macOS: BK Project Manager → 设置…; Windows: 文件 → 设置… | `⌘,`     | `Ctrl+,`   |
+| Refresh project files        | 查看 → 刷新文件目录                                      | `⌘R`     | `Ctrl+R`   |
+| Clear terminal output        | 终端 → 清空终端                                          | —        | —          |
+| Restart the project terminal | 终端 → 重新启动终端                                      | —        | —          |
+| Search projects              | Search box in the project list                           | `⌘K`     | `Ctrl+K`   |
+| Interrupt a terminal command | Focus the terminal                                       | `Ctrl+C` | `Ctrl+C`   |
+
+Click the app icon in the header to open the project using your default external opener; hover to see its name. After running `exit`, restart through the Terminal menu. **Returning to the project list or restarting the terminal ends its current process.**
 
 <a id="downloads"></a>
 
 ## 📦 Downloads
 
-Choose your platform from the [latest release](https://github.com/binbinku/BKProjectManager/releases/latest):
+**Published installers: v0.1.1.** These support discovery, search, favorites, external opening and themes, but do not include the v0.2.0 workbench shown above. Download from the [latest release](https://github.com/binbinku/BKProjectManager/releases/latest):
 
 | Platform                         | Installer                                                                                                                 | ZIP archive                                                                                                                |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
@@ -112,17 +130,29 @@ npm run dev
 
 1. On first launch, choose a workspace such as `~/Workspace` or `D:\Workspace`.
 2. The app reads your directory structure and builds the project categories and list.
-3. Search for a project, star it, or choose a default editor in Settings.
+3. Click **打开项目** (Open project) to enter the workbench: expand folders on the left, preview files in the center and type commands in the terminal.
+4. Open **设置…** (Settings) from the native menu to choose appearance and your default editor. The app icon in the header opens the project externally.
 
 Click **Rescan** after adding or moving projects. You can switch workspaces through **Settings…** in the native menu (macOS: app menu, `⌘,`; Windows: File menu, `Ctrl+,`).
 
-> **Validation scope:** macOS Apple Silicon / Intel and Windows x64 packages are built locally. macOS apps are tested on the host (Intel through Rosetta 2); Windows is cross-built and still awaits Windows 11 runtime testing. First launch from source may require an internet connection to download the Electron runtime.
+> **Validation scope:** the current workbench and local preview are tested on macOS Apple Silicon. Existing Intel installers have been tested through Rosetta 2. Windows x64 installers are cross-built on macOS and still await Windows 11 runtime testing. Dependency installation needs internet access for npm packages and Electron; bundled icons load offline at runtime.
 
 <a id="previews"></a>
 
 ## 🖼️ Screenshots
 
-The main preview follows your GitHub light or dark appearance. Use the links above to view either theme directly.
+The main workbench preview follows your GitHub light or dark appearance. The project list, settings and first-launch views below all use sample projects.
+
+<details>
+<summary><strong>Project overview · Categories, search and favorites</strong></summary>
+
+<br />
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/workspace-dark.png" />
+  <img src="docs/assets/workspace-light.png" alt="Project overview with categories, favorites, search and cards" width="1360" />
+</picture>
+
+</details>
 
 <details>
 <summary><strong>List view · Browse more compactly</strong></summary>
@@ -206,7 +236,7 @@ For example, if `AndroidDev/Projects` contains `settings.gradle.kts`, it is trea
 | Command                    | Purpose                                                        |
 | -------------------------- | -------------------------------------------------------------- |
 | `npm run dev`              | Start the development environment                              |
-| `npm run build`            | Check TypeScript and build the frontend                        |
+| `npm run build`            | Generate file icons, check TypeScript and build the frontend   |
 | `npm start`                | Launch the built desktop application                           |
 | `npm test`                 | Test discovery, settings, project files and sessions           |
 | `npm run test:workbench`   | Test project browsing, file preview, real terminal and cleanup |
@@ -221,19 +251,24 @@ Desktop interaction tests and screenshot generation require a desktop session. T
 ```sh
 npm run pack       # Application directory for the current platform
 npm run dist:mac   # macOS: DMG + ZIP
-npm run dist:win   # Windows: NSIS installer
+npm run dist:win   # Windows: NSIS installer + ZIP
 ```
 
-Output is written to `release/`. Build on the target operating system where possible. The application, Dock and installers use the project logo. Run `npm run icons:generate` on macOS or Windows to regenerate PNG, macOS ICNS and Windows ICO assets from `docs/assets/logo.svg`. Distribution packages do not yet have code signing or macOS notarization. Automatic updates are not implemented yet.
+Output is written to `release/`. All packages are built locally, without GitHub Actions. Build on the target operating system where possible. The application, Dock and installers use the project logo. Run `npm run icons:generate` on macOS or Windows to regenerate PNG, macOS ICNS and Windows ICO assets from `docs/assets/logo.svg`. Distribution packages do not yet have code signing or macOS notarization. Automatic updates are not implemented yet.
+
+### File tree icons
+
+`npm run dev` and `npm run build` generate Material Icon Theme SVGs and associations from the pinned official npm package. No VS Code extension is required. Generated assets are excluded from Git and bundled with their license in production builds. See [third-party notices](THIRD_PARTY_NOTICES.md) for attribution.
 
 ### Project structure
 
 ```text
-electron/     # Windows, restricted IPC, discovery, and local settings
-src/          # React UI and themes
-scripts/      # Development launcher, desktop tests, and screenshots
+electron/     # Native menus, restricted IPC, discovery, files and PTY
+src/          # Project list, file tree, code viewer and themes
+scripts/      # Development launcher, icons, desktop tests and screenshots
 tests/        # Discovery, persistence, project file and session tests
 docs/assets/  # Documentation SVG and demo screenshots
+licenses/     # Third-party licenses distributed with the app
 ```
 
 Settings are stored in Electron's `userData/settings.json`. Set `BKPM_USER_DATA` to use an isolated configuration directory. The renderer disables Node integration, enables context isolation and sandboxing, and uses project IDs to invoke restricted IPC operations.
