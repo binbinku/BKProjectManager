@@ -8,7 +8,7 @@ import {
   Check,
   Clock3,
   Code2,
-  EyeOff,
+  Trash2,
   Folder,
   FolderOpen,
   GitBranch,
@@ -681,7 +681,7 @@ function App() {
                               })
                             }
                           >
-                            <EyeOff size={16} />
+                            <Trash2 size={16} />
                           </button>
                           <button
                             title={`在 ${folderName} 中打开`}

@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { ArrowUpRight, EyeOff, FolderOpen, Loader2, X } from 'lucide-react';
+import { ArrowUpRight, Trash2, FolderOpen, Loader2, X } from 'lucide-react';
 import type { AppState } from './types';
 import { useModalFocus } from './useModalFocus';
 
@@ -78,7 +78,7 @@ export function RemoveItemDialog({
         )}
         <button className="removal-choice" disabled={!!busy} onClick={() => void act('remove')}>
           <span className="removal-choice-icon">
-            {busy === 'remove' ? <Loader2 className="spin" size={21} /> : <EyeOff size={21} />}
+            {busy === 'remove' ? <Loader2 className="spin" size={21} /> : <Trash2 size={21} />}
           </span>
           <span>
             <strong>从列表移除</strong>

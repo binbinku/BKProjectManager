@@ -82,6 +82,8 @@ try {
     const result = await page.evaluate(() => {
       const bar = document.querySelector('.project-tools');
       const bounds = bar.getBoundingClientRect();
+      const style = getComputedStyle(bar);
+      const content = getComputedStyle(document.querySelector('.content'));
       const rects = [...bar.querySelectorAll('.project-tool-button')].map((button) => {
         const rect = button.getBoundingClientRect();
         return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
@@ -105,6 +107,10 @@ try {
           };
         })(),
         position: getComputedStyle(bar).position,
+        background: style.backgroundColor,
+        backdrop: style.backdropFilter,
+        paddingLeft: content.paddingLeft,
+        paddingRight: content.paddingRight,
         bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height },
         rects,
         viewport: { width: innerWidth, height: innerHeight },
@@ -141,9 +147,12 @@ try {
     );
     assert.ok(result.rects.every((rect, i) => i === 0 || rect.y > result.rects[i - 1].y));
     assert.ok(
-      result.bounds.x > result.cardsEnd + 10,
-      'Floating controls keep a gutter clear of project cards',
+      result.bounds.x < result.cardsEnd,
+      'Floating controls overlap the content instead of reserving a right gutter',
     );
+    assert.equal(result.paddingRight, result.paddingLeft);
+    assert.ok(result.backdrop.includes('blur(14px)'));
+    assert.ok(result.background.includes('0.45'), 'The toolbar background is translucent');
     assert.ok(result.bounds.y + result.bounds.height < result.viewport.height);
     assert.ok(result.scrollWidth <= result.viewport.width, 'No horizontal overflow');
     return result;
@@ -151,6 +160,16 @@ try {
   const initial = await geometry();
   assert.ok(initial.firstCardTop < 55, 'Projects begin near the window top');
   await page.screenshot({ path: 'artifacts/category-clean-light.png' });
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  assert.ok(
+    await page.evaluate(
+      () =>
+        document.querySelector('.project-card:last-child').getBoundingClientRect().bottom <
+        document.querySelector('.project-tools').getBoundingClientRect().top,
+    ),
+    'The last row can scroll clear of the overlaid toolbar',
+  );
+  await page.evaluate(() => window.scrollTo(0, 0));
   await page.getByRole('button', { name: '项目排序', exact: true }).click();
   await page.getByRole('menuitemradio', { name: '按目录修改时间', exact: true }).click();
   assert.equal(await page.locator('.project-card h2').first().textContent(), 'Project26');

@@ -206,11 +206,11 @@ Themes change colors only. Sizes, spacing, panel proportions and floating contro
 
 Category appearances stay in local preferences; no configuration files are added to existing projects.
 
-All projects, Favorites, Recently opened and category pages share a project canvas without a top bar, statistics, search or extra heading rows. A vertical floating toolbar in the bottom-right corner provides **view, sort, rescan and new project** controls for both card and list views. Category pages also have an **…** menu for category appearance and removal. Recently opened defaults to the latest opening time first, with name and directory modification time available in its sort menu.
+All projects, Favorites, Recently opened and category pages share a project canvas without a top bar, statistics, search or extra heading rows. A translucent frosted toolbar floats over the content in the bottom-right corner without a reserved side gutter, providing **view, sort, rescan and new project** controls for both card and list views. Category pages also have an **…** menu for category appearance and removal. Recently opened defaults to the latest opening time first, with name and directory modification time available in its sort menu.
 
 ### Removing, restoring and manual deletion
 
-Click the hide icon on a project card, or choose **… → 移除分类** (Remove category) in the selected category's bottom-right toolbar, to open a dialog:
+Click the trash icon on a project card, or choose **… → 移除分类** (Remove category) in the selected category's bottom-right toolbar, to open a dialog:
 
 - **从列表移除** (Remove from list): hide the item in the current workspace. Removing a category also hides its projects. This persists across rescans and restarts while keeping all files intact.
 - **在 Finder / 资源管理器中显示，手动删除** (Show in Finder / File Explorer for manual deletion): immediately hide the entry, then locate and select the folder so you can delete it yourself. The app does not delete files. Even if you keep the folder, the entry stays hidden across rescans and restarts and can be restored in Settings.

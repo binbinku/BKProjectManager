@@ -2,7 +2,7 @@ import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import {
   ArrowDownUp,
   Check,
-  EyeOff,
+  Trash2,
   Grid2X2,
   List,
   MoreHorizontal,
@@ -120,7 +120,7 @@ export function ProjectTools({
               aria-label={`移除分类 ${category}`}
               onClick={() => choose(onRemove)}
             >
-              <EyeOff size={15} />
+              <Trash2 size={15} />
               移除分类
             </button>
           </>
