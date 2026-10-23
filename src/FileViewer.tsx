@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { FileCode2, FolderOpen, Loader2, LockKeyhole } from 'lucide-react';
+import { FileCode2, FolderOpen, Loader2 } from 'lucide-react';
 import { highlightCode, languageForPath } from './code-highlighter';
 import type { FilePreview } from './types';
 
@@ -59,20 +59,7 @@ export function FileViewer({
   }, [selected]);
 
   return (
-    <section className="file-panel" aria-label="文件内容">
-      <div className="panel-heading file-heading">
-        <span>
-          <FileCode2 size={15} />
-          <strong>{selected?.split('/').pop() || '文件预览'}</strong>
-        </span>
-        <span className="read-only">
-          <LockKeyhole size={11} />
-          只读
-        </span>
-      </div>
-      <div className="file-breadcrumb" title={selected || ''}>
-        {selected ? selected.split('/').join('  /  ') : '选择左侧文件，开始浏览项目'}
-      </div>
+    <section className="file-panel" aria-label={selected ? `文件内容：${selected}` : '文件内容'}>
       <div className="file-viewport" ref={viewport} aria-busy={loading}>
         {loading ? (
           <div className="viewer-empty">
@@ -131,17 +118,6 @@ export function FileViewer({
             )}
           </div>
         )}
-      </div>
-      <div className="file-status">
-        <span>
-          {preview?.kind === 'text'
-            ? `${content.split('\n').length} 行 · ${preview.encoding.toUpperCase()}`
-            : '文件预览'}
-        </span>
-        <span>
-          {preview ? formatBytes(preview.size) : ''}
-          {preview?.kind === 'text' && ` · ${language || '纯文本'}`}
-        </span>
       </div>
     </section>
   );

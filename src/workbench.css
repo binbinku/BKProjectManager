@@ -1,33 +1,36 @@
 .project-workbench {
   height: 100vh;
   min-width: 980px;
-  display: grid;
-  grid-template-rows: 52px minmax(0, 1fr) 27px;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   background: var(--canvas);
 }
-.workbench-topbar {
+.workbench-navigation-header,
+.workbench-tools {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  padding: 0 18px 0 12px;
+  min-height: 52px;
+  padding: 0 12px;
   border-bottom: 1px solid var(--border);
   background: var(--sidebar);
+  flex-shrink: 0;
   -webkit-app-region: drag;
 }
-.platform-darwin .workbench-topbar {
-  padding-left: 86px;
+.platform-darwin .workbench-navigation-header {
+  padding-top: 38px;
+  min-height: 90px;
+}
+.workbench-tools {
+  justify-content: flex-end;
 }
 .workbench-navigation,
 .workbench-topbar-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   min-width: 0;
-}
-.workbench-navigation > svg {
-  color: var(--faint);
+  width: 100%;
 }
 .workbench-project-name {
   font-weight: 550;
@@ -36,16 +39,12 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.workbench-category {
-  color: var(--muted);
-  font-size: 11px;
-  white-space: nowrap;
-}
 .back-projects {
   display: grid;
   place-items: center;
   width: 28px;
   height: 28px;
+  flex-shrink: 0;
   border-radius: 6px;
   color: var(--secondary);
 }
@@ -54,8 +53,8 @@
   background: var(--hover);
 }
 .workbench-topbar-actions {
-  flex-shrink: 0;
-  gap: 16px;
+  justify-content: flex-end;
+  gap: 8px;
 }
 .external-open {
   display: flex;
@@ -67,6 +66,7 @@
 }
 .workbench-layout {
   display: grid;
+  flex: 1;
   min-width: 0;
   min-height: 0;
 }
@@ -88,12 +88,16 @@
 }
 .explorer-panel,
 .file-panel,
-.terminal-panel {
+.terminal-panel,
+.terminal-column {
   display: flex;
   flex-direction: column;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
+}
+.terminal-panel {
+  flex: 1;
 }
 .explorer-panel {
   background: var(--sidebar);
@@ -231,11 +235,22 @@
   color: var(--error-text);
 }
 .explorer-hint {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
   padding: 11px 14px;
   border-top: 1px solid var(--border);
   color: var(--muted);
   font-size: 9px;
   white-space: nowrap;
+}
+.explorer-hint > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.explorer-hint small {
+  font-size: inherit;
 }
 .panel-resizer {
   background: var(--border);
@@ -249,35 +264,6 @@
 .panel-resizer:focus-visible {
   background: var(--status);
   outline: none;
-}
-.file-heading {
-  border-bottom: 0;
-}
-.file-heading strong {
-  font-size: 12px;
-  font-weight: 500;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.panel-heading .read-only {
-  font-size: 9px;
-  gap: 4px;
-  color: var(--muted);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 3px 5px;
-  flex-shrink: 0;
-}
-.file-breadcrumb {
-  height: 32px;
-  min-height: 32px;
-  padding: 9px 16px;
-  color: var(--muted);
-  font-size: 10px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .file-viewport {
   flex: 1;
@@ -401,7 +387,7 @@
 .image-preview img {
   display: block;
   max-width: 100%;
-  max-height: calc(100vh - 250px);
+  max-height: calc(100vh - 100px);
   object-fit: contain;
 }
 .image-preview span {
@@ -411,7 +397,6 @@
   padding: 5px 10px;
   border-radius: 5px;
 }
-.file-status,
 .terminal-hint {
   height: 28px;
   flex-shrink: 0;
@@ -457,7 +442,6 @@
 }
 .terminal-host .xterm-viewport {
   background: var(--canvas) !important;
-  scrollbar-width: thin;
 }
 .terminal-error {
   margin: 4px 12px;
@@ -468,25 +452,7 @@
   color: var(--error-text);
   overflow-wrap: anywhere;
 }
-.workbench-statusbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 0 14px;
-  background: var(--sidebar);
-  border-top: 1px solid var(--border);
-  color: var(--muted);
-  font-size: 10px;
-}
-.workbench-statusbar > span {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.status-divider {
-  width: 1px;
-  height: 10px;
-  background: var(--border-strong);
-  margin: 0 3px;
+.terminal-host .xterm-scrollable-element > .scrollbar,
+.terminal-host .xterm-scrollable-element > .shadow {
+  display: none !important;
 }

@@ -7,7 +7,6 @@ import {
   FolderOpen,
   RefreshCw,
   Settings2,
-  SquareTerminal,
 } from 'lucide-react';
 import type { FilePreview, WorkbenchSession } from './types';
 import { FileTree } from './FileTree';
@@ -138,41 +137,6 @@ export default function ProjectWorkbench({
 
   return (
     <div className={`project-workbench platform-${api.platform}`}>
-      <header className="workbench-topbar">
-        <div className="workbench-navigation">
-          <button
-            className="back-projects"
-            aria-label="返回项目列表"
-            title="返回项目列表并关闭当前终端"
-            disabled={leaving}
-            onClick={() => {
-              setLeaving(true);
-              onBack();
-            }}
-          >
-            <ArrowLeft size={16} />
-          </button>
-          <img src={logo} width="21" height="21" alt="BK Project Manager" />
-          <span className="workbench-project-name">{session.project.name}</span>
-          <ChevronRight size={13} />
-          <span className="workbench-category">{session.project.category}</span>
-        </div>
-        <div className="workbench-topbar-actions">
-          <button className="external-open" aria-label="设置" onClick={onSettings} title="设置">
-            <Settings2 size={14} />
-            设置
-          </button>
-          <button
-            className="external-open"
-            onClick={onExternal}
-            disabled={busy}
-            title="使用设置中的默认打开方式"
-          >
-            <ArrowUpRight size={14} />
-            外部打开
-          </button>
-        </div>
-      </header>
       {actionError && (
         <div className="workbench-action-error" role="alert">
           <span>{actionError}</span>
@@ -187,6 +151,24 @@ export default function ProjectWorkbench({
         }}
       >
         <aside className="explorer-panel" aria-label="资源管理器">
+          <header className="workbench-navigation-header">
+            <div className="workbench-navigation">
+              <button
+                className="back-projects"
+                aria-label="返回项目列表"
+                title="返回项目列表并关闭当前终端"
+                disabled={leaving}
+                onClick={() => {
+                  setLeaving(true);
+                  onBack();
+                }}
+              >
+                <ArrowLeft size={16} />
+              </button>
+              <img src={logo} width="21" height="21" alt="BK Project Manager" />
+              <span className="workbench-project-name">{session.project.name}</span>
+            </div>
+          </header>
           <div className="panel-heading">
             <span>
               <Files size={15} />
@@ -213,7 +195,10 @@ export default function ProjectWorkbench({
               onSelect={(path) => void read(path)}
             />
           </div>
-          <div className="explorer-hint">按需展开目录 · 文件保留在原位置</div>
+          <div className="explorer-hint" title={selected || session.project.path}>
+            <span>{selected || session.project.category}</span>
+            <small>只读预览 · 本地文件</small>
+          </div>
         </aside>
         {separator('tree')}
         <FileViewer
@@ -226,22 +211,27 @@ export default function ProjectWorkbench({
           }}
         />
         {separator('terminal')}
-        <ProjectTerminal sessionId={session.id} />
+        <div className="terminal-column">
+          <header className="workbench-tools">
+            <div className="workbench-topbar-actions">
+              <button className="external-open" aria-label="设置" onClick={onSettings} title="设置">
+                <Settings2 size={14} />
+                设置
+              </button>
+              <button
+                className="external-open"
+                onClick={onExternal}
+                disabled={busy}
+                title="使用设置中的默认打开方式"
+              >
+                <ArrowUpRight size={14} />
+                外部打开
+              </button>
+            </div>
+          </header>
+          <ProjectTerminal sessionId={session.id} />
+        </div>
       </div>
-      <footer className="workbench-statusbar">
-        <span>
-          <span className="online-dot" />
-          {session.project.name}
-          <span className="status-divider" />
-          本地工作台
-        </span>
-        <span>
-          <SquareTerminal size={12} />
-          项目终端
-          <span className="status-divider" />
-          只读文件预览
-        </span>
-      </footer>
     </div>
   );
 }

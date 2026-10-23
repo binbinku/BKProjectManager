@@ -95,6 +95,52 @@ try {
     return image?.complete && image.naturalWidth === 120;
   });
 
+  // The central viewer fills the window; hidden scrollbars must not disable scrolling.
+  const assertFullHeight = async () => {
+    const bounds = await page.locator('.file-viewport').boundingBox();
+    assert.equal(bounds.y, 0);
+    assert.equal(bounds.height, await page.evaluate(() => window.innerHeight));
+    assert.equal(await page.locator('.file-panel header, .file-panel footer').count(), 0);
+  };
+  await assertFullHeight();
+  const scrollFixture = path.join(project, 'scroll-fixture');
+  await mkdir(scrollFixture);
+  await Promise.all(
+    Array.from({ length: 80 }, (_, index) =>
+      writeFile(path.join(scrollFixture, `file-${String(index).padStart(2, '0')}.txt`), ''),
+    ),
+  );
+  await writeFile(
+    path.join(scrollFixture, 'long.txt'),
+    Array.from({ length: 160 }, (_, index) => `${index}: ${'scroll '.repeat(80)}`).join('\n'),
+  );
+  await page.getByRole('button', { name: '刷新文件目录' }).click();
+  await page.getByRole('treeitem', { name: '展开 scroll-fixture', exact: true }).click();
+  await page.getByRole('treeitem', { name: '查看 long.txt', exact: true }).click();
+  await page.locator('.code-document').waitFor();
+  await page.locator('.file-viewport').hover();
+  await page.mouse.wheel(500, 500);
+  await page.waitForFunction(() => {
+    const viewport = document.querySelector('.file-viewport');
+    return viewport.scrollTop > 0 && viewport.scrollLeft > 0;
+  });
+  await page.locator('.explorer-scroll').hover();
+  await page.mouse.wheel(0, -10000);
+  await page.waitForFunction(() => document.querySelector('.explorer-scroll').scrollTop === 0);
+  await page.mouse.wheel(0, 400);
+  await page.waitForFunction(() => document.querySelector('.explorer-scroll').scrollTop > 0);
+  for (const selector of ['.file-viewport', '.explorer-scroll', '.xterm-viewport']) {
+    assert.equal(
+      await page.locator(selector).evaluate((element) => getComputedStyle(element).scrollbarWidth),
+      'none',
+    );
+  }
+  for (const scrollbar of await page.locator('.xterm-scrollable-element > .scrollbar').all())
+    assert.equal(await scrollbar.evaluate((element) => getComputedStyle(element).display), 'none');
+  await rm(scrollFixture, { recursive: true });
+  await page.getByRole('button', { name: '刷新文件目录' }).click();
+  await page.getByRole('treeitem', { name: '展开 src', exact: true }).click();
+
   const output = async () =>
     page.evaluate(() =>
       window.__terminalEvents
@@ -177,6 +223,13 @@ try {
         .join('')
         .includes('__BKPM_BURST__'),
     );
+    const visibleOutput = await page.locator('.xterm-rows').textContent();
+    await page.locator('.terminal-host').hover();
+    await page.mouse.wheel(0, -500);
+    await page.waitForFunction(
+      (previous) => document.querySelector('.xterm-rows').textContent !== previous,
+      visibleOutput,
+    );
   }
   const separator = page.getByRole('separator', { name: '调整终端宽度' });
   const before = await page.locator('.terminal-panel').boundingBox();
@@ -206,6 +259,7 @@ try {
       () => !document.querySelector('input[name="settings-theme"]:checked').disabled,
     );
     await page.getByRole('button', { name: '完成', exact: true }).click();
+    await assertFullHeight();
     await page.screenshot({ path: `artifacts/workbench-${theme}.png` });
     if (process.argv.includes('--docs'))
       await copyFile(`artifacts/workbench-${theme}.png`, `docs/assets/workbench-${theme}.png`);
@@ -218,6 +272,7 @@ try {
       document.querySelector('.terminal-panel').getBoundingClientRect().right <= window.innerWidth,
   );
   assert.ok((await page.locator('.file-panel').boundingBox()).width >= 260);
+  await assertFullHeight();
   await app.evaluate(({ BrowserWindow }) =>
     BrowserWindow.getAllWindows()[0].setContentSize(1380, 900),
   );
@@ -265,7 +320,7 @@ try {
   await page.getByRole('button', { name: '返回项目列表' }).click();
   assert.deepEqual(errors, []);
   console.log(
-    'Workbench smoke passed: lazy tree, single-file preview, syntax highlighting, escaped content, images, binary fallback, real PTY input/cwd, Ctrl+C, panel resize, themes, terminal restart, session revocation and process cleanup.',
+    'Workbench smoke passed: full-height viewer, hidden scrollbars with working tree/code/terminal scrolling, lazy tree, single-file preview, syntax highlighting, escaped content, images, binary fallback, real PTY input/cwd, Ctrl+C, panel resize, themes, terminal restart, session revocation and process cleanup.',
   );
 } catch (error) {
   if (app) {
