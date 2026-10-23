@@ -294,6 +294,12 @@ try {
         .join('')
         .includes('__BKPM_BURST__'),
     );
+    // PTY delivery can finish before xterm renders the final write. Wait for
+    // the visible marker so scrolling is measured from the completed output,
+    // rather than comparing two identical screens of repeated burst text.
+    await page.waitForFunction(() =>
+      document.querySelector('.xterm-rows').textContent.includes('__BKPM_BURST__'),
+    );
     const visibleOutput = await page.locator('.xterm-rows').textContent();
     await page.locator('.terminal-host').hover();
     await page.mouse.wheel(0, -500);
