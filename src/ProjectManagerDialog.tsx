@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
+import { useModalFocus } from './useModalFocus';
 import { Check, Loader2, X } from 'lucide-react';
 import type { AppState, CategoryStyle } from './types';
 import {
@@ -34,44 +35,8 @@ export function ProjectManagerDialog({
   const [customStyle, setCustomStyle] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const modalRef = useRef<HTMLElement>(null);
   const savingRef = useRef(false);
-  const closeRef = useRef(onClose);
-  closeRef.current = onClose;
-  useEffect(() => {
-    const previous = document.activeElement as HTMLElement | null;
-    const modal = modalRef.current;
-    (
-      modal?.querySelector<HTMLElement>('input, select') ??
-      modal?.querySelector<HTMLElement>('button')
-    )?.focus();
-    const keyboard = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        if (!savingRef.current) closeRef.current();
-      }
-      if (event.key !== 'Tab' || !modal) return;
-      const elements = [
-        ...modal.querySelectorAll<HTMLElement>(
-          'button:not(:disabled), input:not(:disabled), select:not(:disabled)',
-        ),
-      ];
-      const first = elements[0],
-        last = elements.at(-1);
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last?.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first?.focus();
-      }
-    };
-    document.addEventListener('keydown', keyboard);
-    return () => {
-      document.removeEventListener('keydown', keyboard);
-      previous?.focus();
-    };
-  }, []);
+  const modalRef = useModalFocus(onClose, saving);
   const appearance = dialog.kind !== 'project';
   const title =
     dialog.kind === 'category' ? '新增分类' : dialog.kind === 'project' ? '新建项目' : '分类外观';

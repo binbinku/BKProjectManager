@@ -169,13 +169,23 @@ Click **Rescan** after adding or moving projects. You can switch workspaces thro
 
 Category appearances stay in local preferences; no configuration files are added to existing projects. Published v0.1.1 installers do not include these additions yet.
 
+### Removing, restoring and manual deletion (source preview)
+
+Click the hide icon on a project card, or beside the selected category's title, to open a dialog:
+
+- **从列表移除** (Remove from list): hide the item in the current workspace. Removing a category also hides its projects. This persists across rescans and restarts while keeping all files intact.
+- **在 Finder / 资源管理器中显示，手动删除** (Show in Finder / File Explorer for manual deletion): locate and select the folder so you can delete it yourself. The app neither deletes files nor automatically hides the entry. Click **Rescan** afterward.
+- **Restore:** open **Settings… → 已移除的内容** (Removed items) from the native menu to restore individual entries or everything. Projects removed individually stay hidden when their category is restored, until you restore them too. Favorites and recent activity are retained.
+
+Restoring clears the hidden entry only; folders deleted or moved outside the app are not recreated.
+
 > **Validation scope:** the current workbench and local preview are tested on macOS Apple Silicon. Existing Intel installers have been tested through Rosetta 2. Windows x64 installers are cross-built on macOS and still await Windows 11 runtime testing. Dependency installation needs internet access for npm packages and Electron; bundled icons load offline at runtime.
 
 <a id="previews"></a>
 
 ## 🖼️ More screenshots
 
-The project management and editor pages are shown in full above. Below are the list view, settings and first-launch screens.
+The project management and editor pages are shown in full above. Below are the list view, settings, removal dialog and first-launch screens.
 
 <details>
 <summary><strong>List view · Browse more compactly</strong></summary>
@@ -200,6 +210,19 @@ The project management and editor pages are shown in full above. Below are the l
 
 <br />
 <img src="docs/assets/welcome.png" alt="First-launch screen prompting the user to select a workspace" width="1360" />
+
+</details>
+
+<details>
+<summary><strong>Removal dialog · Hide or reveal for manual deletion</strong></summary>
+
+<p align="center">
+  <br />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/remove-dark.png" />
+    <img src="docs/assets/remove-light.png" alt="Removal dialog: hide from the list or reveal in Finder for manual deletion" width="500" />
+  </picture>
+</p>
 
 </details>
 
@@ -265,6 +288,7 @@ For example, if `AndroidDev/Projects` contains `settings.gradle.kts`, it is trea
 | `npm run test:workbench`   | Test project browsing, file preview, real terminal and cleanup |
 | `npm run test:smoke`       | Verify key interactions in a real Electron window              |
 | `npm run test:management`  | Test category appearance, new folders and restart persistence  |
+| `npm run test:removal`     | Test removal dialogs, reveal, restore and filesystem integrity |
 | `npm run format:check`     | Check source formatting                                        |
 | `npm run docs:screenshots` | Build the app and regenerate screenshots with sample data      |
 

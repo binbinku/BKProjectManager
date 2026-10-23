@@ -19,6 +19,7 @@ import {
   ChevronRight,
   Clock3,
   Code2,
+  EyeOff,
   Folder,
   FolderOpen,
   GitBranch,
@@ -39,6 +40,7 @@ import type { AppState, Project, ThemePreference, WorkbenchSession } from './typ
 import { ThemeSelector } from './ThemeSelector';
 import { CategoryIcon, defaultCategoryStyle } from './categories';
 import { ProjectManagerDialog, type ManagementDialog } from './ProjectManagerDialog';
+import { RemoveItemDialog, type RemovalTarget } from './RemoveItemDialog';
 import './styles.css';
 import { version as appVersion } from '../package.json';
 
@@ -83,6 +85,7 @@ function App() {
   const [view, setView] = useState('grid');
   const [settings, setSettings] = useState(false);
   const [managementDialog, setManagementDialog] = useState<ManagementDialog | null>(null);
+  const [removalTarget, setRemovalTarget] = useState<RemovalTarget | null>(null);
   const [session, setSession] = useState<WorkbenchSession | null>(null);
   const theme = state?.settings.theme ?? 'system';
   const searchRef = useRef<HTMLInputElement>(null);
@@ -120,6 +123,7 @@ function App() {
     const handleKey = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault();
+        if (document.querySelector('[role="dialog"]')) return;
         searchRef.current?.focus();
       }
       if (event.key === 'Escape') {
@@ -175,10 +179,16 @@ function App() {
       ];
       const first = elements[0],
         last = elements.at(-1);
-      if (event.shiftKey && document.activeElement === first) {
+      if (
+        event.shiftKey &&
+        (document.activeElement === first || !modal.contains(document.activeElement))
+      ) {
         event.preventDefault();
         last?.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
+      } else if (
+        !event.shiftKey &&
+        (document.activeElement === last || !modal.contains(document.activeElement))
+      ) {
         event.preventDefault();
         first?.focus();
       }
@@ -210,6 +220,11 @@ function App() {
     );
   const favorites = state?.settings.favorites ?? [];
   const recent = state?.settings.recent ?? {};
+  const removed = state?.settings.visibility[state.settings.workspace ?? ''] ?? {
+    categories: [],
+    projects: [],
+  };
+  const removedCount = removed.categories.length + removed.projects.length;
   const favoriteCount = projects.filter((p) => favorites.includes(p.id)).length;
   const recentCount = projects.filter((p) => recent[p.id]).length;
   const filtered = useMemo(() => {
@@ -356,6 +371,79 @@ function App() {
         </button>
         {state?.settings.customEditor && (
           <p className="editor-path">{state.settings.customEditor}</p>
+        )}
+        {state?.settings.workspace && (
+          <section className="removed-settings" aria-label="已移除的内容">
+            <div className="removed-heading">
+              <h3 className="settings-label">
+                已移除的内容 <small>{removedCount}</small>
+              </h3>
+              {removedCount > 0 && (
+                <button
+                  className="text-button"
+                  disabled={busy}
+                  onClick={() => perform(() => api.restoreItem('all'), '已恢复所有可用分类和项目')}
+                >
+                  全部恢复
+                </button>
+              )}
+            </div>
+            <p className="theme-help">
+              仅对当前工作空间隐藏，重新扫描也会保留。恢复不会创建或修改文件。
+            </p>
+            {removedCount > 0 ? (
+              <div className="removed-list">
+                {removed.categories.map((category) => (
+                  <div className="removed-item" key={`category:${category}`}>
+                    <CategoryIcon style={categoryStyle(category)} />
+                    <div>
+                      <strong>{category}</strong>
+                      <small>分类及其项目</small>
+                    </div>
+                    <button
+                      className="text-button"
+                      disabled={busy}
+                      aria-label={`恢复分类 ${category}`}
+                      onClick={() =>
+                        perform(() => api.restoreItem('category', category), '分类已恢复')
+                      }
+                    >
+                      恢复
+                    </button>
+                  </div>
+                ))}
+                {removed.projects.map((relativePath) => {
+                  const parts = relativePath.split(platform === 'win32' ? '\\' : '/');
+                  const parentHidden = removed.categories.includes(parts[0]);
+                  return (
+                    <div className="removed-item" key={`project:${relativePath}`}>
+                      <Folder size={17} />
+                      <div>
+                        <strong>{parts.at(-1)}</strong>
+                        <small title={relativePath}>
+                          {relativePath}
+                          {parentHidden ? ' · 请先恢复所属分类' : ''}
+                        </small>
+                      </div>
+                      <button
+                        className="text-button"
+                        disabled={busy || parentHidden}
+                        aria-label={`恢复项目 ${relativePath}`}
+                        title={parentHidden ? '请先恢复所属分类' : '恢复到项目列表'}
+                        onClick={() =>
+                          perform(() => api.restoreItem('project', relativePath), '项目已恢复')
+                        }
+                      >
+                        {parentHidden ? '先恢复分类' : '恢复'}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="removed-empty">没有已移除的分类或项目。</p>
+            )}
+          </section>
         )}
         <div className="settings-bottom">
           <span>BK Project Manager · {appVersion}</span>
@@ -556,6 +644,26 @@ function App() {
                     <button
                       className="secondary-button"
                       disabled={busy}
+                      aria-label={`移除分类 ${selectedCategory}`}
+                      title="移除分类或手动删除"
+                      onClick={() =>
+                        setRemovalTarget({
+                          kind: 'category',
+                          key: selectedCategory,
+                          name: selectedCategory,
+                          path: `${state.snapshot?.workspace ?? state.settings.workspace}${platform === 'win32' ? '\\' : '/'}${selectedCategory}`,
+                          count: projects.filter((project) => project.category === selectedCategory)
+                            .length,
+                        })
+                      }
+                    >
+                      <EyeOff size={15} />
+                    </button>
+                  )}
+                  {selectedCategory && (
+                    <button
+                      className="secondary-button"
+                      disabled={busy}
                       aria-label="修改分类外观"
                       title="修改分类外观"
                       onClick={() =>
@@ -726,6 +834,21 @@ function App() {
                         </button>
                         <div className="card-tools">
                           <button
+                            title="移除项目或手动删除"
+                            aria-label={`移除项目 ${project.name}`}
+                            disabled={busy}
+                            onClick={() =>
+                              setRemovalTarget({
+                                kind: 'project',
+                                key: project.id,
+                                name: project.name,
+                                path: project.path,
+                              })
+                            }
+                          >
+                            <EyeOff size={16} />
+                          </button>
+                          <button
                             title={`在 ${folderName} 中打开`}
                             aria-label={`打开 ${project.name} 文件夹`}
                             disabled={busy}
@@ -808,6 +931,22 @@ function App() {
         </div>
       )}
       {settingsDialog}
+      {removalTarget && (
+        <RemoveItemDialog
+          target={removalTarget}
+          onClose={() => setRemovalTarget(null)}
+          onRemoved={(next) => {
+            setState(next);
+            if (removalTarget.kind === 'category') select('all');
+            setRemovalTarget(null);
+            setMessage('已从列表移除，文件仍在原位置，可在设置中恢复');
+          }}
+          onRevealed={() => {
+            setRemovalTarget(null);
+            setMessage(`已在 ${folderName} 中定位，请自行操作；完成后重新扫描`);
+          }}
+        />
+      )}
       {managementDialog && state && (
         <ProjectManagerDialog
           dialog={managementDialog}

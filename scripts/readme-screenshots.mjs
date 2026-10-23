@@ -75,6 +75,9 @@ try {
         element.title = '~/Workspace';
       }
     });
+    await page.locator('.removal-path > span').evaluateAll((elements) => {
+      for (const element of elements) element.textContent = '~/Workspace/WebDev/Projects/AtlasWeb';
+    });
     await page.evaluate(() => document.fonts.ready);
     const target = selector ? page.locator(selector) : page;
     await target.screenshot({
@@ -101,11 +104,19 @@ try {
   await page.getByRole('button', { name: '列表视图' }).click();
   await page.locator('.list-view').waitFor();
   await capture('list-dark.png');
+  await page.getByRole('button', { name: '移除项目 AtlasWeb', exact: true }).click();
+  await capture('remove-dark.png', '.remove-modal');
+  await page.getByRole('button', { name: '取消', exact: true }).click();
+  await theme('light');
+  await page.getByRole('button', { name: '移除项目 AtlasWeb', exact: true }).click();
+  await capture('remove-light.png', '.remove-modal');
+  await page.getByRole('button', { name: '取消', exact: true }).click();
+  await theme('dark');
   await clickMenu(application, 'settings');
   await page.getByRole('dialog').waitFor();
   await capture('settings-dark.png', '.settings-modal');
   assert.deepEqual(errors, []);
-  console.log('Saved 5 documentation screenshots with sample projects to docs/assets.');
+  console.log('Saved 7 documentation screenshots with sample projects to docs/assets.');
 } finally {
   if (application) await application.close().catch(() => {});
   await rm(temporary, { recursive: true, force: true });

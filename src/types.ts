@@ -29,6 +29,7 @@ export interface Settings {
   customEditor: string | null;
   theme: ThemePreference;
   categoryStyles: Record<string, Record<string, CategoryStyle>>;
+  visibility: Record<string, { categories: string[]; projects: string[] }>;
 }
 export interface AppState {
   settings: Settings;
@@ -51,6 +52,9 @@ export interface WorkspaceAPI {
   getState(): Promise<AppState>;
   chooseWorkspace(): Promise<AppState>;
   scan(): Promise<AppState>;
+  removeItem(kind: 'category' | 'project', key: string): Promise<AppState>;
+  restoreItem(kind: 'category' | 'project' | 'all', key?: string): Promise<AppState>;
+  revealItem(kind: 'category' | 'project', key: string): Promise<void>;
   createCategory(name: string, style: CategoryStyle): Promise<AppState>;
   setCategoryStyle(category: string, style: CategoryStyle): Promise<AppState>;
   createProject(category: string, name: string): Promise<AppState>;

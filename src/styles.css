@@ -372,6 +372,121 @@ h3 {
 .management-modal .error-banner {
   margin-top: 18px;
 }
+.remove-modal h2 {
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+}
+.removal-path {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 7px;
+  background: var(--surface-soft);
+  color: var(--secondary);
+  margin: 20px 0;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.removal-path span {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.removal-choice {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 17px 14px;
+  margin-top: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  text-align: left;
+}
+.removal-choice:hover:not(:disabled) {
+  background: var(--surface-soft);
+  border-color: var(--border-strong);
+}
+.removal-choice-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 7px;
+  background: var(--surface-soft);
+  color: var(--secondary);
+  flex-shrink: 0;
+}
+.removal-choice > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+.removal-choice strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 550;
+}
+.removal-choice small {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+.removed-settings {
+  margin-top: 24px;
+  padding-top: 2px;
+  border-top: 1px solid var(--border);
+}
+.removed-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.removed-heading small {
+  margin-left: 5px;
+  font-size: 10px;
+  color: var(--muted);
+}
+.removed-list {
+  max-height: 220px;
+  overflow: auto;
+}
+.removed-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border);
+}
+.removed-item:last-child {
+  border-bottom: 0;
+}
+.removed-item > div {
+  flex: 1;
+  min-width: 0;
+}
+.removed-item strong,
+.removed-item small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.removed-item strong {
+  font-size: 12px;
+  font-weight: 500;
+}
+.removed-item small {
+  font-size: 10px;
+  margin-top: 4px;
+  color: var(--muted);
+}
+.removed-empty {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 15px 0;
+}
 .empty-state > .secondary-button {
   margin-top: 16px;
 }

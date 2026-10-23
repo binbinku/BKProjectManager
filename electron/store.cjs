@@ -1,6 +1,7 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const { validateStyle } = require('./workspace-management.cjs');
+const { loadVisibility } = require('./visibility.cjs');
 function loadCategoryStyles(saved) {
   const workspaces = {};
   if (!saved || typeof saved !== 'object' || Array.isArray(saved)) return workspaces;
@@ -24,6 +25,7 @@ const defaults = () => ({
   customEditor: null,
   theme: 'system',
   categoryStyles: {},
+  visibility: {},
 });
 class Store {
   constructor(directory) {
@@ -50,6 +52,7 @@ class Store {
         customEditor: typeof saved.customEditor === 'string' ? saved.customEditor : null,
         theme: ['light', 'dark', 'system'].includes(saved.theme) ? saved.theme : 'system',
         categoryStyles: loadCategoryStyles(saved.categoryStyles),
+        visibility: loadVisibility(saved.visibility),
       };
     } catch (error) {
       if (error.code !== 'ENOENT')

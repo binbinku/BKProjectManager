@@ -9,6 +9,12 @@ const { Store } = require('./store.cjs');
 const { Workbench } = require('./workbench.cjs');
 const { macAppIcon } = require('./app-icon.cjs');
 const management = require('./workspace-management.cjs');
+const {
+  emptyVisibility,
+  getVisibility,
+  visibleSnapshot,
+  saveVisibility,
+} = require('./visibility.cjs');
 
 app.setName('BK Project Manager');
 const appIcon = path.join(
@@ -149,7 +155,7 @@ async function scan() {
   return scanJob;
 }
 function state() {
-  return { settings: store.data, snapshot };
+  return { settings: store.data, snapshot: visibleSnapshot(snapshot, getVisibility(store.data)) };
 }
 function applyTheme(theme) {
   nativeTheme.themeSource = theme;
@@ -236,7 +242,7 @@ function registerHandlers() {
       }
     },
     'workbench:open': async (id) => {
-      const project = snapshot?.projects.find((item) => item.id === id);
+      const project = state().snapshot?.projects.find((item) => item.id === id);
       if (!project) throw new Error('项目已不存在，请重新扫描');
       const session = await workbench.open(project);
       try {
@@ -268,6 +274,52 @@ function registerHandlers() {
         await scan();
         return state();
       }),
+    'item:remove': (kind, key) =>
+      workspaceTask(async () => {
+        if (!store.data.workspace || !snapshot) throw new Error('请先选择工作空间');
+        const current = getVisibility(store.data);
+        if (kind === 'category' && state().snapshot.categories.includes(key)) {
+          await saveVisibility(store, { ...current, categories: [...current.categories, key] });
+        } else if (kind === 'project') {
+          const project = state().snapshot.projects.find((item) => item.id === key);
+          if (!project) throw new Error('项目已不存在或已移除，请重新扫描');
+          await saveVisibility(store, {
+            ...current,
+            projects: [...current.projects, project.relativePath],
+          });
+        } else throw new Error('分类已不存在、已移除或操作无效');
+        return state();
+      }),
+    'item:restore': (kind, key) =>
+      workspaceTask(async () => {
+        if (!store.data.workspace) throw new Error('请先选择工作空间');
+        const current = getVisibility(store.data);
+        if (kind === 'all') await saveVisibility(store, emptyVisibility());
+        else if (['category', 'project'].includes(kind) && typeof key === 'string') {
+          const field = kind === 'category' ? 'categories' : 'projects';
+          if (!current[field].includes(key)) throw new Error('该内容不在移除列表中');
+          await saveVisibility(store, {
+            ...current,
+            [field]: current[field].filter((item) => item !== key),
+          });
+        } else throw new Error('无效的恢复操作');
+        await scan();
+        return state();
+      }),
+    'item:reveal': async (kind, key) => {
+      const visible = state().snapshot;
+      let target;
+      if (kind === 'category' && visible?.categories.includes(key))
+        target = path.join(visible.workspace, key);
+      else if (kind === 'project') target = visible?.projects.find((item) => item.id === key)?.path;
+      if (!target) throw new Error('内容已不存在或已移除，请重新扫描');
+      try {
+        if (!(await fs.stat(target)).isDirectory()) throw new Error();
+      } catch {
+        throw new Error('文件夹已移动或删除，请重新扫描');
+      }
+      shell.showItemInFolder(target);
+    },
     'category:create': (name, appearance) =>
       workspaceTask(async () => {
         const workspace = store.data.workspace;
@@ -312,7 +364,8 @@ function registerHandlers() {
         return state();
       }),
     'project:favorite': async (id) => {
-      if (!snapshot?.projects.some((p) => p.id === id)) throw new Error('项目已不存在，请重新扫描');
+      if (!state().snapshot?.projects.some((p) => p.id === id))
+        throw new Error('项目已不存在，请重新扫描');
       store.data.favorites = store.data.favorites.includes(id)
         ? store.data.favorites.filter((x) => x !== id)
         : [...store.data.favorites, id];
@@ -353,7 +406,7 @@ function registerHandlers() {
     },
     'project:open': async (id, action = 'default') => {
       if (!['default', 'folder', 'terminal'].includes(action)) throw new Error('无效的项目操作');
-      const project = snapshot?.projects.find((p) => p.id === id);
+      const project = state().snapshot?.projects.find((p) => p.id === id);
       if (!project) throw new Error('项目已不存在，请重新扫描');
       try {
         if (!(await fs.stat(project.path)).isDirectory()) throw new Error();

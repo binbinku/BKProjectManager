@@ -169,13 +169,23 @@ npm run dev
 
 分类外观保存在本机设置中，不会向已有项目写入配置文件。当前公开的 v0.1.1 安装包尚未包含上述新增功能。
 
+### 移除、恢复与手动删除（源码预览版）
+
+点击项目卡片上的隐藏图标，或选中分类后点击标题旁的隐藏图标，会打开操作弹窗：
+
+- **从列表移除**：仅在当前工作空间中隐藏；移除分类会连同其中的项目一起隐藏，重新扫描和重启仍然有效，磁盘文件保持原样。
+- **在 Finder / 资源管理器中显示，手动删除**：定位并选中文件夹，由你在系统中自行删除。应用不会执行删除，也不会自动移除列表项；完成后点击 **重新扫描**。
+- **恢复**：通过系统菜单打开 **设置… → 已移除的内容**，逐项或全部恢复。恢复分类时，之前单独移除的项目仍会隐藏，可再单独恢复。收藏与最近打开记录保留。
+
+恢复只清除隐藏记录；已经被手动删除或移动的文件夹不会重新创建。
+
 > **验证范围**：当前工作台与本地预览包在 macOS Apple Silicon 上验证；既有 macOS Intel 安装包已通过 Rosetta 2 运行验证，Windows x64 安装包由 macOS 交叉构建，尚待 Windows 11 实机验证。安装依赖时需要联网下载 npm 包及 Electron 运行时，图标随应用打包，运行时不需要联网加载。
 
 <a id="previews"></a>
 
 ## 🖼️ 更多界面
 
-上方已完整展示项目管理页与编辑器页。下面补充列表视图、设置和首次启动页面。
+上方已完整展示项目管理页与编辑器页。下面补充列表视图、设置、移除弹窗和首次启动页面。
 
 <details>
 <summary><strong>列表视图 · 更紧凑地浏览项目</strong></summary>
@@ -200,6 +210,19 @@ npm run dev
 
 <br />
 <img src="docs/assets/welcome.png" alt="首次启动页面，引导用户选择工作空间" width="1360" />
+
+</details>
+
+<details>
+<summary><strong>移除弹窗 · 隐藏列表或定位后手动删除</strong></summary>
+
+<p align="center">
+  <br />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/remove-dark.png" />
+    <img src="docs/assets/remove-light.png" alt="移除弹窗：从列表隐藏，或在 Finder 中显示后由用户手动删除" width="500" />
+  </picture>
+</p>
 
 </details>
 
@@ -265,6 +288,7 @@ Workspace/
 | `npm run test:workbench`   | 验证项目文件、预览、真实终端与进程清理   |
 | `npm run test:smoke`       | 在真实 Electron 窗口中验证主要交互       |
 | `npm run test:management`  | 验证分类外观、新建分类与空项目、重启保存 |
+| `npm run test:removal`     | 验证移除弹窗、定位、恢复和文件完整性     |
 | `npm run format:check`     | 检查代码格式                             |
 | `npm run docs:screenshots` | 构建应用并使用示例数据更新文档截图       |
 
