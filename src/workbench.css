@@ -15,9 +15,9 @@
   align-items: center;
   min-height: 52px;
   padding: 0 12px;
-  background: color-mix(in srgb, var(--sidebar) 75%, transparent);
-  -webkit-backdrop-filter: blur(16px) saturate(130%);
-  backdrop-filter: blur(16px) saturate(130%);
+  background: color-mix(in srgb, var(--sidebar) 45%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(130%);
+  backdrop-filter: blur(14px) saturate(130%);
   flex-shrink: 0;
   -webkit-app-region: drag;
 }
@@ -189,17 +189,33 @@
   color: var(--error-text);
 }
 .panel-resizer {
-  background: var(--border);
+  position: relative;
+  z-index: 3;
+  left: -1.5px;
+  width: 4px;
   cursor: col-resize;
   touch-action: none;
   user-select: none;
+}
+.panel-resizer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-50%);
+  background: var(--border);
+  pointer-events: none;
   transition: background 0.15s;
 }
-.panel-resizer:hover,
-.panel-resizer:active,
 .panel-resizer:focus-visible {
-  background: var(--status);
   outline: none;
+}
+.panel-resizer:hover::after,
+.panel-resizer:active::after,
+.panel-resizer:focus-visible::after {
+  background: var(--status);
 }
 .file-viewport {
   flex: 1;

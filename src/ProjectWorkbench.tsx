@@ -76,7 +76,7 @@ export default function ProjectWorkbench({
     if (!layout.current) return;
     const observer = new ResizeObserver(([entry]) => {
       setTerminalWidth((value) =>
-        Math.max(260, Math.min(value, entry.contentRect.width - treeWidth - 268)),
+        Math.max(260, Math.min(value, entry.contentRect.width - treeWidth - 262)),
       );
     });
     observer.observe(layout.current);
@@ -95,8 +95,8 @@ export default function ProjectWorkbench({
   const resize = (side: 'tree' | 'terminal', value: number) => {
     const total = layout.current?.clientWidth || window.innerWidth;
     if (side === 'tree')
-      setTreeWidth(Math.max(minTreeWidth, Math.min(value, 420, total - terminalWidth - 268)));
-    else setTerminalWidth(Math.max(260, Math.min(value, total - treeWidth - 268)));
+      setTreeWidth(Math.max(minTreeWidth, Math.min(value, 420, total - terminalWidth - 262)));
+    else setTerminalWidth(Math.max(260, Math.min(value, total - treeWidth - 262)));
   };
   function separator(side: 'tree' | 'terminal') {
     return (
@@ -109,7 +109,7 @@ export default function ProjectWorkbench({
         aria-valuemax={
           side === 'tree'
             ? 420
-            : Math.max(260, (layout.current?.clientWidth || window.innerWidth) - treeWidth - 268)
+            : Math.max(260, (layout.current?.clientWidth || window.innerWidth) - treeWidth - 262)
         }
         aria-valuenow={side === 'tree' ? treeWidth : terminalWidth}
         tabIndex={0}
@@ -159,7 +159,7 @@ export default function ProjectWorkbench({
         className="workbench-layout"
         ref={layout}
         style={{
-          gridTemplateColumns: `${treeWidth}px 4px minmax(260px, 1fr) 4px ${terminalWidth}px`,
+          gridTemplateColumns: `${treeWidth}px 1px minmax(260px, 1fr) 1px ${terminalWidth}px`,
         }}
       >
         <aside className="explorer-panel" aria-label="资源管理器">
