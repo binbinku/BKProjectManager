@@ -67,7 +67,7 @@ Open a project card to enter the three-panel workbench: browse files on the left
   <sub>Both views use sample projects and follow your GitHub light or dark appearance. The app UI is currently in Chinese.</sub>
 </p>
 
-> **Versions:** the editor view, seven built-in palettes and unified floating controls are part of the v0.2.0 source preview. Published v0.1.1 installers provide basic project management. To try the complete workbench, [run from source](#quick-start). Code preview is read-only; editing and saving files are not supported.
+> **v0.2.0 includes the complete workbench, seven built-in palettes and unified floating controls.** [Download an installer](#downloads) or [run from source](#quick-start). Code preview is read-only; editing and saving files are not supported.
 
 <a id="features"></a>
 
@@ -96,9 +96,9 @@ Open a project card to enter the three-panel workbench: browse files on the left
   </tr>
 </table>
 
-## 🧩 Using the workbench (source preview)
+## 🧩 Using the workbench
 
-The v0.2.0 source opens projects in a three-panel workbench. Published v0.1.1 installers do not include this feature yet.
+Open a project to enter the three-panel workbench, available in both v0.2.0 installers and source builds.
 
 - **Left:** a fixed header contains Back, the project name and the actual icon of your default external app. The tree starts below it and scrolls behind its translucent frosted surface. Bundled Material Icon Theme icons support folder expansion and light/dark appearance.
 - **Center:** a viewer extending from the top to the bottom of the window, showing one read-only file at a time, with line numbers and VS Code Light+ / Dark+ syntax highlighting. No file tabs or editing controls. Common images can also be previewed.
@@ -130,17 +130,19 @@ Click the app icon in the header to open the project using your default external
 
 ## 📦 Downloads
 
-**Published installers: v0.1.1.** These support discovery, search, favorites, external opening and themes, but do not include the v0.2.0 workbench shown above. Download from the [latest release](https://github.com/binbinku/BKProjectManager/releases/latest):
+**Latest version: v0.2.0.** Includes project management, the three-panel workbench, a real terminal, category and empty-project creation, removal and restore, and seven built-in palettes. Download from the [latest release](https://github.com/binbinku/BKProjectManager/releases/latest):
+
+See the [v0.2.0 release notes](docs/releases/v0.2.0.md) for changes and upgrade instructions.
 
 | Platform                         | Installer                                                                                                                 | ZIP archive                                                                                                                |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| macOS · Apple Silicon (M series) | [DMG](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.1/BKProjectManager-0.1.1-mac-arm64.dmg)         | [ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.1/BKProjectManager-0.1.1-mac-arm64.zip)          |
-| macOS · Intel                    | [DMG](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.1/BKProjectManager-0.1.1-mac-x64.dmg)           | [ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.1/BKProjectManager-0.1.1-mac-x64.zip)            |
-| Windows · x64                    | [EXE installer](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.1/BKProjectManager-0.1.1-win-x64.exe) | [No-install ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.1/BKProjectManager-0.1.1-win-x64.zip) |
+| macOS · Apple Silicon (M series) | [DMG](https://github.com/binbinku/BKProjectManager/releases/download/v0.2.0/BKProjectManager-0.2.0-mac-arm64.dmg)         | [ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.2.0/BKProjectManager-0.2.0-mac-arm64.zip)          |
+| macOS · Intel                    | [DMG](https://github.com/binbinku/BKProjectManager/releases/download/v0.2.0/BKProjectManager-0.2.0-mac-x64.dmg)           | [ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.2.0/BKProjectManager-0.2.0-mac-x64.zip)            |
+| Windows · x64                    | [EXE installer](https://github.com/binbinku/BKProjectManager/releases/download/v0.2.0/BKProjectManager-0.2.0-win-x64.exe) | [No-install ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.2.0/BKProjectManager-0.2.0-win-x64.zip) |
 
 On macOS, open the DMG and drag the app into Applications. On Windows, run the installer or extract the ZIP and launch the application. Choose a workspace on first launch.
 
-> v0.1.1 does not have developer code signing or macOS notarization, so your operating system may display trust prompts. Each release includes `SHA256SUMS.txt` for download verification.
+> v0.2.0 does not have developer code signing or macOS notarization, so your operating system may display trust prompts. Each release includes `SHA256SUMS.txt` for download verification.
 
 <a id="quick-start"></a>
 
@@ -166,7 +168,7 @@ The sidebar starts with a single row containing the app icon and name, aligned w
 
 <a id="themes"></a>
 
-### 🎨 Built-in color themes (source preview)
+### 🎨 Built-in color themes
 
 Open **Settings… → 配色主题** (Color theme) from the native menu, then choose a preview card. The choice saves locally. You can also open Settings with `⌘,` on macOS or `Ctrl+,` on Windows. Palette and appearance mode are independent: all seven palettes support light, dark and system appearance.
 
@@ -189,18 +191,18 @@ Themes change colors only. Sizes, spacing, panel proportions and floating contro
   <img src="docs/assets/themes-light.png" alt="Seven built-in color theme previews in Settings: Default, Graphite, Warm Sand, Forest, GitHub, Apple and MacBook Neo" width="500" />
 </picture>
 
-### Creating categories and projects (source preview)
+### Creating categories and projects
 
 - Click **＋** beside the sidebar's category heading, enter a name and choose a color and icon. The app creates `Workspace/CategoryName/Projects/`.
 - Select a category and choose **… → 修改分类外观** (Category appearance) in the bottom-right floating controls. The sidebar and project cards update together.
 - Click **新建项目** (New project), choose a category and enter a name to create an empty folder. It goes into the existing `Projects` container, or directly under the category when no container exists. The list refreshes automatically.
 - Categories that are recognized project roots cannot host new child projects. Duplicate names, invalid paths and reserved names produce an error without overwriting existing content.
 
-Category appearances stay in local preferences; no configuration files are added to existing projects. Published v0.1.1 installers do not include these additions yet.
+Category appearances stay in local preferences; no configuration files are added to existing projects.
 
 All projects, Favorites, Recently opened and category pages share a project canvas without a top bar, statistics, search or extra heading rows. A vertical floating toolbar in the bottom-right corner provides **view, sort, rescan and new project** controls for both card and list views. Category pages also have an **…** menu for category appearance and removal. Recently opened defaults to the latest opening time first, with name and directory modification time available in its sort menu.
 
-### Removing, restoring and manual deletion (source preview)
+### Removing, restoring and manual deletion
 
 Click the hide icon on a project card, or choose **… → 移除分类** (Remove category) in the selected category's bottom-right toolbar, to open a dialog:
 
@@ -210,7 +212,7 @@ Click the hide icon on a project card, or choose **… → 移除分类** (Remov
 
 Restoring clears the hidden entry only; folders deleted or moved outside the app are not recreated.
 
-> **Validation scope:** the current workbench and local preview are tested on macOS Apple Silicon. Existing Intel installers have been tested through Rosetta 2. Windows x64 installers are cross-built on macOS and still await Windows 11 runtime testing. Dependency installation needs internet access for npm packages and Electron; bundled icons load offline at runtime.
+> **Validation scope:** v0.2.0 packaged applications are tested on macOS Apple Silicon and Intel through Rosetta 2. Windows x64 installers are cross-built on macOS and still await Windows 11 runtime testing. Dependency installation needs internet access for npm packages and Electron; bundled icons load offline at runtime.
 
 <a id="previews"></a>
 

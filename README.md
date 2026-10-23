@@ -67,7 +67,7 @@
   <sub>两组截图均使用示例项目，并随 GitHub 的亮暗外观自动切换。</sub>
 </p>
 
-> **版本说明：** 编辑器页、七款内置配色及统一的悬浮工具界面包含在 v0.2.0 源码预览中；公开的 v0.1.1 安装包提供基础项目管理功能。体验完整工作台，请[从源码启动](#quick-start)。代码预览为只读，不提供文件编辑保存。
+> **v0.2.0 已包含完整工作台、七款内置配色和统一的悬浮工具界面。** 可[下载安装包](#downloads)或[从源码启动](#quick-start)。代码预览为只读，不提供文件编辑保存。
 
 <a id="features"></a>
 
@@ -96,9 +96,9 @@
   </tr>
 </table>
 
-## 🧩 工作台使用说明（源码预览版）
+## 🧩 工作台使用说明
 
-v0.2.0 源码支持在软件内打开项目，进入三栏工作台。当前已发布的 v0.1.1 安装包尚未包含此功能。
+在软件内打开项目即可进入三栏工作台，v0.2.0 安装包与源码均支持。
 
 - **左侧：** 固定顶部只保留返回、项目名和默认打开软件的真实图标；目录从下方开始，上滑时从半透明毛玻璃导航后面经过。文件和目录使用离线打包的 Material Icon Theme 图标，支持展开/收起及亮暗主题。
 - **中间：** 代码区上下延伸至窗口边缘，一次只读预览一个文件，支持行号、VS Code Light+ / Dark+ 代码高亮和常见图片；不显示文件标签，不提供编辑保存。
@@ -130,17 +130,19 @@ v0.2.0 源码支持在软件内打开项目，进入三栏工作台。当前已�
 
 ## 📦 下载安装
 
-**公开安装包：v0.1.1。** 支持工作空间扫描、搜索、收藏、外部打开和亮暗主题，尚未包含上方 v0.2.0 工作台。可从 [最新 Release](https://github.com/binbinku/BKProjectManager/releases/latest) 下载：
+**最新版：v0.2.0。** 包含项目管理、三栏工作台、真实终端、分类与空项目创建、移除与恢复，以及七款内置配色。可从 [最新 Release](https://github.com/binbinku/BKProjectManager/releases/latest) 下载：
+
+完整变化与升级说明见 [v0.2.0 更新记录](docs/releases/v0.2.0.md)。
 
 | 平台                            | 安装包                                                                                                                 | ZIP 归档                                                                                                               |
 | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| macOS · Apple Silicon（M 系列） | [DMG](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.1/BKProjectManager-0.1.1-mac-arm64.dmg)      | [ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.1/BKProjectManager-0.1.1-mac-arm64.zip)      |
-| macOS · Intel                   | [DMG](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.1/BKProjectManager-0.1.1-mac-x64.dmg)        | [ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.1/BKProjectManager-0.1.1-mac-x64.zip)        |
-| Windows · x64                   | [EXE 安装包](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.1/BKProjectManager-0.1.1-win-x64.exe) | [免安装 ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.1.1/BKProjectManager-0.1.1-win-x64.zip) |
+| macOS · Apple Silicon（M 系列） | [DMG](https://github.com/binbinku/BKProjectManager/releases/download/v0.2.0/BKProjectManager-0.2.0-mac-arm64.dmg)      | [ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.2.0/BKProjectManager-0.2.0-mac-arm64.zip)      |
+| macOS · Intel                   | [DMG](https://github.com/binbinku/BKProjectManager/releases/download/v0.2.0/BKProjectManager-0.2.0-mac-x64.dmg)        | [ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.2.0/BKProjectManager-0.2.0-mac-x64.zip)        |
+| Windows · x64                   | [EXE 安装包](https://github.com/binbinku/BKProjectManager/releases/download/v0.2.0/BKProjectManager-0.2.0-win-x64.exe) | [免安装 ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.2.0/BKProjectManager-0.2.0-win-x64.zip) |
 
 macOS 打开 DMG 后将应用拖入 Applications；Windows 运行 EXE 安装，或解压 ZIP 后启动应用。首次启动时选择工作空间即可。
 
-> v0.1.1 未配置开发者代码签名和 macOS 公证，系统可能显示信任提示。Release 附带 `SHA256SUMS.txt`，可用于核对下载文件。
+> v0.2.0 未配置开发者代码签名和 macOS 公证，系统可能显示信任提示。Release 附带 `SHA256SUMS.txt`，可用于核对下载文件。
 
 <a id="quick-start"></a>
 
@@ -166,7 +168,7 @@ npm run dev
 
 <a id="themes"></a>
 
-### 🎨 内置配色主题（源码预览版）
+### 🎨 内置配色主题
 
 通过系统菜单打开 **设置… → 配色主题**，点击预览卡片即可切换并保存到本机。也可使用 `⌘,`（macOS）或 `Ctrl+,`（Windows）打开设置。配色与亮暗模式独立，七款配色均适配亮色、暗色和跟随系统：
 
@@ -189,18 +191,18 @@ GitHub 配色参考 [Primer](https://primer.style/product/getting-started/founda
   <img src="docs/assets/themes-light.png" alt="设置中的七款内置配色主题：默认、石墨、暖沙、森林、GitHub、Apple 与 MacBook Neo" width="500" />
 </picture>
 
-### 新增分类与项目（源码预览版）
+### 新增分类与项目
 
 - 点击左侧「项目分类」旁的 **＋**，输入名称并选择颜色、图标。应用创建 `工作空间/分类名称/Projects/`。
 - 选中分类后，通过右下角悬浮区的 **… → 修改分类外观** 调整颜色和图标，侧栏与项目卡片同步显示。
 - 点击 **新建项目**，选择分类并输入名称，只创建一个空文件夹。已有 `Projects` 收纳目录时创建在其中，否则直接创建在分类下；创建后自动刷新列表。
 - 已识别为工程根目录的分类不可用于新建子项目；重复名称、无效路径与系统保留名称会明确提示，不覆盖已有内容。
 
-分类外观保存在本机设置中，不会向已有项目写入配置文件。当前公开的 v0.1.1 安装包尚未包含上述新增功能。
+分类外观保存在本机设置中，不会向已有项目写入配置文件。
 
 全部项目、我的收藏、最近打开与分类页统一直接展示项目，不显示顶栏、统计栏、搜索和额外标题行。右下角纵向悬浮区提供 **显示方式、排序、重新扫描、新建项目**，卡片与列表视图均可使用；分类页额外提供 **…** 菜单，保留分类外观和移除操作。最近打开默认按打开时间倒序，也可以在排序菜单中切换为名称或目录修改时间。
 
-### 移除、恢复与手动删除（源码预览版）
+### 移除、恢复与手动删除
 
 点击项目卡片上的隐藏图标，或选中分类后通过右下角 **… → 移除分类**，会打开操作弹窗：
 
@@ -210,7 +212,7 @@ GitHub 配色参考 [Primer](https://primer.style/product/getting-started/founda
 
 恢复只清除隐藏记录；已经被手动删除或移动的文件夹不会重新创建。
 
-> **验证范围**：当前工作台与本地预览包在 macOS Apple Silicon 上验证；既有 macOS Intel 安装包已通过 Rosetta 2 运行验证，Windows x64 安装包由 macOS 交叉构建，尚待 Windows 11 实机验证。安装依赖时需要联网下载 npm 包及 Electron 运行时，图标随应用打包，运行时不需要联网加载。
+> **验证范围**：v0.2.0 打包应用在 macOS Apple Silicon 及 Rosetta 2 下的 Intel 版本完成运行验证；Windows x64 安装包由 macOS 交叉构建，尚待 Windows 11 实机验证。安装依赖时需要联网下载 npm 包及 Electron 运行时，图标随应用打包，运行时不需要联网加载。
 
 <a id="previews"></a>
 
