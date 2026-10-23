@@ -1,15 +1,7 @@
 import { useEffect, useState } from 'react';
-import {
-  ChevronDown,
-  ChevronRight,
-  File,
-  FileCode2,
-  Folder,
-  FolderOpen,
-  Link2,
-  Loader2,
-} from 'lucide-react';
+import { ChevronDown, ChevronRight, Link2, Loader2 } from 'lucide-react';
 import type { DirectoryListing, FileEntry } from './types';
+import { fileIcons } from './file-icons';
 
 const api = window.workspaceAPI;
 type Directory = { loading?: boolean; listing?: DirectoryListing; error?: string };
@@ -81,15 +73,7 @@ export function FileTree({
           const folder = entry.kind === 'directory';
           const open = expanded.has(entry.path);
           const disabled = entry.kind === 'link' || entry.kind === 'special';
-          const Icon = folder
-            ? open
-              ? FolderOpen
-              : Folder
-            : entry.kind === 'link'
-              ? Link2
-              : /\.(tsx?|jsx?|json|py|rs|go|cs|java|css|html|vue|sh|ya?ml)$/i.test(entry.name)
-                ? FileCode2
-                : File;
+          const icons = fileIcons(entry.path, folder, open);
           return (
             <li key={entry.path} role="none">
               <button
@@ -127,7 +111,30 @@ export function FileTree({
                 <span className="tree-chevron">
                   {folder && (open ? <ChevronDown size={12} /> : <ChevronRight size={12} />)}
                 </span>
-                <Icon size={15} strokeWidth={1.5} />
+                {entry.kind === 'link' ? (
+                  <Link2 size={15} strokeWidth={1.5} />
+                ) : (
+                  <span className="tree-icon" aria-hidden="true">
+                    <img
+                      className={icons.light === icons.dark ? '' : 'tree-icon-light'}
+                      src={icons.light}
+                      alt=""
+                      width="16"
+                      height="16"
+                      draggable={false}
+                    />
+                    {icons.light !== icons.dark && (
+                      <img
+                        className="tree-icon-dark"
+                        src={icons.dark}
+                        alt=""
+                        width="16"
+                        height="16"
+                        draggable={false}
+                      />
+                    )}
+                  </span>
+                )}
                 <span>{entry.name}</span>
                 {directories[entry.path]?.loading && <Loader2 size={12} className="spin" />}
               </button>

@@ -68,7 +68,7 @@ A Codex-inspired interface brings together neutral colors, subtle borders, and c
 
 The v0.2.0 source opens projects in a three-panel workbench. Published v0.1.1 installers do not include this feature yet.
 
-- **Left:** a compact top row with Back, the project name and the external app icon, followed by the file tree. Use View → Refresh Files in the native menu after changing files in the terminal.
+- **Left:** a compact top row with Back, the project name and the external app icon, followed by a file tree with Material Icon Theme file and folder icons. Use View → Refresh Files in the native menu after changing files in the terminal.
 - **Center:** a viewer extending from the top to the bottom of the window, showing one read-only file at a time, with line numbers and VS Code Light+ / Dark+ syntax highlighting. No file tabs or editing controls. Common images can also be previewed.
 - **Right:** an interactive terminal extending from the top to the bottom of the window, starting in the project directory, with scrolling, Ctrl+C, clear and restart. Clear and restart are available in the native Terminal menu. macOS uses your login shell; Windows 11 uses PowerShell.
 - Resize the side panels, switch light/dark themes through Settings in the native menu, return to the project list, or use the existing external opener. Returning closes the project's terminal.
@@ -253,6 +253,8 @@ Settings are stored in Electron's `userData/settings.json`. Set `BKPM_USER_DATA`
 ## 📄 License
 
 Released under the [MIT License](LICENSE). You may use, modify, and redistribute this project while retaining the copyright and license notice.
+
+File tree icons are from [Material Icon Theme](https://github.com/material-extensions/vscode-material-icon-theme) (MIT). See [third-party notices](THIRD_PARTY_NOTICES.md).
 
 <p align="center">
   <sub>Copyright © 2026 <a href="https://github.com/binbinku">binbinku</a></sub>

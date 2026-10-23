@@ -15,6 +15,9 @@ await writeFile(
   JSON.stringify({ name: 'orbit', private: true }, null, 2),
 );
 await writeFile(path.join(project, 'README.md'), '# Orbit\n\nA calm space for your next idea.\n');
+await writeFile(path.join(project, 'config.toml'), 'name = "Orbit"\n');
+await writeFile(path.join(project, 'src', 'types.d.ts'), 'declare const version: string;\n');
+await writeFile(path.join(project, 'src', 'workspace.test.tsx'), '// Workspace tests\n');
 await writeFile(
   path.join(project, 'src', 'workspace.ts'),
   `// Everything you need, in one workspace.\nexport interface Project {\n  name: string;\n  path: string;\n  favorite: boolean;\n}\n\nexport function findProjects(query: string, projects: Project[]) {\n  const keyword = query.trim().toLowerCase();\n\n  return projects\n    .filter((project) => project.name.toLowerCase().includes(keyword))\n    .sort((a, b) => a.name.localeCompare(b.name));\n}\n\nexport const workspace = {\n  name: 'Orbit',\n  theme: 'system',\n  projects: 12,\n};\n`,
@@ -91,7 +94,22 @@ try {
   await page.getByRole('button', { name: '在 VS Code 中打开', exact: true }).waitFor();
   await page.getByLabel('默认打开方式', { exact: true }).selectOption('folder');
   await page.getByRole('button', { name: '完成', exact: true }).click();
+  const assertTreeIcon = async (label, filename) => {
+    const icon = page
+      .getByRole('treeitem', { name: label, exact: true })
+      .locator('.tree-icon img:visible');
+    await icon.waitFor();
+    assert.ok((await icon.getAttribute('src')).endsWith(`/${filename}`));
+    await icon.evaluate((image) => image.decode());
+  };
+  await assertTreeIcon('展开 src', 'folder-src.svg');
   await page.getByRole('treeitem', { name: '展开 src', exact: true }).click();
+  await assertTreeIcon('折叠 src', 'folder-src-open.svg');
+  await assertTreeIcon('查看 package.json', 'nodejs.svg');
+  await assertTreeIcon('查看 README.md', 'readme.svg');
+  await assertTreeIcon('查看 workspace.ts', 'typescript.svg');
+  await assertTreeIcon('查看 types.d.ts', 'typescript-def.svg');
+  await assertTreeIcon('查看 workspace.test.tsx', 'test-jsx.svg');
   await page.getByRole('treeitem', { name: '查看 workspace.ts', exact: true }).click();
   await page.locator('.code-content .shiki').waitFor();
   assert.ok(await page.locator('.code-content .shiki span[style]').count());
@@ -144,8 +162,12 @@ try {
     path.join(scrollFixture, 'long.txt'),
     Array.from({ length: 160 }, (_, index) => `${index}: ${'scroll '.repeat(80)}`).join('\n'),
   );
+  await writeFile(path.join(scrollFixture, 'unknown.bkpm'), 'Unknown file type\n');
   await clickMenu(app, 'refresh-files');
+  await assertTreeIcon('展开 scroll-fixture', 'folder.svg');
   await page.getByRole('treeitem', { name: '展开 scroll-fixture', exact: true }).click();
+  await assertTreeIcon('折叠 scroll-fixture', 'folder-open.svg');
+  await assertTreeIcon('查看 unknown.bkpm', 'file.svg');
   await page.getByRole('treeitem', { name: '查看 long.txt', exact: true }).click();
   await page.locator('.code-document').waitFor();
   await page.locator('.file-viewport').hover();
@@ -289,6 +311,7 @@ try {
       () => !document.querySelector('input[name="settings-theme"]:checked').disabled,
     );
     await page.getByRole('button', { name: '完成', exact: true }).click();
+    await assertTreeIcon('查看 config.toml', theme === 'light' ? 'toml_light.svg' : 'toml.svg');
     await assertFullHeight();
     await page.screenshot({ path: `artifacts/workbench-${theme}.png` });
     if (process.argv.includes('--docs'))

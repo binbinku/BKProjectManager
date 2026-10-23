@@ -28,11 +28,12 @@
     "format:check": "prettier --check .",
     "icons:generate": "node scripts/generate-icons.mjs",
     "postinstall": "node scripts/prepare-native.cjs",
-    "predev": "node scripts/prepare-native.cjs",
+    "predev": "node scripts/prepare-native.cjs && node scripts/prepare-file-icons.mjs",
     "prestart": "node scripts/prepare-native.cjs",
     "pretest:smoke": "node scripts/prepare-native.cjs",
     "test:workbench": "node scripts/workbench-smoke.mjs",
-    "pretest:workbench": "node scripts/prepare-native.cjs"
+    "pretest:workbench": "node scripts/prepare-native.cjs",
+    "prebuild": "node scripts/prepare-file-icons.mjs"
   },
   "dependencies": {
     "@shikijs/core": "^4.5.0",
@@ -53,6 +54,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "electron": "^44.7.0",
     "electron-builder": "^26.0.12",
+    "material-icon-theme": "5.39.0",
     "playwright": "^1.56.0",
     "prettier": "^3.9.10",
     "typescript": "^5.7.3",
@@ -70,7 +72,9 @@
       "electron/**/*",
       "LICENSE",
       "package.json",
-      "build/*.png"
+      "build/*.png",
+      "THIRD_PARTY_NOTICES.md",
+      "licenses/**/*"
     ],
     "asar": true,
     "mac": {

@@ -68,7 +68,7 @@
 
 v0.2.0 源码支持在软件内打开项目，进入三栏工作台。当前已发布的 v0.1.1 安装包尚未包含此功能。
 
-- **左侧：** 顶部保留返回、项目名和外部打开软件图标，下方直接显示文件目录；通过系统菜单「查看 → 刷新文件目录」查看终端修改后的文件。
+- **左侧：** 顶部保留返回、项目名和外部打开软件图标，下方显示带有 Material Icon Theme 文件及文件夹图标的目录；通过系统菜单「查看 → 刷新文件目录」查看终端修改后的文件。
 - **中间：** 代码区上下延伸至窗口边缘，一次只读预览一个文件，支持行号、VS Code Light+ / Dark+ 代码高亮和常见图片；不显示文件标签，不提供编辑保存。
 - **右侧：** 上下延伸至窗口边缘的交互终端，启动在项目目录，支持滚动、Ctrl+C 中断、清空和重启；清空和重启操作位于系统菜单「终端」。macOS 使用登录 Shell，Windows 11 使用 PowerShell。
 - 支持拖动调整左右面板宽度、通过系统菜单中的设置切换亮暗主题、返回项目列表，以及使用原来的外部打开方式。返回列表时会关闭当前项目终端。
@@ -253,6 +253,8 @@ docs/assets/  # 文档 SVG 与演示截图
 ## 📄 开源许可证
 
 采用 [MIT License](LICENSE) 开源。你可以使用、修改和分发本项目，请保留版权与许可声明。
+
+文件树图标来自 [Material Icon Theme](https://github.com/material-extensions/vscode-material-icon-theme)（MIT），详见[第三方声明](THIRD_PARTY_NOTICES.md)。
 
 <p align="center">
   <sub>Copyright © 2026 <a href="https://github.com/binbinku">binbinku</a></sub>

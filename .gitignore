@@ -8,3 +8,5 @@ artifacts/
 .env.*
 !.env.example
 *.local
+public/material-icon-theme/
+src/generated/

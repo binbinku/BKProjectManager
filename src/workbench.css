@@ -130,8 +130,24 @@
 .file-tree-row > svg {
   color: light-dark(#72839a, #91a7bf);
 }
-.file-tree-row.directory > svg {
-  color: var(--muted);
+.tree-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+.tree-icon img {
+  display: block;
+}
+.tree-icon .tree-icon-dark {
+  display: none;
+}
+:root[data-theme='dark'] .tree-icon .tree-icon-light {
+  display: none;
+}
+:root[data-theme='dark'] .tree-icon .tree-icon-dark {
+  display: block;
 }
 .file-tree-row:hover {
   background: var(--hover);
