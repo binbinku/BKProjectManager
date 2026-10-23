@@ -163,15 +163,17 @@ Click **Rescan** after adding or moving projects. You can switch workspaces thro
 ### Creating categories and projects (source preview)
 
 - Click **＋** beside the sidebar's category heading, enter a name and choose a color and icon. The app creates `Workspace/CategoryName/Projects/`.
-- Select a category and use the palette button beside its title to change its appearance. The sidebar, heading and project cards update together.
+- Select a category and choose **… → 修改分类外观** (Category appearance) in the bottom-right floating controls. The sidebar and project cards update together.
 - Click **新建项目** (New project), choose a category and enter a name to create an empty folder. It goes into the existing `Projects` container, or directly under the category when no container exists. The list refreshes automatically.
 - Categories that are recognized project roots cannot host new child projects. Duplicate names, invalid paths and reserved names produce an error without overwriting existing content.
 
 Category appearances stay in local preferences; no configuration files are added to existing projects. Published v0.1.1 installers do not include these additions yet.
 
+Category pages show projects directly, without a top bar, statistics, search or extra heading rows. A vertical floating toolbar in the bottom-right corner provides **view, sort, rescan and new project** controls for both card and list views. Its **…** menu contains category appearance and removal actions. All projects, Favorites and Recently opened retain their search and management tools.
+
 ### Removing, restoring and manual deletion (source preview)
 
-Click the hide icon on a project card, or beside the selected category's title, to open a dialog:
+Click the hide icon on a project card, or choose **… → 移除分类** (Remove category) in the selected category's bottom-right toolbar, to open a dialog:
 
 - **从列表移除** (Remove from list): hide the item in the current workspace. Removing a category also hides its projects. This persists across rescans and restarts while keeping all files intact.
 - **在 Finder / 资源管理器中显示，手动删除** (Show in Finder / File Explorer for manual deletion): immediately hide the entry, then locate and select the folder so you can delete it yourself. The app does not delete files. Even if you keep the folder, the entry stays hidden across rescans and restarts and can be restored in Settings.
@@ -192,6 +194,17 @@ The project management and editor pages are shown in full above. Below are the l
 
 <br />
 <img src="docs/assets/list-dark.png" alt="Dark list view with project names, types, paths, and quick actions" width="1360" />
+
+</details>
+
+<details>
+<summary><strong>Category view · Projects first, floating controls</strong></summary>
+
+<br />
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/category-dark.png" />
+  <img src="docs/assets/category-light.png" alt="Minimal category view with vertical floating controls for view, sort, rescan, creation and category actions" width="1360" />
+</picture>
 
 </details>
 
@@ -289,6 +302,7 @@ For example, if `AndroidDev/Projects` contains `settings.gradle.kts`, it is trea
 | `npm run test:smoke`       | Verify key interactions in a real Electron window              |
 | `npm run test:management`  | Test category appearance, new folders and restart persistence  |
 | `npm run test:removal`     | Test removal dialogs, reveal, restore and filesystem integrity |
+| `npm run test:category`    | Test the minimal category page, floating tools, sort and views |
 | `npm run format:check`     | Check source formatting                                        |
 | `npm run docs:screenshots` | Build the app and regenerate screenshots with sample data      |
 

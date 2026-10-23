@@ -22,6 +22,7 @@
     "test:smoke": "node scripts/smoke.mjs",
     "test:management": "node scripts/management-smoke.mjs",
     "test:removal": "node scripts/removal-smoke.mjs",
+    "test:category": "node scripts/category-smoke.mjs",
     "docs:screenshots": "npm run build && node scripts/prepare-native.cjs && node scripts/readme-screenshots.mjs && node scripts/workbench-smoke.mjs --docs",
     "pack": "npm run build && electron-builder --dir",
     "dist:mac": "npm run build && electron-builder --mac --arm64 --x64 --publish never",

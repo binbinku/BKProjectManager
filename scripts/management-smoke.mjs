@@ -79,7 +79,8 @@ try {
   await assertFocusInside(page);
   await page.keyboard.press('Escape');
   await page.getByRole('dialog').waitFor({ state: 'detached' });
-  await page.getByRole('button', { name: '修改分类外观' }).click();
+  await page.getByRole('button', { name: '分类操作', exact: true }).click();
+  await page.getByRole('menuitem', { name: '修改分类外观' }).click();
   await page.getByRole('dialog').getByRole('button', { name: '青色', exact: true }).click();
   await page.getByRole('dialog').getByRole('button', { name: '工具', exact: true }).click();
   for (let i = 0; i < 25; i++) {

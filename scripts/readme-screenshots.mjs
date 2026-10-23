@@ -104,6 +104,17 @@ try {
   await page.getByRole('button', { name: '列表视图' }).click();
   await page.locator('.list-view').waitFor();
   await capture('list-dark.png');
+  await page.getByRole('button', { name: '卡片视图', exact: true }).click();
+  await page
+    .getByRole('navigation', { name: '项目分类', exact: true })
+    .getByRole('button', { name: /WebDev/ })
+    .click();
+  await capture('category-dark.png');
+  await theme('light');
+  await capture('category-light.png');
+  await page.getByRole('button', { name: /全部项目/ }).click();
+  await page.getByRole('button', { name: '列表视图', exact: true }).click();
+  await theme('dark');
   await page.getByRole('button', { name: '移除项目 AtlasWeb', exact: true }).click();
   await capture('remove-dark.png', '.remove-modal');
   await page.getByRole('button', { name: '取消', exact: true }).click();
@@ -116,7 +127,7 @@ try {
   await page.getByRole('dialog').waitFor();
   await capture('settings-dark.png', '.settings-modal');
   assert.deepEqual(errors, []);
-  console.log('Saved 7 documentation screenshots with sample projects to docs/assets.');
+  console.log('Saved 9 documentation screenshots with sample projects to docs/assets.');
 } finally {
   if (application) await application.close().catch(() => {});
   await rm(temporary, { recursive: true, force: true });

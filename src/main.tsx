@@ -28,7 +28,6 @@ import {
   List,
   Loader2,
   Monitor,
-  Palette,
   Plus,
   RefreshCw,
   Search,
@@ -38,6 +37,7 @@ import {
 } from 'lucide-react';
 import type { AppState, Project, ThemePreference, WorkbenchSession } from './types';
 import { ThemeSelector } from './ThemeSelector';
+import { CategoryTools } from './CategoryTools';
 import { CategoryIcon, defaultCategoryStyle } from './categories';
 import { ProjectManagerDialog, type ManagementDialog } from './ProjectManagerDialog';
 import { RemoveItemDialog, type RemovalTarget } from './RemoveItemDialog';
@@ -482,7 +482,7 @@ function App() {
     );
 
   return (
-    <div className={`app platform-${platform}`}>
+    <div className={`app platform-${platform} ${selectedCategory ? 'category-page' : ''}`}>
       <aside className="sidebar">
         <div className="sidebar-drag" />
         <div className="brand">
@@ -563,20 +563,23 @@ function App() {
         </div>
       </aside>
       <main>
-        <header className="topbar">
-          <div className="breadcrumb">
-            <FolderOpen size={16} />
-            <span>工作空间</span>
-            <ChevronRight size={14} />
-            <strong>{title}</strong>
-          </div>
-          <div className="topbar-right">
-            <span className="local-badge">
-              <span className="online-dot" />
-              LOCAL
-            </span>
-          </div>
-        </header>
+        {!selectedCategory && (
+          <header className="topbar">
+            <div className="breadcrumb">
+              <FolderOpen size={16} />
+              <span>工作空间</span>
+              <ChevronRight size={14} />
+              <strong>{title}</strong>
+            </div>
+            <div className="topbar-right">
+              <span className="local-badge">
+                <span className="online-dot" />
+                LOCAL
+              </span>
+            </div>
+          </header>
+        )}
+        {selectedCategory && <div className="category-window-drag" aria-hidden="true" />}
         <div className="content">
           {error && (
             <div className="error-banner" role="alert">
@@ -623,156 +626,128 @@ function App() {
             </section>
           ) : (
             <>
-              <section className="page-heading">
-                <div>
-                  <h1 className="category-heading">
-                    {selectedCategory && (
-                      <CategoryIcon style={categoryStyle(selectedCategory)} size={27} />
-                    )}{' '}
-                    {title}
-                  </h1>
-                  <p>
-                    {selection === 'favorites'
-                      ? '快速访问你收藏的项目。'
-                      : selection === 'recent'
-                        ? '继续处理最近打开的项目。'
-                        : '浏览和打开工作空间中的项目。'}
-                  </p>
-                </div>
-                <div className="heading-actions">
-                  {selectedCategory && (
-                    <button
-                      className="secondary-button"
-                      disabled={busy}
-                      aria-label={`移除分类 ${selectedCategory}`}
-                      title="移除分类或手动删除"
-                      onClick={() =>
-                        setRemovalTarget({
-                          kind: 'category',
-                          key: selectedCategory,
-                          name: selectedCategory,
-                          path: `${state.snapshot?.workspace ?? state.settings.workspace}${platform === 'win32' ? '\\' : '/'}${selectedCategory}`,
-                          count: projects.filter((project) => project.category === selectedCategory)
-                            .length,
-                        })
-                      }
-                    >
-                      <EyeOff size={15} />
+              {selectedCategory ? (
+                <h1 className="sr-only">{title}</h1>
+              ) : (
+                <>
+                  <section className="page-heading">
+                    <div>
+                      <h1>{title}</h1>
+                      <p>
+                        {selection === 'favorites'
+                          ? '快速访问你收藏的项目。'
+                          : selection === 'recent'
+                            ? '继续处理最近打开的项目。'
+                            : '浏览和打开工作空间中的项目。'}
+                      </p>
+                    </div>
+                    <div className="heading-actions">
+                      <button
+                        className="secondary-button"
+                        disabled={busy}
+                        onClick={() => perform(api.scan)}
+                      >
+                        <RefreshCw size={15} className={busy ? 'spin' : ''} />
+                        {busy ? '正在扫描' : '重新扫描'}
+                      </button>
+                      <button className="primary-button" disabled={busy} onClick={addProject}>
+                        <Plus size={16} />
+                        新建项目
+                      </button>
+                    </div>
+                  </section>
+                  <section className="workspace-summary">
+                    <div className="summary-icon">
+                      <FolderOpen size={23} />
+                    </div>
+                    <div className="summary-path">
+                      <strong>{state.settings.workspace.split(/[\\/]/).pop()}</strong>
+                      <span title={state.settings.workspace}>{state.settings.workspace}</span>
+                    </div>
+                    <div className="summary-stat">
+                      <strong>{projects.length}</strong>
+                      <span>个项目</span>
+                    </div>
+                    <div className="summary-stat">
+                      <strong>{categories.length}</strong>
+                      <span>个分类</span>
+                    </div>
+                    <button className="text-button" onClick={() => setSettings(true)}>
+                      管理工作空间
+                      <ArrowUpRight size={14} />
                     </button>
-                  )}
-                  {selectedCategory && (
-                    <button
-                      className="secondary-button"
-                      disabled={busy}
-                      aria-label="修改分类外观"
-                      title="修改分类外观"
-                      onClick={() =>
-                        setManagementDialog({ kind: 'appearance', category: selectedCategory })
-                      }
-                    >
-                      <Palette size={15} />
-                    </button>
-                  )}
-                  <button
-                    className="secondary-button"
-                    disabled={busy}
-                    onClick={() => perform(api.scan)}
-                  >
-                    <RefreshCw size={15} className={busy ? 'spin' : ''} />
-                    {busy ? '正在扫描' : '重新扫描'}
-                  </button>
-                  <button className="primary-button" disabled={busy} onClick={addProject}>
-                    <Plus size={16} />
-                    新建项目
-                  </button>
-                </div>
-              </section>
-              <section className="workspace-summary">
-                <div className="summary-icon">
-                  <FolderOpen size={23} />
-                </div>
-                <div className="summary-path">
-                  <strong>{state.settings.workspace.split(/[\\/]/).pop()}</strong>
-                  <span title={state.settings.workspace}>{state.settings.workspace}</span>
-                </div>
-                <div className="summary-stat">
-                  <strong>{projects.length}</strong>
-                  <span>个项目</span>
-                </div>
-                <div className="summary-stat">
-                  <strong>{categories.length}</strong>
-                  <span>个分类</span>
-                </div>
-                <button className="text-button" onClick={() => setSettings(true)}>
-                  管理工作空间
-                  <ArrowUpRight size={14} />
-                </button>
-              </section>
+                  </section>
+                </>
+              )}
               {!!state.snapshot?.warnings.length && (
                 <div className="scan-warning" role="status">
                   {state.snapshot.warnings.join('；')}
                 </div>
               )}
-              <div className="project-toolbar">
-                <div className="search-field">
-                  <Search size={17} />
-                  <input
-                    ref={searchRef}
-                    aria-label="搜索项目"
-                    placeholder="搜索项目、分类或技术类型…"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                  />
-                  {query ? (
-                    <button onClick={() => setQuery('')} aria-label="清空搜索">
-                      <X size={14} />
-                    </button>
-                  ) : (
-                    <kbd>{platform === 'darwin' ? '⌘' : 'Ctrl'} K</kbd>
-                  )}
-                </div>
-                <div className="toolbar-options">
-                  <label className="sort-control">
-                    <ArrowDownUp size={14} />
-                    <select
-                      aria-label="项目排序"
-                      value={sort}
-                      onChange={(e) => setSort(e.target.value)}
-                    >
-                      <option value="name">按名称排序</option>
-                      <option value="modified">按目录修改时间</option>
-                    </select>
-                    <ChevronDown size={13} />
-                  </label>
-                  <div className="view-toggle">
-                    <button
-                      className={view === 'grid' ? 'selected' : ''}
-                      onClick={() => setView('grid')}
-                      aria-label="卡片视图"
-                      aria-pressed={view === 'grid'}
-                    >
-                      <Grid2X2 size={16} />
-                    </button>
-                    <button
-                      className={view === 'list' ? 'selected' : ''}
-                      onClick={() => setView('list')}
-                      aria-label="列表视图"
-                      aria-pressed={view === 'list'}
-                    >
-                      <List size={17} />
-                    </button>
+              {!selectedCategory && (
+                <>
+                  <div className="project-toolbar">
+                    <div className="search-field">
+                      <Search size={17} />
+                      <input
+                        ref={searchRef}
+                        aria-label="搜索项目"
+                        placeholder="搜索项目、分类或技术类型…"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                      />
+                      {query ? (
+                        <button onClick={() => setQuery('')} aria-label="清空搜索">
+                          <X size={14} />
+                        </button>
+                      ) : (
+                        <kbd>{platform === 'darwin' ? '⌘' : 'Ctrl'} K</kbd>
+                      )}
+                    </div>
+                    <div className="toolbar-options">
+                      <label className="sort-control">
+                        <ArrowDownUp size={14} />
+                        <select
+                          aria-label="项目排序"
+                          value={sort}
+                          onChange={(e) => setSort(e.target.value)}
+                        >
+                          <option value="name">按名称排序</option>
+                          <option value="modified">按目录修改时间</option>
+                        </select>
+                        <ChevronDown size={13} />
+                      </label>
+                      <div className="view-toggle">
+                        <button
+                          className={view === 'grid' ? 'selected' : ''}
+                          onClick={() => setView('grid')}
+                          aria-label="卡片视图"
+                          aria-pressed={view === 'grid'}
+                        >
+                          <Grid2X2 size={16} />
+                        </button>
+                        <button
+                          className={view === 'list' ? 'selected' : ''}
+                          onClick={() => setView('list')}
+                          aria-label="列表视图"
+                          aria-pressed={view === 'list'}
+                        >
+                          <List size={17} />
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-              <div className="results-caption">
-                <span>
-                  {query ? `“${query}” 的搜索结果` : title}
-                  <b>{filtered.length}</b>
-                </span>
-                <small>
-                  {selection === 'recent' ? '按最近打开时间排列' : '项目文件保留在原目录'}
-                </small>
-              </div>
+                  <div className="results-caption">
+                    <span>
+                      {query ? `“${query}” 的搜索结果` : title}
+                      <b>{filtered.length}</b>
+                    </span>
+                    <small>
+                      {selection === 'recent' ? '按最近打开时间排列' : '项目文件保留在原目录'}
+                    </small>
+                  </div>
+                </>
+              )}
               {filtered.length ? (
                 <section
                   className={`project-grid ${view === 'list' ? 'list-view' : ''}`}
@@ -900,30 +875,62 @@ function App() {
                           ? '打开一个项目后，就能在这里快速找回。'
                           : '点击新建项目，创建第一个项目文件夹。'}
                   </p>
-                  {!busy && !query && selection !== 'favorites' && selection !== 'recent' && (
-                    <button className="secondary-button" onClick={addProject}>
-                      <Plus size={15} />
-                      {categories.length ? '新建项目' : '新增分类'}
-                    </button>
-                  )}
+                  {!busy &&
+                    !query &&
+                    !selectedCategory &&
+                    selection !== 'favorites' &&
+                    selection !== 'recent' && (
+                      <button className="secondary-button" onClick={addProject}>
+                        <Plus size={15} />
+                        {categories.length ? '新建项目' : '新增分类'}
+                      </button>
+                    )}
                 </div>
               )}
-              <footer className="content-footer">
-                <span>
-                  <span className="online-dot" />
-                  {state.snapshot
-                    ? `上次扫描 ${new Date(state.snapshot.scannedAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}`
-                    : '等待扫描'}
-                </span>
-                <span>
-                  <Monitor size={13} />
-                  仅在本机管理 · 不移动项目文件
-                </span>
-              </footer>
+              {!selectedCategory && (
+                <footer className="content-footer">
+                  <span>
+                    <span className="online-dot" />
+                    {state.snapshot
+                      ? `上次扫描 ${new Date(state.snapshot.scannedAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}`
+                      : '等待扫描'}
+                  </span>
+                  <span>
+                    <Monitor size={13} />
+                    仅在本机管理 · 不移动项目文件
+                  </span>
+                </footer>
+              )}
             </>
           )}
         </div>
       </main>
+      {selectedCategory && state?.settings.workspace && (
+        <CategoryTools
+          key={selectedCategory}
+          category={selectedCategory}
+          busy={busy}
+          obscured={settings || !!managementDialog || !!removalTarget}
+          sort={sort}
+          view={view}
+          onSort={setSort}
+          onView={setView}
+          onScan={() => void perform(api.scan)}
+          onCreate={addProject}
+          onAppearance={() =>
+            setManagementDialog({ kind: 'appearance', category: selectedCategory })
+          }
+          onRemove={() =>
+            setRemovalTarget({
+              kind: 'category',
+              key: selectedCategory,
+              name: selectedCategory,
+              path: `${state.snapshot?.workspace ?? state.settings.workspace}${platform === 'win32' ? '\\' : '/'}${selectedCategory}`,
+              count: projects.filter((project) => project.category === selectedCategory).length,
+            })
+          }
+        />
+      )}
       {message && (
         <div className="toast" role="status">
           <Check size={16} />

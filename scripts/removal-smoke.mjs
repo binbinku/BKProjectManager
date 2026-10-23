@@ -69,7 +69,8 @@ async function hideCategory(page, name) {
     .getByRole('navigation', { name: '项目分类', exact: true })
     .getByRole('button', { name: new RegExp(name) })
     .click();
-  await page.getByRole('button', { name: `移除分类 ${name}`, exact: true }).click();
+  await page.getByRole('button', { name: '分类操作', exact: true }).click();
+  await page.getByRole('menuitem', { name: `移除分类 ${name}`, exact: true }).click();
   await page.getByRole('button', { name: '从列表移除', exact: false }).click();
   await page.getByRole('dialog').waitFor({ state: 'detached' });
 }
@@ -213,7 +214,8 @@ try {
     .getByRole('navigation', { name: '项目分类', exact: true })
     .getByRole('button', { name: /WebDev/ })
     .click();
-  await page.getByRole('button', { name: '移除分类 WebDev', exact: true }).click();
+  await page.getByRole('button', { name: '分类操作', exact: true }).click();
+  await page.getByRole('menuitem', { name: '移除分类 WebDev', exact: true }).click();
   await page.getByRole('button', { name: /中显示，手动删除/ }).click();
   await page.getByRole('dialog').waitFor({ state: 'detached' });
   assert.deepEqual(await app.evaluate(() => globalThis.__revealed), [workspace + '/WebDev']);

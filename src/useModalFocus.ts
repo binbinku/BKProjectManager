@@ -44,5 +44,15 @@ export function useModalFocus(onClose: () => void, busy: boolean) {
       if (previous?.isConnected) previous.focus();
     };
   }, []);
+  useEffect(() => {
+    const modal = modalRef.current;
+    if (!busy && modal && !modal.contains(document.activeElement)) {
+      modal
+        .querySelector<HTMLElement>(
+          'input:not(:disabled), select:not(:disabled), button:not(:disabled)',
+        )
+        ?.focus();
+    }
+  }, [busy]);
   return modalRef;
 }
