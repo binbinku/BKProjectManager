@@ -1,69 +1,8 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { FileCode2, FolderOpen, Loader2, LockKeyhole } from 'lucide-react';
-import hljs from 'highlight.js/lib/core';
-import javascript from 'highlight.js/lib/languages/javascript';
-import typescript from 'highlight.js/lib/languages/typescript';
-import json from 'highlight.js/lib/languages/json';
-import xml from 'highlight.js/lib/languages/xml';
-import css from 'highlight.js/lib/languages/css';
-import markdown from 'highlight.js/lib/languages/markdown';
-import bash from 'highlight.js/lib/languages/bash';
-import python from 'highlight.js/lib/languages/python';
-import rust from 'highlight.js/lib/languages/rust';
-import go from 'highlight.js/lib/languages/go';
-import java from 'highlight.js/lib/languages/java';
-import csharp from 'highlight.js/lib/languages/csharp';
-import cpp from 'highlight.js/lib/languages/cpp';
-import yaml from 'highlight.js/lib/languages/yaml';
+import { highlightCode, languageForPath } from './code-highlighter';
 import type { FilePreview } from './types';
 
-for (const [name, language] of Object.entries({
-  javascript,
-  typescript,
-  json,
-  xml,
-  css,
-  markdown,
-  bash,
-  python,
-  rust,
-  go,
-  java,
-  csharp,
-  cpp,
-  yaml,
-}))
-  hljs.registerLanguage(name, language);
-const languages: Record<string, string> = {
-  js: 'javascript',
-  jsx: 'javascript',
-  mjs: 'javascript',
-  cjs: 'javascript',
-  ts: 'typescript',
-  tsx: 'typescript',
-  json: 'json',
-  html: 'xml',
-  htm: 'xml',
-  svg: 'xml',
-  xml: 'xml',
-  vue: 'xml',
-  css: 'css',
-  md: 'markdown',
-  sh: 'bash',
-  zsh: 'bash',
-  bash: 'bash',
-  py: 'python',
-  rs: 'rust',
-  go: 'go',
-  java: 'java',
-  cs: 'csharp',
-  c: 'cpp',
-  h: 'cpp',
-  cpp: 'cpp',
-  hpp: 'cpp',
-  yaml: 'yaml',
-  yml: 'yaml',
-};
 export const formatBytes = (size: number) =>
   size < 1024
     ? `${size} B`
@@ -85,16 +24,32 @@ export function FileViewer({
   onReload(): void;
 }) {
   const viewport = useRef<HTMLDivElement>(null);
-  const language = selected ? languages[selected.split('.').pop()!.toLowerCase()] : undefined;
+  const language = languageForPath(selected);
   const content = preview?.kind === 'text' ? preview.content : '';
-  const highlighted = useMemo(() => {
-    if (!language || content.length > 200_000) return null;
-    try {
-      return hljs.highlight(content, { language, ignoreIllegals: true }).value;
-    } catch {
-      return null;
+  const [highlighted, setHighlighted] = useState<{
+    content: string;
+    language: string;
+    html: string;
+  } | null>(null);
+  useEffect(() => {
+    let current = true;
+    setHighlighted(null);
+    if (language && content.length <= 200_000) {
+      void highlightCode(content, language).then(
+        (html) => {
+          if (current) setHighlighted({ content, language, html });
+        },
+        () => {},
+      );
     }
+    return () => {
+      current = false;
+    };
   }, [content, language]);
+  const highlightedHTML =
+    highlighted?.content === content && highlighted?.language === language
+      ? highlighted.html
+      : null;
   const lines = useMemo(
     () => Array.from({ length: content.split('\n').length }, (_, index) => index + 1).join('\n'),
     [content],
@@ -167,10 +122,8 @@ export function FileViewer({
             <pre className="line-numbers" aria-hidden="true">
               {lines}
             </pre>
-            {highlighted !== null ? (
-              <pre className="code-content">
-                <code dangerouslySetInnerHTML={{ __html: highlighted }} />
-              </pre>
+            {highlightedHTML !== null ? (
+              <div className="code-content" dangerouslySetInnerHTML={{ __html: highlightedHTML }} />
             ) : (
               <pre className="code-content">
                 <code>{content || '\n'}</code>

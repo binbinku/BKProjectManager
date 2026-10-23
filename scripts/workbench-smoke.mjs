@@ -19,7 +19,7 @@ await writeFile(
   `// Everything you need, in one workspace.\nexport interface Project {\n  name: string;\n  path: string;\n  favorite: boolean;\n}\n\nexport function findProjects(query: string, projects: Project[]) {\n  const keyword = query.trim().toLowerCase();\n\n  return projects\n    .filter((project) => project.name.toLowerCase().includes(keyword))\n    .sort((a, b) => a.name.localeCompare(b.name));\n}\n\nexport const workspace = {\n  name: 'Orbit',\n  theme: 'system',\n  projects: 12,\n};\n`,
 );
 await writeFile(
-  path.join(project, 'unsafe.txt'),
+  path.join(project, 'unsafe.ts'),
   '<img src=x onerror="globalThis.__previewInjected=true"><script>globalThis.__previewInjected=true</script>',
 );
 await writeFile(path.join(project, 'binary.dat'), Buffer.from([0, 1, 2]));
@@ -69,8 +69,8 @@ try {
   await page.locator('.terminal-host[data-running="true"]').waitFor();
   await page.getByRole('treeitem', { name: '展开 src', exact: true }).click();
   await page.getByRole('treeitem', { name: '查看 workspace.ts', exact: true }).click();
-  await page.locator('.code-content').getByText('findProjects', { exact: true }).waitFor();
-  assert.ok(await page.locator('.code-content .hljs-keyword').count());
+  await page.locator('.code-content .shiki').waitFor();
+  assert.ok(await page.locator('.code-content .shiki span[style]').count());
   assert.equal(await page.getByRole('tab').count(), 0);
   assert.equal(await page.locator('.file-panel textarea').count(), 0);
   const original = await page.locator('.code-content').textContent();
@@ -80,7 +80,8 @@ try {
   );
   assert.equal(await page.locator('.code-document').count(), 1);
   assert.ok(!(await page.locator('.code-content').textContent()).includes('findProjects'));
-  await page.getByRole('treeitem', { name: '查看 unsafe.txt', exact: true }).click();
+  await page.getByRole('treeitem', { name: '查看 unsafe.ts', exact: true }).click();
+  await page.locator('.code-content .shiki').waitFor();
   await page.waitForFunction(() =>
     document.querySelector('.code-content')?.textContent?.includes('<script>'),
   );
@@ -255,7 +256,7 @@ try {
   await page.getByRole('button', { name: '打开项目', exact: true }).click();
   await page.locator('.terminal-host[data-running="true"]').waitFor();
   await page.getByRole('treeitem', { name: '查看 package.json', exact: true }).click();
-  await page.locator('.code-content .hljs-attr').first().waitFor();
+  await page.locator('.code-content .shiki span[style]').first().waitFor();
   await page.getByRole('button', { name: '返回项目列表' }).click();
   assert.deepEqual(errors, []);
   console.log(

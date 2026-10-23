@@ -69,7 +69,7 @@ A Codex-inspired interface brings together neutral colors, subtle borders, and c
 The v0.2.0 source opens projects in a three-panel workbench. Published v0.1.1 installers do not include this feature yet.
 
 - **Left:** expand the project file tree on demand; refresh after changing files in the terminal.
-- **Center:** one read-only file at a time, with line numbers and syntax highlighting. No file tabs or editing controls. Common images can also be previewed.
+- **Center:** one read-only file at a time, with line numbers and VS Code Light+ / Dark+ syntax highlighting. No file tabs or editing controls. Common images can also be previewed.
 - **Right:** an interactive terminal starting in the project directory, with scrolling, Ctrl+C, clear and restart. macOS uses your login shell; Windows 11 uses PowerShell.
 - Resize the side panels, switch light/dark themes, return to the project list, or use the existing external opener. Returning closes the project's terminal.
 
