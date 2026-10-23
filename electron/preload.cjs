@@ -34,6 +34,7 @@ contextBridge.exposeInMainWorld('workspaceAPI', {
   createProject: (category, name) => ipcRenderer.invoke('project:create', category, name),
   toggleFavorite: (id) => ipcRenderer.invoke('project:favorite', id),
   openProject: (id, action) => ipcRenderer.invoke('project:open', id, action),
+  openGitHub: (id) => ipcRenderer.invoke('project:github', id),
   setOpener: (value) => ipcRenderer.invoke('settings:opener', value),
   setTheme: (value) => ipcRenderer.invoke('settings:theme', value),
   setPalette: (value) => ipcRenderer.invoke('settings:palette', value),

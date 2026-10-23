@@ -1,6 +1,7 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const { createHash } = require('node:crypto');
+const { readGitHubRemotes } = require('./github.cjs');
 
 const excluded = new Set([
   'node_modules',
@@ -47,6 +48,7 @@ async function scanWorkspace(input) {
     try {
       const info = entries ?? (await readEntries(projectPath));
       const stat = await fs.stat(projectPath);
+      const git = info.some((e) => e.name === '.git');
       projects.push({
         id: createHash('sha256').update(projectPath).digest('hex').slice(0, 24),
         name,
@@ -54,7 +56,8 @@ async function scanWorkspace(input) {
         relativePath: path.relative(root, projectPath),
         category,
         type: detectType(info),
-        git: info.some((e) => e.name === '.git'),
+        git,
+        githubRemotes: git ? await readGitHubRemotes(projectPath) : [],
         modifiedAt: stat.mtimeMs,
       });
     } catch {

@@ -23,6 +23,7 @@ import {
 import type { AppState, Project, ThemePreference, WorkbenchSession } from './types';
 import { ThemeSelector } from './ThemeSelector';
 import { PaletteSelector } from './PaletteSelector';
+import { GitHubButton } from './GitHubButton';
 import { applyPalette } from './palettes';
 import { ProjectTools } from './ProjectTools';
 import { CategoryIcon, defaultCategoryStyle } from './categories';
@@ -472,6 +473,7 @@ function App() {
             opener={state!.settings}
             onBack={() => void leaveProject()}
             onExternal={() => open(session.project)}
+            onGitHub={() => void perform(() => api.openGitHub(session.project.id))}
             busy={busy}
             actionError={settings ? '' : error}
             onDismissError={() => setError('')}
@@ -661,6 +663,11 @@ function App() {
                           <ArrowUpRight size={14} />
                         </button>
                         <div className="card-tools">
+                          <GitHubButton
+                            project={project}
+                            busy={busy}
+                            onOpen={() => void perform(() => api.openGitHub(project.id))}
+                          />
                           <button
                             title="移除项目或手动删除"
                             aria-label={`移除项目 ${project.name}`}

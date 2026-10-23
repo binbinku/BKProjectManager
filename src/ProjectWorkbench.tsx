@@ -4,6 +4,7 @@ import type { FilePreview, Settings, WorkbenchSession } from './types';
 import { FileTree } from './FileTree';
 import { FileViewer } from './FileViewer';
 import { ProjectTerminal } from './ProjectTerminal';
+import { GitHubButton } from './GitHubButton';
 import './workbench.css';
 
 const api = window.workspaceAPI;
@@ -12,6 +13,7 @@ export default function ProjectWorkbench({
   opener,
   onBack,
   onExternal,
+  onGitHub,
   busy,
   actionError,
   onDismissError,
@@ -20,6 +22,7 @@ export default function ProjectWorkbench({
   opener: Pick<Settings, 'opener' | 'customEditor'>;
   onBack(): void;
   onExternal(): void;
+  onGitHub(): void;
   busy: boolean;
   actionError: string;
   onDismissError(): void;
@@ -181,6 +184,7 @@ export default function ProjectWorkbench({
                 <span className="workbench-project-name" title={session.project.path}>
                   {session.project.name}
                 </span>
+                <GitHubButton project={session.project} busy={busy} onOpen={onGitHub} workbench />
                 <button
                   className="external-open"
                   aria-label={openerInfo ? `在 ${openerInfo.name} 中打开` : '外部打开'}

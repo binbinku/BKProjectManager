@@ -126,6 +126,12 @@ Settings, file refresh and terminal actions live in the native menu bar. Menu la
 
 Click the app icon in the header to open the project using your default external opener; hover to see its name. After running `exit`, restart through the Terminal menu. **Returning to the project list or restarting the terminal ends its current process.**
 
+### GitHub repository shortcut (v0.2.1 source and local builds)
+
+GitHub projects show a GitHub icon in cards, list rows and the workbench header. Click it to open the repository homepage in your default browser. HTTPS and SSH remotes are supported, including Git worktree and submodule metadata. Detection reads local Git configuration without requiring Git or a token; credentials in clone URLs never reach the interface or browser.
+
+A single repository opens directly. Multiple repositories appear in a native menu with `origin` first and duplicate URLs merged. Local projects and non-GitHub remotes have no extra button. Rescan after changing remotes; clicking also revalidates the local configuration. This shortcut is not included in the v0.2.0 installers below.
+
 <a id="downloads"></a>
 
 ## 📦 Downloads
@@ -335,6 +341,7 @@ For example, if `AndroidDev/Projects` contains `settings.gradle.kts`, it is trea
 | `npm run test:removal`     | Test removal dialogs, reveal, restore and filesystem integrity      |
 | `npm run test:category`    | Test the minimal category page, floating tools, sort and views      |
 | `npm run test:palettes`    | Test palettes, light/dark appearance, stable layout and persistence |
+| `npm run test:github`      | Test GitHub shortcuts, remote selection and workbench session       |
 | `npm run format:check`     | Check source formatting                                             |
 | `npm run docs:screenshots` | Build the app and regenerate screenshots with sample data           |
 

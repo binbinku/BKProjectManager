@@ -1,3 +1,8 @@
+export interface GitHubRemote {
+  name: string;
+  url: string;
+  repository: string;
+}
 export interface Project {
   id: string;
   name: string;
@@ -6,6 +11,7 @@ export interface Project {
   category: string;
   type: string;
   git: boolean;
+  githubRemotes: GitHubRemote[];
   modifiedAt: number;
 }
 export interface Snapshot {
@@ -62,6 +68,7 @@ export interface WorkspaceAPI {
   createProject(category: string, name: string): Promise<AppState>;
   toggleFavorite(id: string): Promise<AppState>;
   openProject(id: string, action?: 'default' | 'folder' | 'terminal'): Promise<AppState>;
+  openGitHub(id: string): Promise<AppState>;
   setOpener(value: string): Promise<AppState>;
   setTheme(value: ThemePreference): Promise<AppState>;
   setPalette(value: PaletteName): Promise<AppState>;

@@ -10,6 +10,7 @@ const { Workbench } = require('./workbench.cjs');
 const { macAppIcon } = require('./app-icon.cjs');
 const management = require('./workspace-management.cjs');
 const palettes = require('./palettes.json');
+const { readGitHubRemotes } = require('./github.cjs');
 const {
   emptyVisibility,
   getVisibility,
@@ -243,6 +244,35 @@ async function editorPath(opener) {
 }
 function registerHandlers() {
   const handlers = {
+    'project:github': (id) =>
+      workspaceTask(async () => {
+        const project = state().snapshot?.projects.find((item) => item.id === id);
+        if (!project) throw new Error('项目已不存在或已移除，请重新扫描');
+        const remotes = await readGitHubRemotes(project.path);
+        project.githubRemotes = remotes;
+        if (!remotes.length) throw new Error('未找到 GitHub 远程仓库，请重新扫描');
+        if (remotes.length === 1) await shell.openExternal(remotes[0].url);
+        else
+          await new Promise((resolve, reject) => {
+            let selected = false;
+            const menu = Menu.buildFromTemplate(
+              remotes.map((remote) => ({
+                label: `${remote.name} · ${remote.repository}`,
+                click: () => {
+                  selected = true;
+                  shell.openExternal(remote.url).then(resolve, reject);
+                },
+              })),
+            );
+            menu.popup({
+              window,
+              callback: () => {
+                if (!selected) resolve();
+              },
+            });
+          });
+        return state();
+      }),
     'settings:opener-info': async () => {
       const opener = store.data.opener;
       const name =

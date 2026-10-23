@@ -1,6 +1,6 @@
 {
   "name": "bk-project-manager",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "description": "A local workspace for all your projects",
   "main": "electron/main.cjs",
@@ -37,7 +37,8 @@
     "pretest:smoke": "node scripts/prepare-native.cjs",
     "test:workbench": "node scripts/workbench-smoke.mjs",
     "pretest:workbench": "node scripts/prepare-native.cjs",
-    "prebuild": "node scripts/prepare-file-icons.mjs"
+    "prebuild": "node scripts/prepare-file-icons.mjs",
+    "test:github": "node scripts/github-smoke.mjs"
   },
   "dependencies": {
     "@shikijs/core": "^4.5.0",
