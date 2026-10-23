@@ -43,6 +43,10 @@ try {
       ELECTRON_RENDERER_URL: '',
       ZDOTDIR: path.join(directory, 'shell'),
       HISTFILE: path.join(directory, 'shell', 'history'),
+      NO_COLOR: '1',
+      FORCE_COLOR: '0',
+      CLICOLOR: '0',
+      CI: 'true',
     },
   });
   const page = await app.firstWindow();
@@ -115,6 +119,32 @@ try {
     ),
   );
   assert.ok((await output()).includes(await realpath(project)));
+  const shellQuote = (text) =>
+    windows ? `'${text.replaceAll("'", "''")}'` : `'${text.replaceAll("'", "'\\''")}'`;
+  const colorProbe =
+    'console.log("BKPM_DEPTH="+process.stdout.getColorDepth());console.log("BKPM_NO_COLOR="+(process.env.NO_COLOR??"unset"));process.stdout.write("\\u001b[38;2;215;119;87mBKPM_ORANGE\\u001b[0m\\n")';
+  await command(
+    `${windows ? '& ' : ''}${shellQuote(process.execPath)} -e ${shellQuote(colorProbe)}`,
+  );
+  await page.waitForFunction(() => {
+    const output = window.__terminalEvents
+      .filter((event) => event.type === 'data')
+      .map((event) => event.data)
+      .join('');
+    return (
+      output.includes('BKPM_DEPTH=24') &&
+      output.includes('BKPM_NO_COLOR=unset') &&
+      output.includes('\u001b[38;2;215;119;87mBKPM_ORANGE')
+    );
+  });
+  await page.waitForFunction(() =>
+    [...document.querySelectorAll('.xterm-rows span')].some(
+      (element) =>
+        element.textContent.includes('BKPM_ORANGE') &&
+        getComputedStyle(element).color === 'rgb(215, 119, 87)',
+    ),
+  );
+  await page.screenshot({ path: 'artifacts/terminal-color.png' });
   const session = await page.evaluate(
     () => window.__terminalEvents.find((event) => event.type === 'data').sessionId,
   );

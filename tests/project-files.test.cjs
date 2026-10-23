@@ -5,6 +5,7 @@ const path = require('node:path');
 const os = require('node:os');
 const { ProjectFiles, MAX_FILE_BYTES } = require('../electron/project-files.cjs');
 const { Workbench } = require('../electron/workbench.cjs');
+const { terminalEnvironment } = require('../electron/terminal-environment.cjs');
 
 async function fixture(t) {
   const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'bkpm-files-'));
@@ -13,6 +14,44 @@ async function fixture(t) {
   await fs.mkdir(path.join(root, 'src'), { recursive: true });
   return { root, directory, files: await ProjectFiles.open(root) };
 }
+
+test('Interactive terminal capabilities do not inherit host no-color, CI or debugger settings', () => {
+  const source = {
+    NO_COLOR: '1',
+    FORCE_COLOR: '0',
+    CLICOLOR: '0',
+    CLICOLOR_FORCE: '0',
+    CI: 'true',
+    TERM: 'dumb',
+    COLORTERM: '',
+    ELECTRON_RUN_AS_NODE: '1',
+    BKPM_USER_DATA: '/host/config',
+    NODE_OPTIONS: '--inspect',
+    NODE_INSPECTOR_IPC: '/host/debugger',
+    PATH: '/usr/bin',
+    HOME: '/home/user',
+    PROJECT_ENV: 'keep',
+  };
+  const env = terminalEnvironment(source);
+  assert.equal(env.TERM, 'xterm-256color');
+  assert.equal(env.COLORTERM, 'truecolor');
+  for (const name of [
+    'NO_COLOR',
+    'FORCE_COLOR',
+    'CLICOLOR',
+    'CLICOLOR_FORCE',
+    'CI',
+    'NODE_OPTIONS',
+    'ELECTRON_RUN_AS_NODE',
+    'BKPM_USER_DATA',
+    'NODE_INSPECTOR_IPC',
+  ])
+    assert.equal(env[name], undefined);
+  assert.equal(env.PATH, source.PATH);
+  assert.equal(env.HOME, source.HOME);
+  assert.equal(env.PROJECT_ENV, 'keep');
+  assert.equal(source.NO_COLOR, '1');
+});
 
 test('File tree is lazy, keeps hidden files, sorts folders first and reads Unicode paths', async (t) => {
   const { root, files } = await fixture(t);

@@ -2,6 +2,7 @@ const path = require('node:path');
 const os = require('node:os');
 const { randomUUID } = require('node:crypto');
 const { ProjectFiles } = require('./project-files.cjs');
+const { terminalEnvironment } = require('./terminal-environment.cjs');
 
 class Workbench {
   constructor(send) {
@@ -46,21 +47,7 @@ class Workbench {
           'powershell.exe',
         )
       : os.userInfo().shell || '/bin/zsh';
-    const env = {
-      ...process.env,
-      TERM: 'xterm-256color',
-      COLORTERM: 'truecolor',
-      TERM_PROGRAM: 'BKProjectManager',
-    };
-    // Do not pass Electron/debugger flags into shells or programs launched by users.
-    for (const name of Object.keys(env))
-      if (
-        name.startsWith('ELECTRON_') ||
-        name.startsWith('BKPM_') ||
-        name === 'NODE_OPTIONS' ||
-        name === 'NODE_INSPECTOR_IPC'
-      )
-        delete env[name];
+    const env = terminalEnvironment();
     const pty = require('node-pty').spawn(executable, windows ? ['-NoLogo'] : ['-l'], {
       cwd: session.files.root,
       name: 'xterm-256color',
