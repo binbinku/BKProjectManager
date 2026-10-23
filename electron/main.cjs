@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, shell, nativeTheme } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell, nativeTheme, Menu } = require('electron');
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const os = require('node:os');
@@ -7,6 +7,7 @@ const { pathToFileURL } = require('node:url');
 const { scanWorkspace } = require('./scanner.cjs');
 const { Store } = require('./store.cjs');
 const { Workbench } = require('./workbench.cjs');
+const { macAppIcon } = require('./app-icon.cjs');
 
 app.setName('BK Project Manager');
 const appIcon = path.join(
@@ -21,6 +22,99 @@ let window,
   snapshot = null;
 let scanJob;
 let workbench;
+let pendingSettings = false;
+function menuAction(action) {
+  if (!window || window.isDestroyed()) {
+    if (action === 'settings') {
+      pendingSettings = true;
+      createWindow();
+    }
+    return;
+  }
+  window.show();
+  window.focus();
+  window.webContents.send('app:menu-action', action);
+}
+function createMenu() {
+  const settings = {
+    id: 'settings',
+    label: '设置…',
+    accelerator: 'CmdOrCtrl+,',
+    click: () => menuAction('settings'),
+  };
+  Menu.setApplicationMenu(
+    Menu.buildFromTemplate([
+      ...(process.platform === 'darwin'
+        ? [
+            {
+              label: app.name,
+              submenu: [
+                { role: 'about' },
+                { type: 'separator' },
+                settings,
+                { type: 'separator' },
+                { role: 'services' },
+                { type: 'separator' },
+                { role: 'hide' },
+                { role: 'hideOthers' },
+                { role: 'unhide' },
+                { type: 'separator' },
+                { role: 'quit' },
+              ],
+            },
+          ]
+        : []),
+      {
+        label: '文件',
+        submenu: [
+          ...(process.platform === 'darwin' ? [] : [settings, { type: 'separator' }]),
+          { role: process.platform === 'darwin' ? 'close' : 'quit' },
+        ],
+      },
+      {
+        label: '编辑',
+        submenu: [
+          { role: 'undo' },
+          { role: 'redo' },
+          { type: 'separator' },
+          { role: 'cut' },
+          { role: 'copy' },
+          { role: 'paste' },
+          { role: 'selectAll' },
+        ],
+      },
+      {
+        label: '查看',
+        submenu: [
+          {
+            id: 'refresh-files',
+            label: '刷新文件目录',
+            accelerator: 'CmdOrCtrl+R',
+            click: () => menuAction('refresh-files'),
+          },
+          { type: 'separator' },
+          { role: 'resetZoom' },
+          { role: 'zoomIn' },
+          { role: 'zoomOut' },
+          { type: 'separator' },
+          { role: 'togglefullscreen' },
+        ],
+      },
+      {
+        label: '终端',
+        submenu: [
+          { id: 'terminal-clear', label: '清空终端', click: () => menuAction('terminal-clear') },
+          {
+            id: 'terminal-restart',
+            label: '重新启动终端',
+            click: () => menuAction('terminal-restart'),
+          },
+        ],
+      },
+      { role: 'windowMenu' },
+    ]),
+  );
+}
 async function scan() {
   if (!store.data.workspace) return null;
   if (!scanJob)
@@ -93,6 +187,34 @@ async function editorPath(opener) {
 }
 function registerHandlers() {
   const handlers = {
+    'settings:opener-info': async () => {
+      const opener = store.data.opener;
+      const name =
+        opener === 'folder'
+          ? process.platform === 'darwin'
+            ? 'Finder'
+            : '文件资源管理器'
+          : opener === 'vscode'
+            ? 'VS Code'
+            : opener === 'cursor'
+              ? 'Cursor'
+              : path
+                  .basename(store.data.customEditor || '自定义编辑器')
+                  .replace(/\.(app|exe)$/i, '');
+      try {
+        const target =
+          opener === 'folder'
+            ? process.platform === 'darwin'
+              ? '/System/Library/CoreServices/Finder.app'
+              : path.join(process.env.WINDIR || 'C:\\Windows', 'explorer.exe')
+            : await editorPath(opener);
+        if (process.platform === 'darwin') return { name, icon: await macAppIcon(target) };
+        const icon = await app.getFileIcon(target, { size: 'large' });
+        return { name, icon: icon.isEmpty() ? null : icon.toDataURL() };
+      } catch {
+        return { name, icon: null };
+      }
+    },
     'workbench:open': async (id) => {
       const project = snapshot?.projects.find((item) => item.id === id);
       if (!project) throw new Error('项目已不存在，请重新扫描');
@@ -114,7 +236,13 @@ function registerHandlers() {
     'terminal:resize': async (...args) => workbench.resize(...args),
     'terminal:acknowledge': async (...args) => workbench.acknowledge(...args),
     'terminal:stop': async (...args) => workbench.stopTerminal(...args),
-    'workspace:state': async () => state(),
+    'workspace:state': async () => {
+      if (pendingSettings) {
+        pendingSettings = false;
+        window.webContents.send('app:menu-action', 'settings');
+      }
+      return state();
+    },
     'workspace:scan': async () => {
       await scan();
       return state();
@@ -265,6 +393,7 @@ app
         window.setBackgroundColor(nativeTheme.shouldUseDarkColors ? '#191919' : '#ffffff');
     });
     registerHandlers();
+    createMenu();
     createWindow();
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) createWindow();

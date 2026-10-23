@@ -1,25 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { Terminal } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
-import { Circle, Eraser, RefreshCw, SquareTerminal } from 'lucide-react';
 import type { TerminalEvent } from './types';
 import '@xterm/xterm/css/xterm.css';
 
 const api = window.workspaceAPI;
 
-export function ProjectTerminal({
-  sessionId,
-  controlsContainer,
-}: {
-  sessionId: string;
-  controlsContainer: HTMLElement | null;
-}) {
+export function ProjectTerminal({ sessionId }: { sessionId: string }) {
   const host = useRef<HTMLDivElement>(null);
   const controls = useRef<{ restart(): void; clear(): void } | null>(null);
   const [status, setStatus] = useState('正在启动');
-  const [shell, setShell] = useState('终端');
-  const [starting, setStarting] = useState(true);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState('');
 
@@ -117,7 +107,7 @@ export function ProjectTerminal({
       } else {
         terminalId = null;
         terminal.writeln(
-          `\r\n\x1b[90m进程已退出，代码 ${event.exitCode}。点击右上角重新启动。\x1b[0m`,
+          `\r\n\x1b[90m进程已退出，代码 ${event.exitCode}。通过系统菜单「终端 → 重新启动终端」继续。\x1b[0m`,
         );
         setRunning(false);
         setStatus(`已退出 · ${event.exitCode}`);
@@ -147,7 +137,6 @@ export function ProjectTerminal({
     const start = async () => {
       if (starting || disposed) return;
       starting = true;
-      setStarting(true);
       setError('');
       setStatus('正在启动');
       setRunning(false);
@@ -165,7 +154,6 @@ export function ProjectTerminal({
           return;
         }
         terminalId = result.id;
-        setShell(result.shell);
         setRunning(true);
         setStatus('运行中');
         for (const event of earlyEvents) handleEvent(event);
@@ -178,7 +166,6 @@ export function ProjectTerminal({
         }
       } finally {
         starting = false;
-        if (!disposed) setStarting(false);
       }
     };
     controls.current = {
@@ -188,6 +175,10 @@ export function ProjectTerminal({
         terminal.focus();
       },
     };
+    const unsubscribeMenu = api.onMenuAction((action) => {
+      if (action === 'terminal-clear') controls.current?.clear();
+      if (action === 'terminal-restart') controls.current?.restart();
+    });
     // Wait until React has committed this mount. StrictMode's disposable first
     // mount must never leave a shell competing with the active component.
     const startup = setTimeout(() => void start(), 0);
@@ -199,6 +190,7 @@ export function ProjectTerminal({
       resizeObserver.disconnect();
       themeObserver.disconnect();
       unsubscribe();
+      unsubscribeMenu();
       input.dispose();
       if (terminalId) void api.stopTerminal(sessionId, terminalId).catch(() => {});
       terminal.dispose();
@@ -207,45 +199,12 @@ export function ProjectTerminal({
 
   return (
     <section className="terminal-panel" aria-label="项目终端">
-      {controlsContainer &&
-        createPortal(
-          <>
-            <div className="panel-heading terminal-controls-heading">
-              <span>
-                <SquareTerminal size={15} />
-                终端 <small>{shell}</small>
-              </span>
-              <div className="panel-actions">
-                <button
-                  aria-label="清空终端"
-                  title="清空终端显示"
-                  onClick={() => controls.current?.clear()}
-                >
-                  <Eraser size={14} />
-                </button>
-                <button
-                  aria-label="重新启动终端"
-                  title="结束当前进程并重新启动终端"
-                  disabled={starting}
-                  onClick={() => controls.current?.restart()}
-                >
-                  <RefreshCw size={14} className={starting ? 'spin' : ''} />
-                </button>
-              </div>
-            </div>
-            <div className="terminal-status" role="status" title="Ctrl C 中断 · exit 退出">
-              <Circle size={6} fill="currentColor" />
-              {status}
-            </div>
-            {error && (
-              <div className="terminal-error" role="alert">
-                {error}
-              </div>
-            )}
-          </>,
-          controlsContainer,
-        )}
-      <div className="terminal-host" data-running={running}>
+      {error && (
+        <div className="terminal-error" role="alert">
+          {error}
+        </div>
+      )}
+      <div className="terminal-host" data-running={running} data-status={status}>
         <div className="terminal-surface" ref={host} />
       </div>
     </section>

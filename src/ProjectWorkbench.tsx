@@ -1,24 +1,15 @@
 import { useRef, useState, useEffect, type PointerEvent as ReactPointerEvent } from 'react';
-import {
-  ArrowLeft,
-  ArrowUpRight,
-  ChevronRight,
-  Files,
-  FolderOpen,
-  RefreshCw,
-  Settings2,
-} from 'lucide-react';
-import type { FilePreview, WorkbenchSession } from './types';
+import { ArrowLeft, Code2, FolderOpen } from 'lucide-react';
+import type { FilePreview, Settings, WorkbenchSession } from './types';
 import { FileTree } from './FileTree';
 import { FileViewer } from './FileViewer';
 import { ProjectTerminal } from './ProjectTerminal';
 import './workbench.css';
 
 const api = window.workspaceAPI;
-const logo = new URL('../docs/assets/logo.svg', import.meta.url).href;
 export default function ProjectWorkbench({
   session,
-  onSettings,
+  opener,
   onBack,
   onExternal,
   busy,
@@ -26,7 +17,7 @@ export default function ProjectWorkbench({
   onDismissError,
 }: {
   session: WorkbenchSession;
-  onSettings(): void;
+  opener: Pick<Settings, 'opener' | 'customEditor'>;
   onBack(): void;
   onExternal(): void;
   busy: boolean;
@@ -41,7 +32,21 @@ export default function ProjectWorkbench({
   const [treeWidth, setTreeWidth] = useState(236);
   const [terminalWidth, setTerminalWidth] = useState(390);
   const [leaving, setLeaving] = useState(false);
-  const [terminalTools, setTerminalTools] = useState<HTMLDivElement | null>(null);
+  const [openerInfo, setOpenerInfo] = useState<{ name: string; icon: string | null } | null>(null);
+  const minTreeWidth = api.platform === 'darwin' ? 220 : 160;
+  useEffect(() => {
+    let current = true;
+    setOpenerInfo(null);
+    void api
+      .getOpenerInfo()
+      .then((info) => {
+        if (current) setOpenerInfo(info);
+      })
+      .catch(() => {});
+    return () => {
+      current = false;
+    };
+  }, [opener.opener, opener.customEditor]);
   const layout = useRef<HTMLDivElement>(null);
   const request = useRef(0);
   const drag = useRef<{ side: 'tree' | 'terminal'; startX: number; width: number } | null>(null);
@@ -77,14 +82,20 @@ export default function ProjectWorkbench({
     observer.observe(layout.current);
     return () => observer.disconnect();
   }, [treeWidth]);
-  const refreshFiles = () => {
-    setRefresh((value) => value + 1);
-    if (selected) void read(selected);
-  };
+  useEffect(
+    () =>
+      api.onMenuAction((action) => {
+        if (action === 'refresh-files') {
+          setRefresh((value) => value + 1);
+          if (selected) void read(selected);
+        }
+      }),
+    [selected, session.id],
+  );
   const resize = (side: 'tree' | 'terminal', value: number) => {
     const total = layout.current?.clientWidth || window.innerWidth;
     if (side === 'tree')
-      setTreeWidth(Math.max(160, Math.min(value, 420, total - terminalWidth - 268)));
+      setTreeWidth(Math.max(minTreeWidth, Math.min(value, 420, total - terminalWidth - 268)));
     else setTerminalWidth(Math.max(260, Math.min(value, total - treeWidth - 268)));
   };
   function separator(side: 'tree' | 'terminal') {
@@ -94,7 +105,7 @@ export default function ProjectWorkbench({
         role="separator"
         aria-orientation="vertical"
         aria-label={side === 'tree' ? '调整文件目录宽度' : '调整终端宽度'}
-        aria-valuemin={side === 'tree' ? 160 : 260}
+        aria-valuemin={side === 'tree' ? minTreeWidth : 260}
         aria-valuemax={
           side === 'tree'
             ? 420
@@ -166,28 +177,26 @@ export default function ProjectWorkbench({
               >
                 <ArrowLeft size={16} />
               </button>
-              <img src={logo} width="21" height="21" alt="BK Project Manager" />
-              <span className="workbench-project-name">{session.project.name}</span>
+              <span className="workbench-project-name" title={session.project.path}>
+                {session.project.name}
+              </span>
+              <button
+                className="external-open"
+                aria-label={openerInfo ? `在 ${openerInfo.name} 中打开` : '外部打开'}
+                title={openerInfo ? `在 ${openerInfo.name} 中打开` : '外部打开'}
+                onClick={onExternal}
+                disabled={busy}
+              >
+                {openerInfo?.icon ? (
+                  <img src={openerInfo.icon} width="20" height="20" alt="" />
+                ) : opener.opener === 'folder' ? (
+                  <FolderOpen size={18} />
+                ) : (
+                  <Code2 size={18} />
+                )}
+              </button>
             </div>
           </header>
-          <div className="panel-heading">
-            <span>
-              <Files size={15} />
-              资源管理器
-            </span>
-            <button
-              aria-label="刷新文件目录"
-              title="重新读取文件目录和当前文件"
-              onClick={refreshFiles}
-            >
-              <RefreshCw size={14} />
-            </button>
-          </div>
-          <div className="explorer-root" title={session.project.path}>
-            <ChevronRight size={12} className="root-chevron" />
-            <FolderOpen size={14} />
-            <strong>{session.project.name}</strong>
-          </div>
           <div className="explorer-scroll">
             <FileTree
               key={refresh}
@@ -195,26 +204,6 @@ export default function ProjectWorkbench({
               selected={selected}
               onSelect={(path) => void read(path)}
             />
-          </div>
-          <div className="explorer-hint" title={selected || session.project.path}>
-            <span>{selected || session.project.category}</span>
-            <small>只读预览 · 本地文件</small>
-          </div>
-          <div className="workbench-terminal-tools" ref={setTerminalTools} />
-          <div className="workbench-tools">
-            <button className="external-open" aria-label="设置" onClick={onSettings} title="设置">
-              <Settings2 size={14} />
-              设置
-            </button>
-            <button
-              className="external-open"
-              onClick={onExternal}
-              disabled={busy}
-              title="使用设置中的默认打开方式"
-            >
-              <ArrowUpRight size={14} />
-              外部打开
-            </button>
           </div>
         </aside>
         {separator('tree')}
@@ -228,7 +217,7 @@ export default function ProjectWorkbench({
           }}
         />
         {separator('terminal')}
-        <ProjectTerminal sessionId={session.id} controlsContainer={terminalTools} />
+        <ProjectTerminal sessionId={session.id} />
       </div>
     </div>
   );

@@ -1,3 +1,4 @@
+import { clickMenu } from './native-menu.mjs';
 import { _electron as electron } from 'playwright';
 import { mkdir, mkdtemp, rm, utimes, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -49,7 +50,7 @@ try {
 
   async function theme(value) {
     const openedHere = !(await page.getByRole('dialog').count());
-    if (openedHere) await page.getByRole('button', { name: '设置', exact: false }).last().click();
+    if (openedHere) await clickMenu(application, 'settings');
     const radio = page
       .getByRole('radiogroup', { name: '设置外观主题', exact: true })
       .getByRole('radio', { name: value === 'dark' ? '暗色' : '亮色', exact: true });
@@ -100,7 +101,7 @@ try {
   await page.getByRole('button', { name: '列表视图' }).click();
   await page.locator('.list-view').waitFor();
   await capture('list-dark.png');
-  await page.getByRole('button', { name: '设置', exact: false }).last().click();
+  await clickMenu(application, 'settings');
   await page.getByRole('dialog').waitFor();
   await capture('settings-dark.png', '.settings-modal');
   assert.deepEqual(errors, []);

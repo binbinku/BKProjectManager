@@ -1,3 +1,4 @@
+import { clickMenu } from './native-menu.mjs';
 import { _electron as electron } from 'playwright';
 import { mkdtemp, mkdir, writeFile, rm, realpath, copyFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -67,6 +68,29 @@ try {
   await page.getByRole('button', { name: '打开项目', exact: true }).click();
   await page.getByRole('tree', { name: '项目文件目录' }).waitFor();
   await page.locator('.terminal-host[data-running="true"]').waitFor();
+  assert.equal(await page.getByRole('button', { name: '设置', exact: true }).count(), 0);
+  assert.equal(await page.locator('.explorer-panel > header').count(), 1);
+  assert.equal((await page.locator('.workbench-navigation-header').boundingBox()).y, 0);
+  await page.waitForFunction(() => {
+    const image = document.querySelector('.external-open img');
+    return image?.complete && image.naturalWidth > 0;
+  });
+  const defaultOpener = await page.evaluate(() => window.workspaceAPI.getOpenerInfo());
+  assert.ok(defaultOpener.icon.startsWith('data:image/png;base64,'));
+  const external = page.getByRole('button', {
+    name: `在 ${defaultOpener.name} 中打开`,
+    exact: true,
+  });
+  assert.equal(await external.getAttribute('title'), `在 ${defaultOpener.name} 中打开`);
+  await app.evaluate(({ shell }) => {
+    shell.openPath = async () => '';
+  });
+  await external.click();
+  await clickMenu(app, 'settings');
+  await page.getByLabel('默认打开方式', { exact: true }).selectOption('vscode');
+  await page.getByRole('button', { name: '在 VS Code 中打开', exact: true }).waitFor();
+  await page.getByLabel('默认打开方式', { exact: true }).selectOption('folder');
+  await page.getByRole('button', { name: '完成', exact: true }).click();
   await page.getByRole('treeitem', { name: '展开 src', exact: true }).click();
   await page.getByRole('treeitem', { name: '查看 workspace.ts', exact: true }).click();
   await page.locator('.code-content .shiki').waitFor();
@@ -120,7 +144,7 @@ try {
     path.join(scrollFixture, 'long.txt'),
     Array.from({ length: 160 }, (_, index) => `${index}: ${'scroll '.repeat(80)}`).join('\n'),
   );
-  await page.getByRole('button', { name: '刷新文件目录' }).click();
+  await clickMenu(app, 'refresh-files');
   await page.getByRole('treeitem', { name: '展开 scroll-fixture', exact: true }).click();
   await page.getByRole('treeitem', { name: '查看 long.txt', exact: true }).click();
   await page.locator('.code-document').waitFor();
@@ -144,7 +168,7 @@ try {
   for (const scrollbar of await page.locator('.xterm-scrollable-element > .scrollbar').all())
     assert.equal(await scrollbar.evaluate((element) => getComputedStyle(element).display), 'none');
   await rm(scrollFixture, { recursive: true });
-  await page.getByRole('button', { name: '刷新文件目录' }).click();
+  await clickMenu(app, 'refresh-files');
   await page.getByRole('treeitem', { name: '展开 src', exact: true }).click();
 
   const output = async () =>
@@ -256,7 +280,7 @@ try {
   }
   // Check both themes while the terminal and file viewer remain mounted.
   for (const theme of ['dark', 'light']) {
-    await page.getByRole('button', { name: '设置', exact: true }).click();
+    await clickMenu(app, 'settings');
     await page
       .getByRole('radio', { name: theme === 'dark' ? '暗色' : '亮色', exact: true })
       .click();
@@ -285,7 +309,7 @@ try {
   const pid = (await output()).match(/BKPM_PID_(\d+)/)?.[1];
   await command('exit');
   await page.locator('.terminal-host[data-running="false"]').waitFor();
-  await page.getByRole('button', { name: '重新启动终端' }).click();
+  await clickMenu(app, 'terminal-restart');
   await page.locator('.terminal-host[data-running="true"]').waitFor();
   await command(
     windows
@@ -329,14 +353,14 @@ try {
     'Workbench smoke passed: full-height viewer and terminal, hidden scrollbars with working tree/code/terminal scrolling, lazy tree, single-file preview, syntax highlighting, escaped content, images, binary fallback, real PTY input/cwd, Ctrl+C, panel resize, themes, terminal restart, session revocation and process cleanup.',
   );
 } catch (error) {
-  if (app) {
-    const page = await app.firstWindow();
+  if (app?.windows().some((page) => !page.isClosed())) {
+    const page = app.windows().find((page) => !page.isClosed());
     await page.screenshot({ path: 'artifacts/workbench-failure.png' }).catch(() => {});
     console.error(
       'Terminal status:',
       await page
-        .locator('.terminal-status')
-        .textContent()
+        .locator('.terminal-host')
+        .getAttribute('data-status')
         .catch(() => 'unavailable'),
     );
     console.error('Terminal error:', await page.locator('.terminal-error').allTextContents());

@@ -71,7 +71,7 @@ export function FileTree({
     if (directory?.error)
       return (
         <li className="tree-message tree-error" role="alert">
-          目录读取失败，点击刷新重试。
+          目录读取失败，请通过「查看 → 刷新文件目录」重试。
         </li>
       );
     if (!directory?.listing) return null;

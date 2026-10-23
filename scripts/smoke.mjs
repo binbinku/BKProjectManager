@@ -1,3 +1,4 @@
+import { clickMenu } from './native-menu.mjs';
 import { _electron as electron } from 'playwright';
 import { mkdtemp, mkdir, writeFile, rm, realpath } from 'node:fs/promises';
 import path from 'node:path';
@@ -39,7 +40,7 @@ async function launch() {
 }
 async function chooseTheme(page, value, group = '设置外观主题') {
   const openedHere = !(await page.getByRole('dialog').count());
-  if (openedHere) await page.getByRole('button', { name: '设置', exact: false }).last().click();
+  if (openedHere) await clickMenu(app, 'settings');
   const labels = { light: '亮色', dark: '暗色', system: '跟随系统' };
   const radio = page
     .getByRole('radiogroup', { name: group, exact: true })
@@ -91,10 +92,7 @@ try {
     return { empty: icon.isEmpty(), size: icon.getSize() };
   });
   assert.deepEqual(nativeIcon, { empty: false, size: { width: 1024, height: 1024 } });
-  assert.equal(
-    await page.locator('.version').textContent(),
-    `v${await app.evaluate(({ app }) => app.getVersion())}`,
-  );
+  assert.equal(await page.getByRole('button', { name: '设置', exact: true }).count(), 0);
   await chooseTheme(page, 'light');
   await page.screenshot({ path: 'artifacts/welcome.png' });
   await page.emulateMedia({ colorScheme: 'dark' });
@@ -144,7 +142,7 @@ try {
   await page.getByRole('button', { name: '清空搜索' }).click();
   await page.getByRole('button', { name: '列表视图' }).click();
   await page.locator('.list-view').waitFor();
-  await page.getByRole('button', { name: '设置', exact: false }).last().click();
+  await clickMenu(app, 'settings');
   await page.getByRole('dialog').waitFor();
   await page.getByLabel('默认打开方式').selectOption('vscode');
   await chooseTheme(page, 'light', '设置外观主题');
@@ -172,7 +170,7 @@ try {
     await app.evaluate(({ dialog }, workspace) => {
       dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [workspace] });
     }, process.env.BKPM_SMOKE_WORKSPACE);
-    await page.getByRole('button', { name: '设置', exact: false }).last().click();
+    await clickMenu(app, 'settings');
     await page.getByRole('button', { name: '更换工作空间' }).click();
     await page
       .getByRole('dialog')

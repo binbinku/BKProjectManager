@@ -29,6 +29,8 @@ export interface AppState {
   snapshot: Snapshot | null;
 }
 export interface WorkspaceAPI {
+  onMenuAction(callback: (action: MenuAction) => void): () => void;
+  getOpenerInfo(): Promise<{ name: string; icon: string | null }>;
   openWorkbench(id: string): Promise<{ session: WorkbenchSession; state: AppState }>;
   closeWorkbench(id: string): Promise<void>;
   listProjectFiles(id: string, relative: string): Promise<DirectoryListing>;
@@ -49,6 +51,7 @@ export interface WorkspaceAPI {
   setTheme(value: ThemePreference): Promise<AppState>;
   chooseEditor(): Promise<AppState>;
 }
+export type MenuAction = 'settings' | 'refresh-files' | 'terminal-clear' | 'terminal-restart';
 export interface WorkbenchSession {
   id: string;
   project: Project;

@@ -1,5 +1,11 @@
 const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('workspaceAPI', {
+  onMenuAction: (callback) => {
+    const listener = (_event, action) => callback(action);
+    ipcRenderer.on('app:menu-action', listener);
+    return () => ipcRenderer.removeListener('app:menu-action', listener);
+  },
+  getOpenerInfo: () => ipcRenderer.invoke('settings:opener-info'),
   openWorkbench: (id) => ipcRenderer.invoke('workbench:open', id),
   closeWorkbench: (id) => ipcRenderer.invoke('workbench:close', id),
   listProjectFiles: (id, relative) => ipcRenderer.invoke('workbench:list', id, relative),

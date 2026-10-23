@@ -30,7 +30,6 @@ import {
   Plus,
   RefreshCw,
   Search,
-  Settings2,
   Star,
   Terminal,
   X,
@@ -101,6 +100,9 @@ function App() {
     }
   }
   useEffect(() => {
+    const unsubscribeMenu = api.onMenuAction((action) => {
+      if (action === 'settings') setSettings(true);
+    });
     void (async () => {
       try {
         const initial = await api.getState();
@@ -123,7 +125,10 @@ function App() {
       }
     };
     document.addEventListener('keydown', handleKey);
-    return () => document.removeEventListener('keydown', handleKey);
+    return () => {
+      unsubscribeMenu();
+      document.removeEventListener('keydown', handleKey);
+    };
   }, []);
   useEffect(() => {
     if (message) {
@@ -356,7 +361,7 @@ function App() {
         >
           <ProjectWorkbench
             session={session}
-            onSettings={() => setSettings(true)}
+            opener={state!.settings}
             onBack={() => void leaveProject()}
             onExternal={() => open(session.project)}
             busy={busy}
@@ -437,11 +442,6 @@ function App() {
             <span className="online-dot" />
             项目保留在你的电脑上
           </div>
-          <button className="nav-item" onClick={() => setSettings(true)}>
-            <Settings2 size={17} />
-            <span>设置</span>
-            <span className="version">v{appVersion}</span>
-          </button>
         </div>
       </aside>
       <main>

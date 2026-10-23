@@ -68,10 +68,10 @@ A Codex-inspired interface brings together neutral colors, subtle borders, and c
 
 The v0.2.0 source opens projects in a three-panel workbench. Published v0.1.1 installers do not include this feature yet.
 
-- **Left:** expand the project file tree on demand; refresh after changing files in the terminal.
+- **Left:** a compact top row with Back, the project name and the external app icon, followed by the file tree. Use View → Refresh Files in the native menu after changing files in the terminal.
 - **Center:** a viewer extending from the top to the bottom of the window, showing one read-only file at a time, with line numbers and VS Code Light+ / Dark+ syntax highlighting. No file tabs or editing controls. Common images can also be previewed.
-- **Right:** an interactive terminal extending from the top to the bottom of the window, starting in the project directory, with scrolling, Ctrl+C, clear and restart. Its status and controls live in the left sidebar. macOS uses your login shell; Windows 11 uses PowerShell.
-- Resize the side panels, switch light/dark themes in Settings, return to the project list, or use the existing external opener. Returning closes the project's terminal.
+- **Right:** an interactive terminal extending from the top to the bottom of the window, starting in the project directory, with scrolling, Ctrl+C, clear and restart. Clear and restart are available in the native Terminal menu. macOS uses your login shell; Windows 11 uses PowerShell.
+- Resize the side panels, switch light/dark themes through Settings in the native menu, return to the project list, or use the existing external opener. Returning closes the project's terminal.
 - Scrollbars are hidden throughout the app; mouse-wheel, trackpad and horizontal scrolling remain available.
 
 <picture>
@@ -114,7 +114,7 @@ npm run dev
 2. The app reads your directory structure and builds the project categories and list.
 3. Search for a project, star it, or choose a default editor in Settings.
 
-Click **Rescan** after adding or moving projects. You can switch workspaces in **Settings**.
+Click **Rescan** after adding or moving projects. You can switch workspaces through **Settings…** in the native menu (macOS: app menu, `⌘,`; Windows: File menu, `Ctrl+,`).
 
 > **Validation scope:** macOS Apple Silicon / Intel and Windows x64 packages are built locally. macOS apps are tested on the host (Intel through Rosetta 2); Windows is cross-built and still awaits Windows 11 runtime testing. First launch from source may require an internet connection to download the Electron runtime.
 
