@@ -7,12 +7,17 @@
   background: var(--canvas);
 }
 .workbench-navigation-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  height: 52px;
   display: flex;
   align-items: center;
   min-height: 52px;
   padding: 0 12px;
-  border-bottom: 1px solid var(--border);
-  background: var(--sidebar);
+  background: color-mix(in srgb, var(--sidebar) 75%, transparent);
+  -webkit-backdrop-filter: blur(16px) saturate(130%);
+  backdrop-filter: blur(16px) saturate(130%);
   flex-shrink: 0;
   -webkit-app-region: drag;
 }
@@ -102,13 +107,17 @@
   overflow: auto;
   flex: 1;
   min-height: 0;
-  padding: 4px 0 16px;
+  padding: 0 0 16px;
+  scroll-padding-top: 56px;
 }
 .file-tree,
 .file-tree ul {
   list-style: none;
   padding: 0;
   margin: 0;
+}
+.file-tree {
+  padding-top: 4px;
 }
 .file-tree-row {
   display: flex;

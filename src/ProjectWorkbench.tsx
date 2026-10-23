@@ -163,41 +163,41 @@ export default function ProjectWorkbench({
         }}
       >
         <aside className="explorer-panel" aria-label="资源管理器">
-          <header className="workbench-navigation-header">
-            <div className="workbench-navigation">
-              <button
-                className="back-projects"
-                aria-label="返回项目列表"
-                title="返回项目列表并关闭当前终端"
-                disabled={leaving}
-                onClick={() => {
-                  setLeaving(true);
-                  onBack();
-                }}
-              >
-                <ArrowLeft size={16} />
-              </button>
-              <span className="workbench-project-name" title={session.project.path}>
-                {session.project.name}
-              </span>
-              <button
-                className="external-open"
-                aria-label={openerInfo ? `在 ${openerInfo.name} 中打开` : '外部打开'}
-                title={openerInfo ? `在 ${openerInfo.name} 中打开` : '外部打开'}
-                onClick={onExternal}
-                disabled={busy}
-              >
-                {openerInfo?.icon ? (
-                  <img src={openerInfo.icon} width="20" height="20" alt="" />
-                ) : opener.opener === 'folder' ? (
-                  <FolderOpen size={18} />
-                ) : (
-                  <Code2 size={18} />
-                )}
-              </button>
-            </div>
-          </header>
           <div className="explorer-scroll">
+            <header className="workbench-navigation-header">
+              <div className="workbench-navigation">
+                <button
+                  className="back-projects"
+                  aria-label="返回项目列表"
+                  title="返回项目列表并关闭当前终端"
+                  disabled={leaving}
+                  onClick={() => {
+                    setLeaving(true);
+                    onBack();
+                  }}
+                >
+                  <ArrowLeft size={16} />
+                </button>
+                <span className="workbench-project-name" title={session.project.path}>
+                  {session.project.name}
+                </span>
+                <button
+                  className="external-open"
+                  aria-label={openerInfo ? `在 ${openerInfo.name} 中打开` : '外部打开'}
+                  title={openerInfo ? `在 ${openerInfo.name} 中打开` : '外部打开'}
+                  onClick={onExternal}
+                  disabled={busy}
+                >
+                  {openerInfo?.icon ? (
+                    <img src={openerInfo.icon} width="20" height="20" alt="" />
+                  ) : opener.opener === 'folder' ? (
+                    <FolderOpen size={18} />
+                  ) : (
+                    <Code2 size={18} />
+                  )}
+                </button>
+              </div>
+            </header>
             <FileTree
               key={refresh}
               sessionId={session.id}

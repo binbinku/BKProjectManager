@@ -72,7 +72,7 @@ try {
   await page.getByRole('tree', { name: '项目文件目录' }).waitFor();
   await page.locator('.terminal-host[data-running="true"]').waitFor();
   assert.equal(await page.getByRole('button', { name: '设置', exact: true }).count(), 0);
-  assert.equal(await page.locator('.explorer-panel > header').count(), 1);
+  assert.equal(await page.locator('.explorer-panel header').count(), 1);
   assert.equal((await page.locator('.workbench-navigation-header').boundingBox()).y, 0);
   await page.waitForFunction(() => {
     const image = document.querySelector('.external-open img');
@@ -181,6 +181,25 @@ try {
   await page.waitForFunction(() => document.querySelector('.explorer-scroll').scrollTop === 0);
   await page.mouse.wheel(0, 400);
   await page.waitForFunction(() => document.querySelector('.explorer-scroll').scrollTop > 0);
+  const glass = await page.locator('.workbench-navigation-header').evaluate((header) => {
+    const bounds = header.getBoundingClientRect();
+    const style = getComputedStyle(header);
+    return {
+      y: bounds.y,
+      border: style.borderBottomWidth,
+      filter: style.backdropFilter,
+      overlapsRows: [...document.querySelectorAll('.file-tree-row')].some((row) => {
+        const rect = row.getBoundingClientRect();
+        return rect.y < bounds.bottom && rect.bottom > bounds.top;
+      }),
+      coversRows: header.contains(document.elementFromPoint(bounds.right - 8, bounds.y + 26)),
+    };
+  });
+  assert.equal(glass.y, 0);
+  assert.equal(glass.border, '0px');
+  assert.ok(glass.filter.includes('blur('));
+  assert.ok(glass.overlapsRows && glass.coversRows);
+  await page.screenshot({ path: 'artifacts/explorer-glass.png' });
   for (const selector of ['.file-viewport', '.explorer-scroll', '.xterm-viewport']) {
     assert.equal(
       await page.locator(selector).evaluate((element) => getComputedStyle(element).scrollbarWidth),
