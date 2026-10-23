@@ -197,10 +197,15 @@ try {
   }
   // Check both themes while the terminal and file viewer remain mounted.
   for (const theme of ['dark', 'light']) {
+    await page.getByRole('button', { name: '设置', exact: true }).click();
     await page
       .getByRole('radio', { name: theme === 'dark' ? '暗色' : '亮色', exact: true })
       .click();
     await page.waitForFunction((theme) => document.documentElement.dataset.theme === theme, theme);
+    await page.waitForFunction(
+      () => !document.querySelector('input[name="settings-theme"]:checked').disabled,
+    );
+    await page.getByRole('button', { name: '完成', exact: true }).click();
     await page.screenshot({ path: `artifacts/workbench-${theme}.png` });
     if (process.argv.includes('--docs'))
       await copyFile(`artifacts/workbench-${theme}.png`, `docs/assets/workbench-${theme}.png`);

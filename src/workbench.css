@@ -53,9 +53,6 @@
 .external-open:hover {
   background: var(--hover);
 }
-.workbench-topbar .theme-selector {
-  margin: 0;
-}
 .workbench-topbar-actions {
   flex-shrink: 0;
   gap: 16px;

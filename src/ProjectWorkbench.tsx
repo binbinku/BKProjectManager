@@ -6,21 +6,20 @@ import {
   Files,
   FolderOpen,
   RefreshCw,
+  Settings2,
   SquareTerminal,
 } from 'lucide-react';
-import type { FilePreview, ThemePreference, WorkbenchSession } from './types';
+import type { FilePreview, WorkbenchSession } from './types';
 import { FileTree } from './FileTree';
 import { FileViewer } from './FileViewer';
 import { ProjectTerminal } from './ProjectTerminal';
-import { ThemeSelector } from './ThemeSelector';
 import './workbench.css';
 
 const api = window.workspaceAPI;
 const logo = new URL('../docs/assets/logo.svg', import.meta.url).href;
 export default function ProjectWorkbench({
   session,
-  theme,
-  onTheme,
+  onSettings,
   onBack,
   onExternal,
   busy,
@@ -28,8 +27,7 @@ export default function ProjectWorkbench({
   onDismissError,
 }: {
   session: WorkbenchSession;
-  theme: ThemePreference;
-  onTheme(value: ThemePreference): void;
+  onSettings(): void;
   onBack(): void;
   onExternal(): void;
   busy: boolean;
@@ -160,7 +158,10 @@ export default function ProjectWorkbench({
           <span className="workbench-category">{session.project.category}</span>
         </div>
         <div className="workbench-topbar-actions">
-          <ThemeSelector value={theme} onChange={onTheme} disabled={busy} compact />
+          <button className="external-open" aria-label="设置" onClick={onSettings} title="设置">
+            <Settings2 size={14} />
+            设置
+          </button>
           <button
             className="external-open"
             onClick={onExternal}

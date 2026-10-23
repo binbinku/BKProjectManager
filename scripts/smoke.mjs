@@ -37,7 +37,9 @@ async function launch() {
   await page.waitForLoadState('domcontentloaded');
   return page;
 }
-async function chooseTheme(page, value, group = '外观主题') {
+async function chooseTheme(page, value, group = '设置外观主题') {
+  const openedHere = !(await page.getByRole('dialog').count());
+  if (openedHere) await page.getByRole('button', { name: '设置', exact: false }).last().click();
   const labels = { light: '亮色', dark: '暗色', system: '跟随系统' };
   const radio = page
     .getByRole('radiogroup', { name: group, exact: true })
@@ -47,7 +49,7 @@ async function chooseTheme(page, value, group = '外观主题') {
     ({ name, value }) =>
       document.querySelector(`input[name="${name}"][value="${value}"]`)?.checked &&
       !document.querySelector(`input[name="${name}"][value="${value}"]`)?.disabled,
-    { name: group === '外观主题' ? 'sidebar-theme' : 'settings-theme', value },
+    { name: 'settings-theme', value },
   );
   await page.waitForFunction(
     async (expected) => (await window.workspaceAPI.getState()).settings.theme === expected,
@@ -72,6 +74,7 @@ async function chooseTheme(page, value, group = '外观主题') {
       JSON.stringify(colors),
     );
   }
+  if (openedHere) await page.getByRole('button', { name: '完成', exact: true }).click();
 }
 try {
   let page = await launch();

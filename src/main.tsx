@@ -217,7 +217,15 @@ function App() {
         : selection === 'recent'
           ? '最近打开'
           : selection.slice(9);
-  const choose = () => perform(api.chooseWorkspace);
+  const choose = () =>
+    perform(async () => {
+      const next = await api.chooseWorkspace();
+      if (session && next.settings.workspace !== state?.settings.workspace) {
+        await api.closeWorkbench(session.id).catch(() => {});
+        setSession(null);
+      }
+      return next;
+    });
   const changeTheme = (value: ThemePreference) => perform(() => api.setTheme(value));
   const open = (project: Project, action: 'default' | 'folder' | 'terminal' = 'default') =>
     perform(() => api.openProject(project.id, action), `已打开 ${project.name}`);
@@ -258,27 +266,106 @@ function App() {
     setQuery('');
   };
 
+  const settingsDialog = settings && (
+    <div className="modal-backdrop" onClick={() => setSettings(false)}>
+      <section
+        className="settings-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="settings-title"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="modal-heading">
+          <span className="modal-kicker">偏好设置</span>
+          <button aria-label="关闭设置" onClick={() => setSettings(false)}>
+            <X size={20} />
+          </button>
+        </div>
+        <h2 id="settings-title">设置</h2>
+        {error && (
+          <div className="error-banner" role="alert">
+            {error}
+          </div>
+        )}
+        <p className="settings-description">管理外观、工作空间和默认编辑器。</p>
+        <h3 className="settings-label">外观</h3>
+        <ThemeSelector value={theme} onChange={changeTheme} disabled={busy} />
+        <p className="theme-help">立即生效并自动保存。跟随系统会使用系统的外观设置。</p>
+        <label className="settings-label">工作空间目录</label>
+        <div className="settings-path">{state?.settings.workspace || '尚未选择工作空间'}</div>
+        {session && <p className="theme-help">更换工作空间会返回项目列表，并关闭当前项目终端。</p>}
+        <button className="secondary-button" disabled={busy} onClick={choose}>
+          <FolderOpen size={15} />
+          {state?.settings.workspace ? '更换工作空间' : '选择工作空间'}
+        </button>
+        <div className="settings-rule">
+          <Layers3 size={17} />
+          <p>
+            一级目录作为分类；优先扫描分类中的
+            Projects，否则扫描分类的直接子目录。已识别的工程作为一个项目收纳。
+          </p>
+        </div>
+        <label className="settings-label" htmlFor="default-opener">
+          默认打开方式
+        </label>
+        <select
+          id="default-opener"
+          className="settings-select"
+          value={state?.settings.opener || 'folder'}
+          disabled={busy}
+          onChange={(e) => perform(() => api.setOpener(e.target.value))}
+        >
+          {Object.entries(openerLabels).map(([value, label]) => (
+            <option value={value} key={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+        <button
+          className="text-button choose-editor"
+          disabled={busy}
+          onClick={() => perform(api.chooseEditor)}
+        >
+          <Plus size={14} />
+          选择编辑器程序
+        </button>
+        {state?.settings.customEditor && (
+          <p className="editor-path">{state.settings.customEditor}</p>
+        )}
+        <div className="settings-bottom">
+          <span>BK Project Manager · {appVersion}</span>
+          <button className="primary-button" onClick={() => setSettings(false)}>
+            完成
+            <Check size={15} />
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+
   if (session)
     return (
-      <Suspense
-        fallback={
-          <div className="viewer-empty">
-            <Loader2 className="spin" size={30} />
-            正在打开项目工作台
-          </div>
-        }
-      >
-        <ProjectWorkbench
-          session={session}
-          theme={theme}
-          onTheme={changeTheme}
-          onBack={() => void leaveProject()}
-          onExternal={() => open(session.project)}
-          busy={busy}
-          actionError={error}
-          onDismissError={() => setError('')}
-        />
-      </Suspense>
+      <>
+        <Suspense
+          fallback={
+            <div className="viewer-empty">
+              <Loader2 className="spin" size={30} />
+              正在打开项目工作台
+            </div>
+          }
+        >
+          <ProjectWorkbench
+            session={session}
+            onSettings={() => setSettings(true)}
+            onBack={() => void leaveProject()}
+            onExternal={() => open(session.project)}
+            busy={busy}
+            actionError={settings ? '' : error}
+            onDismissError={() => setError('')}
+          />
+        </Suspense>
+        {settingsDialog}
+      </>
     );
 
   return (
@@ -346,7 +433,6 @@ function App() {
           {!categories.length && <p className="sidebar-hint">选择工作空间后，分类会出现在这里。</p>}
         </nav>
         <div className="sidebar-bottom">
-          <ThemeSelector value={theme} onChange={changeTheme} disabled={busy} compact />
           <div className="local-note">
             <span className="online-dot" />
             项目保留在你的电脑上
@@ -658,81 +744,7 @@ function App() {
           {message}
         </div>
       )}
-      {settings && (
-        <div className="modal-backdrop" onClick={() => setSettings(false)}>
-          <section
-            className="settings-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="settings-title"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="modal-heading">
-              <span className="modal-kicker">偏好设置</span>
-              <button aria-label="关闭设置" onClick={() => setSettings(false)}>
-                <X size={20} />
-              </button>
-            </div>
-            <h2 id="settings-title">设置</h2>
-            {error && (
-              <div className="error-banner" role="alert">
-                {error}
-              </div>
-            )}
-            <p className="settings-description">管理外观、工作空间和默认编辑器。</p>
-            <h3 className="settings-label">外观</h3>
-            <ThemeSelector value={theme} onChange={changeTheme} disabled={busy} />
-            <p className="theme-help">立即生效并自动保存。跟随系统会使用系统的外观设置。</p>
-            <label className="settings-label">工作空间目录</label>
-            <div className="settings-path">{state?.settings.workspace || '尚未选择工作空间'}</div>
-            <button className="secondary-button" disabled={busy} onClick={choose}>
-              <FolderOpen size={15} />
-              {state?.settings.workspace ? '更换工作空间' : '选择工作空间'}
-            </button>
-            <div className="settings-rule">
-              <Layers3 size={17} />
-              <p>
-                一级目录作为分类；优先扫描分类中的
-                Projects，否则扫描分类的直接子目录。已识别的工程作为一个项目收纳。
-              </p>
-            </div>
-            <label className="settings-label" htmlFor="default-opener">
-              默认打开方式
-            </label>
-            <select
-              id="default-opener"
-              className="settings-select"
-              value={state?.settings.opener || 'folder'}
-              disabled={busy}
-              onChange={(e) => perform(() => api.setOpener(e.target.value))}
-            >
-              {Object.entries(openerLabels).map(([value, label]) => (
-                <option value={value} key={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-            <button
-              className="text-button choose-editor"
-              disabled={busy}
-              onClick={() => perform(api.chooseEditor)}
-            >
-              <Plus size={14} />
-              选择编辑器程序
-            </button>
-            {state?.settings.customEditor && (
-              <p className="editor-path">{state.settings.customEditor}</p>
-            )}
-            <div className="settings-bottom">
-              <span>BK Project Manager · {appVersion}</span>
-              <button className="primary-button" onClick={() => setSettings(false)}>
-                完成
-                <Check size={15} />
-              </button>
-            </div>
-          </section>
-        </div>
-      )}
+      {settingsDialog}
     </div>
   );
 }

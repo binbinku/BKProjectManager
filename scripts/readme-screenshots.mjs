@@ -48,19 +48,22 @@ try {
   await page.getByRole('button', { name: '选择工作空间', exact: true }).waitFor();
 
   async function theme(value) {
+    const openedHere = !(await page.getByRole('dialog').count());
+    if (openedHere) await page.getByRole('button', { name: '设置', exact: false }).last().click();
     const radio = page
-      .getByRole('radiogroup', { name: '外观主题', exact: true })
+      .getByRole('radiogroup', { name: '设置外观主题', exact: true })
       .getByRole('radio', { name: value === 'dark' ? '暗色' : '亮色', exact: true });
     if (!(await radio.isChecked())) await radio.click();
     await page.waitForFunction(
       (value) =>
         document.documentElement.dataset.theme === value &&
-        !document.querySelector(`input[name="sidebar-theme"][value="${value}"]`).disabled,
+        !document.querySelector(`input[name="settings-theme"][value="${value}"]`).disabled,
       value,
     );
     await page.evaluate(
       () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
     );
+    if (openedHere) await page.getByRole('button', { name: '完成', exact: true }).click();
   }
   async function capture(name, selector) {
     console.log(`Capturing ${name}...`);
