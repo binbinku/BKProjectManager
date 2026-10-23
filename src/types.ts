@@ -17,7 +17,7 @@ export interface Snapshot {
   scannedAt: number;
 }
 export type ThemePreference = 'light' | 'dark' | 'system';
-export type PaletteName = 'default' | 'graphite' | 'sand' | 'forest';
+export type PaletteName = 'default' | 'graphite' | 'sand' | 'forest' | 'github' | 'apple' | 'neo';
 export interface CategoryStyle {
   color: string;
   icon: string;

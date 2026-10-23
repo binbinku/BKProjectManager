@@ -90,7 +90,7 @@ Open a project card to enter the three-panel workbench: browse files on the left
     <td><strong>⌨️ Built-in terminal</strong><br />Run commands in the project directory, with ANSI true color, scrollback and process interruption.</td>
   </tr>
   <tr>
-    <td><strong>🌗 Choose your appearance</strong><br />Default, Graphite, Warm Sand and Forest palettes, each supporting light, dark and system appearance with identical layouts.</td>
+    <td><strong>🌗 Choose your appearance</strong><br />Seven palettes: Default, Graphite, Warm Sand, Forest, GitHub, Apple and MacBook Neo, each supporting light, dark and system appearance with identical layouts.</td>
     <td><strong>🔒 Local by design</strong><br />Preferences stay on your computer. Scanning does not move or delete projects, and no cloud account is required.</td>
   </tr>
 </table>
@@ -167,18 +167,23 @@ The sidebar starts with a single row containing the app icon and name, aligned w
 
 Open **Settings… → 配色主题** (Color theme) from the native menu, then choose a preview card. The choice saves locally. Palette and appearance mode are independent:
 
-| Theme            | Style                                  |
-| ---------------- | -------------------------------------- |
-| 默认 · Default   | The existing clean neutral palette     |
-| 石墨 · Graphite  | Cool gray with restrained blue accents |
-| 暖沙 · Warm Sand | Soft beige gray and muted warm brown   |
-| 森林 · Forest    | Quiet, low-saturation gray green       |
+| Theme            | Style                                                  |
+| ---------------- | ------------------------------------------------------ |
+| 默认 · Default   | The existing clean neutral palette                     |
+| 石墨 · Graphite  | Cool gray with restrained blue accents                 |
+| 暖沙 · Warm Sand | Soft beige gray and muted warm brown                   |
+| 森林 · Forest    | Quiet, low-saturation gray green                       |
+| GitHub           | White and deep gray with classic blue accents          |
+| Apple            | Silver gray with crisp system blue                     |
+| MacBook Neo      | Soft off-white and charcoal with citrus yellow accents |
+
+The GitHub palette draws from [Primer](https://primer.style/product/getting-started/foundations/color-usage/); MacBook Neo takes inspiration from [Citrus](https://www.apple.com/macbook-neo/), softened for comfortable everyday use.
 
 Themes change colors only. Sizes, spacing, panel proportions and floating controls stay in place. Syntax highlighting retains VS Code Light+ / Dark+ colors; the terminal background follows the palette while ANSI and true-color program output remain supported.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/themes-dark.png" />
-  <img src="docs/assets/themes-light.png" alt="Four built-in color theme previews in Settings: Default, Graphite, Warm Sand and Forest" width="500" />
+  <img src="docs/assets/themes-light.png" alt="Seven built-in color theme previews in Settings: Default, Graphite, Warm Sand, Forest, GitHub, Apple and MacBook Neo" width="500" />
 </picture>
 
 ### Creating categories and projects (source preview)

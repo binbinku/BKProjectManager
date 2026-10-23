@@ -330,7 +330,7 @@ function App() {
           onChange={(value) => void changeAppearance(() => api.setPalette(value))}
           disabled={busy}
         />
-        <p className="theme-help">四款克制配色，搭配任意亮暗模式。切换仅改变颜色，布局保持一致。</p>
+        <p className="theme-help">七款内置配色，搭配任意亮暗模式。切换仅改变颜色，布局保持一致。</p>
         <label className="settings-label">工作空间目录</label>
         <div className="settings-path">{state?.settings.workspace || '尚未选择工作空间'}</div>
         {session && <p className="theme-help">更换工作空间会返回项目列表，并关闭当前项目终端。</p>}

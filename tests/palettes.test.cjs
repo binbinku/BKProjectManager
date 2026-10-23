@@ -15,8 +15,16 @@ function contrast(a, b) {
   const [low, high] = [luminance(a), luminance(b)].sort((x, y) => x - y);
   return (high + 0.05) / (low + 0.05);
 }
-test('Four built-in themes contain only matching color tokens in both modes, with readable text and buttons', () => {
-  assert.deepEqual(Object.keys(palettes), ['default', 'graphite', 'sand', 'forest']);
+test('Seven built-in themes contain only matching color tokens in both modes, with readable text and buttons', () => {
+  assert.deepEqual(Object.keys(palettes), [
+    'default',
+    'graphite',
+    'sand',
+    'forest',
+    'github',
+    'apple',
+    'neo',
+  ]);
   const tokens = Object.keys(palettes.default.colors.light).sort();
   for (const palette of Object.values(palettes))
     for (const colors of Object.values(palette.colors)) {

@@ -131,7 +131,7 @@ try {
   await settings(page);
   const selected = page
     .getByRole('radiogroup', { name: '配色主题', exact: true })
-    .getByRole('radio', { name: '森林', exact: true });
+    .getByRole('radio', { name: palettes.neo.name, exact: true });
   await selected.focus();
   await selected.press('ArrowRight');
   await page.waitForFunction(
@@ -226,17 +226,17 @@ try {
       document.querySelector('.xterm-rows').textContent.includes('SESSION_kept'),
     );
   }
-  await appearance(page, 'system', 'forest');
+  await appearance(page, 'system', 'neo');
   for (const mode of ['light', 'dark']) {
     await page.emulateMedia({ colorScheme: mode });
     await page.waitForFunction(
       (expected) => document.documentElement.dataset.theme === expected,
       mode,
     );
-    assert.equal(await page.evaluate(() => document.documentElement.dataset.palette), 'forest');
+    assert.equal(await page.evaluate(() => document.documentElement.dataset.palette), 'neo');
     assert.equal(
       await page.evaluate(() => getComputedStyle(document.documentElement).backgroundColor),
-      rgb(palettes.forest.colors[mode].canvas),
+      rgb(palettes.neo.colors[mode].canvas),
     );
   }
   await assert.rejects(
@@ -247,17 +247,17 @@ try {
     page.evaluate(() => window.workspaceAPI.setPalette('__proto__')),
     /无效的配色主题/,
   );
-  await appearance(page, 'dark', 'forest');
+  await appearance(page, 'dark', 'neo');
   await app.close();
   page = await launch();
   await page.locator('.project-card').first().waitFor();
   const restored = await page.evaluate(() => window.workspaceAPI.getState());
-  assert.equal(restored.settings.palette, 'forest');
+  assert.equal(restored.settings.palette, 'neo');
   assert.equal(restored.settings.theme, 'dark');
-  await checkColors(page, 'forest', 'dark');
+  await checkColors(page, 'neo', 'dark');
   assert.deepEqual(errors, []);
   console.log(
-    'Palette smoke passed: all four palettes in both modes, native backgrounds, identical project/workbench geometry, unchanged VS Code highlighting and true-color output, live terminal session, system appearance, validation and restart persistence.',
+    'Palette smoke passed: all seven palettes in both modes, native backgrounds, identical project/workbench geometry, unchanged VS Code highlighting and true-color output, live terminal session, system appearance, validation and restart persistence.',
   );
 } finally {
   if (app) await app.close().catch(() => {});
