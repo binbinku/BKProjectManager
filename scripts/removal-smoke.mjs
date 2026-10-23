@@ -108,6 +108,18 @@ try {
   assert.deepEqual(await app.evaluate(() => globalThis.__revealed), [
     path.join(workspace, 'WebDev/Projects/Beta'),
   ]);
+  assert.equal(await page.locator('.project-card').count(), 2);
+  await page.getByRole('button', { name: '重新扫描', exact: true }).click();
+  await page.getByRole('button', { name: '重新扫描', exact: true }).waitFor({ state: 'visible' });
+  assert.equal(await page.locator('.project-card').count(), 2);
+  await app.close();
+  page = await launch();
+  await page.locator('.project-card').first().waitFor();
+  assert.equal(await page.locator('.project-card').count(), 2);
+  await settings(page);
+  await page.getByRole('button', { name: '恢复项目 WebDev/Projects/Beta', exact: true }).click();
+  await page.getByText('没有已移除的分类或项目。', { exact: true }).waitFor();
+  await closeSettings(page);
   assert.equal(await page.locator('.project-card').count(), 3);
   assert.deepEqual(await tree(workspace), original);
   await page.getByRole('button', { name: '收藏 Alpha', exact: true }).click();
@@ -203,7 +215,16 @@ try {
     .click();
   await page.getByRole('button', { name: '移除分类 WebDev', exact: true }).click();
   await page.getByRole('button', { name: /中显示，手动删除/ }).click();
+  await page.getByRole('dialog').waitFor({ state: 'detached' });
   assert.deepEqual(await app.evaluate(() => globalThis.__revealed), [workspace + '/WebDev']);
+  assert.equal(await page.locator('.project-card').count(), 1);
+  assert.equal(
+    await page
+      .getByRole('navigation', { name: '项目分类', exact: true })
+      .getByRole('button', { name: /WebDev/ })
+      .count(),
+    0,
+  );
   // Simulate a user's deletion in this disposable fixture, never through the app.
   await rm(path.join(workspace, 'WebDev/Projects/Beta'), { recursive: true });
   await page.getByRole('button', { name: '重新扫描', exact: true }).click();
@@ -214,6 +235,9 @@ try {
       ),
   );
   await settings(page);
+  await page.getByRole('button', { name: '恢复分类 WebDev', exact: true }).click();
+  await page.getByText('没有已移除的分类或项目。', { exact: true }).waitFor();
+  assert.equal(await page.locator('.project-card h2').filter({ hasText: 'Beta' }).count(), 0);
   await page.getByRole('radio', { name: '暗色', exact: true }).click();
   await page.waitForFunction(
     () =>
@@ -249,7 +273,7 @@ try {
   assert.deepEqual(state.settings.visibility[workspace], { categories: [], projects: [] });
   assert.deepEqual(errors, []);
   console.log(
-    'Removal smoke passed: cancel, modal focus, project/category removal, restore, restart/rescan persistence, favorites/recent retention, workspace isolation, Finder reveal, untouched filesystem and manual deletion rescan.',
+    'Removal smoke passed: cancel, modal focus, project/category removal, restore, restart/rescan persistence, favorites/recent retention, workspace isolation, manual deletion hides before Finder reveal, untouched filesystem and manual deletion rescan.',
   );
 } finally {
   if (app) await app.close().catch(() => {});

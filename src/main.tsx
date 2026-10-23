@@ -935,15 +935,15 @@ function App() {
         <RemoveItemDialog
           target={removalTarget}
           onClose={() => setRemovalTarget(null)}
-          onRemoved={(next) => {
+          onRemoved={(next, revealed) => {
             setState(next);
             if (removalTarget.kind === 'category') select('all');
             setRemovalTarget(null);
-            setMessage('已从列表移除，文件仍在原位置，可在设置中恢复');
-          }}
-          onRevealed={() => {
-            setRemovalTarget(null);
-            setMessage(`已在 ${folderName} 中定位，请自行操作；完成后重新扫描`);
+            setMessage(
+              revealed
+                ? `已从列表移除，并在 ${folderName} 中定位，请自行删除文件夹`
+                : '已从列表移除，文件仍在原位置，可在设置中恢复',
+            );
           }}
         />
       )}

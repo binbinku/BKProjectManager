@@ -54,7 +54,7 @@ export interface WorkspaceAPI {
   scan(): Promise<AppState>;
   removeItem(kind: 'category' | 'project', key: string): Promise<AppState>;
   restoreItem(kind: 'category' | 'project' | 'all', key?: string): Promise<AppState>;
-  revealItem(kind: 'category' | 'project', key: string): Promise<void>;
+  revealItem(kind: 'category' | 'project', key: string): Promise<AppState>;
   createCategory(name: string, style: CategoryStyle): Promise<AppState>;
   setCategoryStyle(category: string, style: CategoryStyle): Promise<AppState>;
   createProject(category: string, name: string): Promise<AppState>;

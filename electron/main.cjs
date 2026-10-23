@@ -157,6 +157,31 @@ async function scan() {
 function state() {
   return { settings: store.data, snapshot: visibleSnapshot(snapshot, getVisibility(store.data)) };
 }
+async function removeItem(kind, key, reveal = false) {
+  const visible = state().snapshot;
+  if (!store.data.workspace || !visible) throw new Error('请先选择工作空间');
+  const current = getVisibility(store.data);
+  let next, target;
+  if (kind === 'category' && visible.categories.includes(key)) {
+    next = { ...current, categories: [...current.categories, key] };
+    target = path.join(visible.workspace, key);
+  } else if (kind === 'project') {
+    const project = visible.projects.find((item) => item.id === key);
+    if (!project) throw new Error('项目已不存在或已移除，请重新扫描');
+    next = { ...current, projects: [...current.projects, project.relativePath] };
+    target = project.path;
+  } else throw new Error('分类已不存在、已移除或操作无效');
+  if (reveal) {
+    try {
+      if (!(await fs.stat(target)).isDirectory()) throw new Error();
+    } catch {
+      throw new Error('文件夹已移动或删除，请重新扫描');
+    }
+  }
+  await saveVisibility(store, next);
+  if (reveal) shell.showItemInFolder(target);
+  return state();
+}
 function applyTheme(theme) {
   nativeTheme.themeSource = theme;
   if (window && !window.isDestroyed())
@@ -274,22 +299,7 @@ function registerHandlers() {
         await scan();
         return state();
       }),
-    'item:remove': (kind, key) =>
-      workspaceTask(async () => {
-        if (!store.data.workspace || !snapshot) throw new Error('请先选择工作空间');
-        const current = getVisibility(store.data);
-        if (kind === 'category' && state().snapshot.categories.includes(key)) {
-          await saveVisibility(store, { ...current, categories: [...current.categories, key] });
-        } else if (kind === 'project') {
-          const project = state().snapshot.projects.find((item) => item.id === key);
-          if (!project) throw new Error('项目已不存在或已移除，请重新扫描');
-          await saveVisibility(store, {
-            ...current,
-            projects: [...current.projects, project.relativePath],
-          });
-        } else throw new Error('分类已不存在、已移除或操作无效');
-        return state();
-      }),
+    'item:remove': (kind, key) => workspaceTask(() => removeItem(kind, key)),
     'item:restore': (kind, key) =>
       workspaceTask(async () => {
         if (!store.data.workspace) throw new Error('请先选择工作空间');
@@ -306,20 +316,7 @@ function registerHandlers() {
         await scan();
         return state();
       }),
-    'item:reveal': async (kind, key) => {
-      const visible = state().snapshot;
-      let target;
-      if (kind === 'category' && visible?.categories.includes(key))
-        target = path.join(visible.workspace, key);
-      else if (kind === 'project') target = visible?.projects.find((item) => item.id === key)?.path;
-      if (!target) throw new Error('内容已不存在或已移除，请重新扫描');
-      try {
-        if (!(await fs.stat(target)).isDirectory()) throw new Error();
-      } catch {
-        throw new Error('文件夹已移动或删除，请重新扫描');
-      }
-      shell.showItemInFolder(target);
-    },
+    'item:reveal': (kind, key) => workspaceTask(() => removeItem(kind, key, true)),
     'category:create': (name, appearance) =>
       workspaceTask(async () => {
         const workspace = store.data.workspace;

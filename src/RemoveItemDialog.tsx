@@ -14,12 +14,10 @@ export function RemoveItemDialog({
   target,
   onClose,
   onRemoved,
-  onRevealed,
 }: {
   target: RemovalTarget;
   onClose: () => void;
-  onRemoved: (next: AppState) => void;
-  onRevealed: () => void;
+  onRemoved: (next: AppState, revealed: boolean) => void;
 }) {
   const [busy, setBusy] = useState<'remove' | 'reveal' | null>(null);
   const [error, setError] = useState('');
@@ -33,10 +31,9 @@ export function RemoveItemDialog({
     setError('');
     try {
       if (action === 'remove')
-        onRemoved(await window.workspaceAPI.removeItem(target.kind, target.key));
+        onRemoved(await window.workspaceAPI.removeItem(target.kind, target.key), false);
       else {
-        await window.workspaceAPI.revealItem(target.kind, target.key);
-        onRevealed();
+        onRemoved(await window.workspaceAPI.revealItem(target.kind, target.key), true);
       }
     } catch (reason) {
       setError(
@@ -68,7 +65,7 @@ export function RemoveItemDialog({
         </div>
         <h2 id="remove-title">如何处理“{target.name}”？</h2>
         <p className="settings-description" id="remove-description">
-          选择从软件列表中移除，或在{folderName}中定位后自行删除文件夹。
+          两种方式都会从软件列表中隐藏；如需删除文件，可在{folderName}中自行操作。
         </p>
         <div className="removal-path">
           <FolderOpen size={17} />
@@ -99,7 +96,7 @@ export function RemoveItemDialog({
           </span>
           <span>
             <strong>在{folderName}中显示，手动删除</strong>
-            <small>定位并选中文件夹，由你自行删除；软件不会执行删除。完成后重新扫描。</small>
+            <small>先从列表隐藏，再定位并选中文件夹，由你自行删除。可在设置中恢复显示。</small>
           </span>
           <ArrowUpRight size={17} />
         </button>

@@ -174,7 +174,7 @@ Category appearances stay in local preferences; no configuration files are added
 Click the hide icon on a project card, or beside the selected category's title, to open a dialog:
 
 - **从列表移除** (Remove from list): hide the item in the current workspace. Removing a category also hides its projects. This persists across rescans and restarts while keeping all files intact.
-- **在 Finder / 资源管理器中显示，手动删除** (Show in Finder / File Explorer for manual deletion): locate and select the folder so you can delete it yourself. The app neither deletes files nor automatically hides the entry. Click **Rescan** afterward.
+- **在 Finder / 资源管理器中显示，手动删除** (Show in Finder / File Explorer for manual deletion): immediately hide the entry, then locate and select the folder so you can delete it yourself. The app does not delete files. Even if you keep the folder, the entry stays hidden across rescans and restarts and can be restored in Settings.
 - **Restore:** open **Settings… → 已移除的内容** (Removed items) from the native menu to restore individual entries or everything. Projects removed individually stay hidden when their category is restored, until you restore them too. Favorites and recent activity are retained.
 
 Restoring clears the hidden entry only; folders deleted or moved outside the app are not recreated.
