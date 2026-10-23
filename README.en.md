@@ -90,7 +90,7 @@ Open a project card to enter the three-panel workbench: browse files on the left
     <td><strong>⌨️ Built-in terminal</strong><br />Run commands in the project directory, with ANSI true color, scrollback and process interruption.</td>
   </tr>
   <tr>
-    <td><strong>🌗 Choose your appearance</strong><br />Light, dark, and system themes, with both card and list views.</td>
+    <td><strong>🌗 Choose your appearance</strong><br />Default, Graphite, Warm Sand and Forest palettes, each supporting light, dark and system appearance with identical layouts.</td>
     <td><strong>🔒 Local by design</strong><br />Preferences stay on your computer. Scanning does not move or delete projects, and no cloud account is required.</td>
   </tr>
 </table>
@@ -162,6 +162,24 @@ npm run dev
 Click **Rescan** after adding or moving projects. You can switch workspaces through **Settings…** in the native menu (macOS: app menu, `⌘,`; Windows: File menu, `Ctrl+,`).
 
 The sidebar starts with a single row containing the app icon and name, aligned with the native traffic lights on macOS. Workspace management is available through Settings in the native menu.
+
+### Built-in color themes (source preview)
+
+Open **Settings… → 配色主题** (Color theme) from the native menu, then choose a preview card. The choice saves locally. Palette and appearance mode are independent:
+
+| Theme            | Style                                  |
+| ---------------- | -------------------------------------- |
+| 默认 · Default   | The existing clean neutral palette     |
+| 石墨 · Graphite  | Cool gray with restrained blue accents |
+| 暖沙 · Warm Sand | Soft beige gray and muted warm brown   |
+| 森林 · Forest    | Quiet, low-saturation gray green       |
+
+Themes change colors only. Sizes, spacing, panel proportions and floating controls stay in place. Syntax highlighting retains VS Code Light+ / Dark+ colors; the terminal background follows the palette while ANSI and true-color program output remain supported.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/themes-dark.png" />
+  <img src="docs/assets/themes-light.png" alt="Four built-in color theme previews in Settings: Default, Graphite, Warm Sand and Forest" width="500" />
+</picture>
 
 ### Creating categories and projects (source preview)
 
@@ -295,19 +313,20 @@ For example, if `AndroidDev/Projects` contains `settings.gradle.kts`, it is trea
 
 **Electron · React · TypeScript · Vite**
 
-| Command                    | Purpose                                                        |
-| -------------------------- | -------------------------------------------------------------- |
-| `npm run dev`              | Start the development environment                              |
-| `npm run build`            | Generate file icons, check TypeScript and build the frontend   |
-| `npm start`                | Launch the built desktop application                           |
-| `npm test`                 | Test discovery, settings, project files and sessions           |
-| `npm run test:workbench`   | Test project browsing, file preview, real terminal and cleanup |
-| `npm run test:smoke`       | Verify key interactions in a real Electron window              |
-| `npm run test:management`  | Test category appearance, new folders and restart persistence  |
-| `npm run test:removal`     | Test removal dialogs, reveal, restore and filesystem integrity |
-| `npm run test:category`    | Test the minimal category page, floating tools, sort and views |
-| `npm run format:check`     | Check source formatting                                        |
-| `npm run docs:screenshots` | Build the app and regenerate screenshots with sample data      |
+| Command                    | Purpose                                                             |
+| -------------------------- | ------------------------------------------------------------------- |
+| `npm run dev`              | Start the development environment                                   |
+| `npm run build`            | Generate file icons, check TypeScript and build the frontend        |
+| `npm start`                | Launch the built desktop application                                |
+| `npm test`                 | Test discovery, settings, project files and sessions                |
+| `npm run test:workbench`   | Test project browsing, file preview, real terminal and cleanup      |
+| `npm run test:smoke`       | Verify key interactions in a real Electron window                   |
+| `npm run test:management`  | Test category appearance, new folders and restart persistence       |
+| `npm run test:removal`     | Test removal dialogs, reveal, restore and filesystem integrity      |
+| `npm run test:category`    | Test the minimal category page, floating tools, sort and views      |
+| `npm run test:palettes`    | Test palettes, light/dark appearance, stable layout and persistence |
+| `npm run format:check`     | Check source formatting                                             |
+| `npm run docs:screenshots` | Build the app and regenerate screenshots with sample data           |
 
 Desktop interaction tests and screenshot generation require a desktop session. They use temporary workspaces and isolated settings, leaving your preferences intact. Documentation screenshots never read your project directories.
 

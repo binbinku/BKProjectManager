@@ -22,6 +22,8 @@ import {
 } from 'lucide-react';
 import type { AppState, Project, ThemePreference, WorkbenchSession } from './types';
 import { ThemeSelector } from './ThemeSelector';
+import { PaletteSelector } from './PaletteSelector';
+import { applyPalette } from './palettes';
 import { ProjectTools } from './ProjectTools';
 import { CategoryIcon, defaultCategoryStyle } from './categories';
 import { ProjectManagerDialog, type ManagementDialog } from './ProjectManagerDialog';
@@ -73,6 +75,7 @@ function App() {
   const [removalTarget, setRemovalTarget] = useState<RemovalTarget | null>(null);
   const [session, setSession] = useState<WorkbenchSession | null>(null);
   const theme = state?.settings.theme ?? 'system';
+  const palette = state?.settings.palette ?? 'default';
   async function perform(task: () => Promise<AppState>, success?: string) {
     setBusy(true);
     setError('');
@@ -129,6 +132,7 @@ function App() {
       document.documentElement.classList.add('theme-changing');
       document.documentElement.dataset.theme =
         theme === 'system' ? (media.matches ? 'dark' : 'light') : theme;
+      applyPalette(document.documentElement, palette);
       frame = requestAnimationFrame(() => {
         frame = requestAnimationFrame(() =>
           document.documentElement.classList.remove('theme-changing'),
@@ -142,7 +146,7 @@ function App() {
       cancelAnimationFrame(frame);
       document.documentElement.classList.remove('theme-changing');
     };
-  }, [theme]);
+  }, [theme, palette]);
   useEffect(() => {
     if (!settings) return;
     const previous = document.activeElement as HTMLElement | null;
@@ -244,7 +248,19 @@ function App() {
       }
       return next;
     });
-  const changeTheme = (value: ThemePreference) => perform(() => api.setTheme(value));
+  const changeAppearance = async (task: () => Promise<AppState>) => {
+    const focused = document.activeElement as HTMLElement | null;
+    await perform(task);
+    requestAnimationFrame(() => {
+      if (
+        focused?.isConnected &&
+        document.querySelector('.settings-modal')?.contains(focused) &&
+        (document.activeElement === document.body || document.activeElement === focused)
+      )
+        focused.focus();
+    });
+  };
+  const changeTheme = (value: ThemePreference) => changeAppearance(() => api.setTheme(value));
   const open = (project: Project, action: 'default' | 'folder' | 'terminal' = 'default') =>
     perform(() => api.openProject(project.id, action), `已打开 ${project.name}`);
   async function enterProject(project: Project) {
@@ -308,6 +324,13 @@ function App() {
         <h3 className="settings-label">外观</h3>
         <ThemeSelector value={theme} onChange={changeTheme} disabled={busy} />
         <p className="theme-help">立即生效并自动保存。跟随系统会使用系统的外观设置。</p>
+        <h3 className="settings-label">配色主题</h3>
+        <PaletteSelector
+          value={palette}
+          onChange={(value) => void changeAppearance(() => api.setPalette(value))}
+          disabled={busy}
+        />
+        <p className="theme-help">四款克制配色，搭配任意亮暗模式。切换仅改变颜色，布局保持一致。</p>
         <label className="settings-label">工作空间目录</label>
         <div className="settings-path">{state?.settings.workspace || '尚未选择工作空间'}</div>
         {session && <p className="theme-help">更换工作空间会返回项目列表，并关闭当前项目终端。</p>}

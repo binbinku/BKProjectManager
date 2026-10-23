@@ -3,6 +3,7 @@ import { Terminal } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import type { TerminalEvent } from './types';
 import '@xterm/xterm/css/xterm.css';
+import { currentPaletteColors } from './palettes';
 
 const api = window.workspaceAPI;
 
@@ -37,12 +38,13 @@ export function ProjectTerminal({ sessionId }: { sessionId: string }) {
     // clipboard escape handlers or commands that can interact with the host.
     const applyTheme = () => {
       const dark = getComputedStyle(document.documentElement).colorScheme === 'dark';
+      const colors = currentPaletteColors();
       terminal.options.theme = dark
         ? {
-            background: '#191919',
-            foreground: '#deded9',
-            cursor: '#d8e5d6',
-            selectionBackground: '#5d735b70',
+            background: colors.canvas,
+            foreground: colors.text,
+            cursor: colors.text,
+            selectionBackground: `${colors.focus}70`,
             black: '#303030',
             red: '#dc9290',
             green: '#a1bd97',
@@ -54,10 +56,10 @@ export function ProjectTerminal({ sessionId }: { sessionId: string }) {
             brightBlack: '#92928b',
           }
         : {
-            background: '#ffffff',
-            foreground: '#333330',
-            cursor: '#394e36',
-            selectionBackground: '#a5b99c60',
+            background: colors.canvas,
+            foreground: colors.text,
+            cursor: colors.text,
+            selectionBackground: `${colors.focus}60`,
             black: '#303030',
             red: '#a74440',
             green: '#4a7441',
@@ -73,7 +75,7 @@ export function ProjectTerminal({ sessionId }: { sessionId: string }) {
     const themeObserver = new MutationObserver(applyTheme);
     themeObserver.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ['data-theme'],
+      attributeFilter: ['data-theme', 'data-palette'],
     });
 
     const fitTerminal = () => {

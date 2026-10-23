@@ -90,7 +90,7 @@
     <td><strong>⌨️ 内置终端</strong><br />进入项目目录即可运行命令，支持 ANSI 真彩色、滚动和进程中断。</td>
   </tr>
   <tr>
-    <td><strong>🌗 亮暗随心</strong><br />亮色、暗色、跟随系统三种外观，搭配卡片与列表视图。</td>
+    <td><strong>🌗 亮暗随心</strong><br />默认、石墨、暖沙、森林四款配色，各自适配亮色、暗色和跟随系统，布局保持一致。</td>
     <td><strong>🔒 数据留在本机</strong><br />设置本地保存，扫描不移动或删除项目文件，无需云端账户。</td>
   </tr>
 </table>
@@ -162,6 +162,24 @@ npm run dev
 新增或移动项目后，点击 **重新扫描**。更换工作空间可在系统菜单的 **设置…** 中完成（macOS：应用菜单，`⌘,`；Windows：文件菜单，`Ctrl+,`）。
 
 侧栏顶部只保留一行图标与应用名称，macOS 下与红黄绿窗口按钮对齐；工作空间管理统一放在系统菜单的设置中。
+
+### 内置配色主题（源码预览版）
+
+通过系统菜单打开 **设置… → 配色主题**，点击预览卡片即可切换并保存到本机。配色与亮暗模式独立，可自由组合：
+
+| 主题 | 配色风格                 |
+| ---- | ------------------------ |
+| 默认 | 延续现有纯净中性色       |
+| 石墨 | 冷灰底色，少量雾蓝点缀   |
+| 暖沙 | 柔和米灰与克制的暖棕色   |
+| 森林 | 低饱和灰绿，保持安静简洁 |
+
+主题只改变配色，不改变尺寸、间距、面板比例或悬浮按钮位置。代码高亮继续使用 VS Code Light+ / Dark+；终端背景随主题调整，程序的 ANSI 与真彩色输出保持正常。
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/themes-dark.png" />
+  <img src="docs/assets/themes-light.png" alt="设置中的四款内置配色主题：默认、石墨、暖沙与森林" width="500" />
+</picture>
 
 ### 新增分类与项目（源码预览版）
 
@@ -306,6 +324,7 @@ Workspace/
 | `npm run test:management`  | 验证分类外观、新建分类与空项目、重启保存 |
 | `npm run test:removal`     | 验证移除弹窗、定位、恢复和文件完整性     |
 | `npm run test:category`    | 验证精简分类页、悬浮工具、排序和视图切换 |
+| `npm run test:palettes`    | 验证四主题亮暗配色、布局不变与重启保存   |
 | `npm run format:check`     | 检查代码格式                             |
 | `npm run docs:screenshots` | 构建应用并使用示例数据更新文档截图       |
 

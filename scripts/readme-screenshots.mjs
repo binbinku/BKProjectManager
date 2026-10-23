@@ -132,8 +132,11 @@ try {
   await clickMenu(application, 'settings');
   await page.getByRole('dialog').waitFor();
   await capture('settings-dark.png', '.settings-modal');
+  await capture('themes-dark.png', '.palette-selector');
+  await theme('light');
+  await capture('themes-light.png', '.palette-selector');
   assert.deepEqual(errors, []);
-  console.log('Saved 9 documentation screenshots with sample projects to docs/assets.');
+  console.log('Saved 11 documentation screenshots with sample projects to docs/assets.');
 } finally {
   if (application) await application.close().catch(() => {});
   await rm(temporary, { recursive: true, force: true });

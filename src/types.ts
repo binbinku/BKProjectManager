@@ -17,6 +17,7 @@ export interface Snapshot {
   scannedAt: number;
 }
 export type ThemePreference = 'light' | 'dark' | 'system';
+export type PaletteName = 'default' | 'graphite' | 'sand' | 'forest';
 export interface CategoryStyle {
   color: string;
   icon: string;
@@ -28,6 +29,7 @@ export interface Settings {
   opener: string;
   customEditor: string | null;
   theme: ThemePreference;
+  palette: PaletteName;
   categoryStyles: Record<string, Record<string, CategoryStyle>>;
   visibility: Record<string, { categories: string[]; projects: string[] }>;
 }
@@ -62,6 +64,7 @@ export interface WorkspaceAPI {
   openProject(id: string, action?: 'default' | 'folder' | 'terminal'): Promise<AppState>;
   setOpener(value: string): Promise<AppState>;
   setTheme(value: ThemePreference): Promise<AppState>;
+  setPalette(value: PaletteName): Promise<AppState>;
   chooseEditor(): Promise<AppState>;
 }
 export type MenuAction = 'settings' | 'refresh-files' | 'terminal-clear' | 'terminal-restart';

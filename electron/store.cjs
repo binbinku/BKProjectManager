@@ -2,6 +2,7 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const { validateStyle } = require('./workspace-management.cjs');
 const { loadVisibility } = require('./visibility.cjs');
+const palettes = require('./palettes.json');
 function loadCategoryStyles(saved) {
   const workspaces = {};
   if (!saved || typeof saved !== 'object' || Array.isArray(saved)) return workspaces;
@@ -24,6 +25,7 @@ const defaults = () => ({
   opener: 'folder',
   customEditor: null,
   theme: 'system',
+  palette: 'default',
   categoryStyles: {},
   visibility: {},
 });
@@ -51,6 +53,10 @@ class Store {
           : 'folder',
         customEditor: typeof saved.customEditor === 'string' ? saved.customEditor : null,
         theme: ['light', 'dark', 'system'].includes(saved.theme) ? saved.theme : 'system',
+        palette:
+          typeof saved.palette === 'string' && Object.hasOwn(palettes, saved.palette)
+            ? saved.palette
+            : 'default',
         categoryStyles: loadCategoryStyles(saved.categoryStyles),
         visibility: loadVisibility(saved.visibility),
       };

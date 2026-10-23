@@ -36,6 +36,7 @@ contextBridge.exposeInMainWorld('workspaceAPI', {
   openProject: (id, action) => ipcRenderer.invoke('project:open', id, action),
   setOpener: (value) => ipcRenderer.invoke('settings:opener', value),
   setTheme: (value) => ipcRenderer.invoke('settings:theme', value),
+  setPalette: (value) => ipcRenderer.invoke('settings:palette', value),
   chooseEditor: () => ipcRenderer.invoke('settings:editor'),
   platform: process.platform,
 });

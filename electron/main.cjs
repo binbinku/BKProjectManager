@@ -9,6 +9,7 @@ const { Store } = require('./store.cjs');
 const { Workbench } = require('./workbench.cjs');
 const { macAppIcon } = require('./app-icon.cjs');
 const management = require('./workspace-management.cjs');
+const palettes = require('./palettes.json');
 const {
   emptyVisibility,
   getVisibility,
@@ -182,10 +183,14 @@ async function removeItem(kind, key, reveal = false) {
   if (reveal) shell.showItemInFolder(target);
   return state();
 }
+function windowBackground() {
+  return palettes[store?.data.palette ?? 'default'].colors[
+    nativeTheme.shouldUseDarkColors ? 'dark' : 'light'
+  ].canvas;
+}
 function applyTheme(theme) {
   nativeTheme.themeSource = theme;
-  if (window && !window.isDestroyed())
-    window.setBackgroundColor(nativeTheme.shouldUseDarkColors ? '#191919' : '#ffffff');
+  if (window && !window.isDestroyed()) window.setBackgroundColor(windowBackground());
 }
 function run(executable, args, waitForExit = false) {
   return new Promise((resolve, reject) => {
@@ -383,6 +388,20 @@ function registerHandlers() {
       applyTheme(value);
       return state();
     },
+    'settings:palette': async (value) => {
+      if (typeof value !== 'string' || !Object.hasOwn(palettes, value))
+        throw new Error('无效的配色主题');
+      const previous = store.data.palette;
+      store.data.palette = value;
+      try {
+        await store.save();
+      } catch (error) {
+        store.data.palette = previous;
+        throw error;
+      }
+      applyTheme(store.data.theme);
+      return state();
+    },
     'settings:editor': async () => {
       const result = await dialog.showOpenDialog(window, {
         title: '选择编辑器应用',
@@ -458,7 +477,7 @@ function createWindow() {
     height: 900,
     minWidth: 980,
     minHeight: 660,
-    backgroundColor: nativeTheme.shouldUseDarkColors ? '#191919' : '#ffffff',
+    backgroundColor: windowBackground(),
     title: 'BK Project Manager',
     icon: appIcon,
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
@@ -491,8 +510,7 @@ app
     await store.load();
     applyTheme(store.data.theme);
     nativeTheme.on('updated', () => {
-      if (window && !window.isDestroyed())
-        window.setBackgroundColor(nativeTheme.shouldUseDarkColors ? '#191919' : '#ffffff');
+      if (window && !window.isDestroyed()) window.setBackgroundColor(windowBackground());
     });
     registerHandlers();
     createMenu();
