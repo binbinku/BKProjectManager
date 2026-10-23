@@ -484,23 +484,14 @@ function App() {
   return (
     <div className={`app platform-${platform} ${selectedCategory ? 'category-page' : ''}`}>
       <aside className="sidebar">
-        <div className="sidebar-drag" />
-        <div className="brand">
+        <header className="brand">
           <span className="brand-mark">
-            <img src={logo} alt="BK Project Manager" width="32" height="32" />
+            <img src={logo} alt="BK Project Manager" width="22" height="22" />
           </span>
-          <div>
-            Project Manager<span>本地项目工作台</span>
-          </div>
-        </div>
-        <button className="workspace-switch" onClick={() => setSettings(true)}>
-          <span className="workspace-avatar">W</span>
-          <span>
-            <strong>{state?.settings.workspace?.split(/[\\/]/).pop() || '我的工作空间'}</strong>
-            <small>本地工作空间</small>
+          <span className="brand-name" title="Project Manager">
+            Project Manager
           </span>
-          <ChevronDown size={15} />
-        </button>
+        </header>
         <div className="nav-caption">工作台</div>
         <nav aria-label="项目导航">
           <button
@@ -555,12 +546,6 @@ function App() {
           ))}
           {!categories.length && <p className="sidebar-hint">选择工作空间后，分类会出现在这里。</p>}
         </nav>
-        <div className="sidebar-bottom">
-          <div className="local-note">
-            <span className="online-dot" />
-            项目保留在你的电脑上
-          </div>
-        </div>
       </aside>
       <main>
         {!selectedCategory && (
@@ -672,10 +657,6 @@ function App() {
                       <strong>{categories.length}</strong>
                       <span>个分类</span>
                     </div>
-                    <button className="text-button" onClick={() => setSettings(true)}>
-                      管理工作空间
-                      <ArrowUpRight size={14} />
-                    </button>
                   </section>
                 </>
               )}

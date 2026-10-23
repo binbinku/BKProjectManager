@@ -71,6 +71,14 @@ try {
     );
   assert.equal(await page.getByRole('textbox', { name: '搜索项目' }).count(), 0);
   await page.getByRole('toolbar', { name: '分类工具栏' }).waitFor();
+  for (const selector of ['.workspace-switch', '.sidebar-bottom', '.local-note', '.sidebar-drag'])
+    assert.equal(await page.locator(selector).count(), 0);
+  assert.equal(await page.getByRole('button', { name: '管理工作空间', exact: true }).count(), 0);
+  const nativeButtons = await app.evaluate(({ BrowserWindow }) =>
+    process.platform === 'darwin'
+      ? BrowserWindow.getAllWindows()[0].getWindowButtonPosition()
+      : null,
+  );
   async function geometry() {
     const result = await page.evaluate(() => {
       const bar = document.querySelector('.category-tools');
@@ -83,6 +91,20 @@ try {
         card.getBoundingClientRect(),
       );
       return {
+        brand: (() => {
+          const header = document.querySelector('.brand').getBoundingClientRect();
+          const logo = document.querySelector('.brand-mark').getBoundingClientRect();
+          const name = document.querySelector('.brand-name');
+          const text = name.getBoundingClientRect();
+          return {
+            top: header.top,
+            logoLeft: logo.left,
+            logoCenter: logo.top + logo.height / 2,
+            textCenter: text.top + text.height / 2,
+            textWidth: name.clientWidth,
+            textScrollWidth: name.scrollWidth,
+          };
+        })(),
         position: getComputedStyle(bar).position,
         bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height },
         rects,
@@ -93,6 +115,25 @@ try {
       };
     });
     assert.equal(result.position, 'fixed');
+    assert.equal(result.brand.top, 0);
+    assert.ok(
+      Math.abs(result.brand.logoCenter - result.brand.textCenter) < 1,
+      'App icon and name share the top row',
+    );
+    assert.ok(
+      result.brand.textScrollWidth <= result.brand.textWidth,
+      'The app name fits even at the minimum window width',
+    );
+    if (nativeButtons) {
+      assert.ok(
+        Math.abs(result.brand.logoCenter - (nativeButtons.y + 6)) < 1,
+        'The top row aligns with the native traffic lights',
+      );
+      assert.ok(
+        result.brand.logoLeft > nativeButtons.x + 52,
+        'Branding leaves the native window buttons clear',
+      );
+    }
     assert.equal(result.rects.length, 5);
     assert.ok(
       result.rects.every(

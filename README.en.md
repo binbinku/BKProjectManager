@@ -160,6 +160,8 @@ npm run dev
 
 Click **Rescan** after adding or moving projects. You can switch workspaces through **Settings…** in the native menu (macOS: app menu, `⌘,`; Windows: File menu, `Ctrl+,`).
 
+The sidebar starts with a single row containing the app icon and name, aligned with the native traffic lights on macOS. Workspace management is available through Settings in the native menu.
+
 ### Creating categories and projects (source preview)
 
 - Click **＋** beside the sidebar's category heading, enter a name and choose a color and icon. The app creates `Workspace/CategoryName/Projects/`.

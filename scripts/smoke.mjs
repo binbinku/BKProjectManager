@@ -65,7 +65,7 @@ async function chooseTheme(page, value, group = '设置外观主题') {
     () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
   );
   if (value !== 'system') {
-    const colors = await page.locator('.workspace-switch').evaluate((element) => ({
+    const colors = await page.locator('.settings-modal').evaluate((element) => ({
       background: getComputedStyle(element).backgroundColor,
       scheme: getComputedStyle(element).colorScheme,
     }));
