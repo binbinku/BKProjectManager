@@ -2,12 +2,8 @@ import React, { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useState } 
 import { createRoot } from 'react-dom/client';
 import {
   ArrowRight,
-  ArrowUpRight,
-  Box,
-  Braces,
   Check,
   Clock3,
-  Code2,
   Trash2,
   Folder,
   FolderOpen,
@@ -22,6 +18,7 @@ import {
 } from 'lucide-react';
 import type { AppState, Project, ThemePreference, WorkbenchSession } from './types';
 import { ThemeSelector } from './ThemeSelector';
+import { GlassTransparency } from './GlassTransparency';
 import { PaletteSelector } from './PaletteSelector';
 import { GitHubButton } from './GitHubButton';
 import { applyPalette } from './palettes';
@@ -33,8 +30,10 @@ import './styles.css';
 import { version as appVersion } from '../package.json';
 
 const logo = new URL('../docs/assets/logo.svg', import.meta.url).href;
+const vscodeIcon = new URL('./material-icon-theme/vscode.svg', document.baseURI).href;
 const ProjectWorkbench = lazy(() => import('./ProjectWorkbench'));
 const api = window.workspaceAPI;
+const projectWindow = window.location.hash === '#project';
 const typeColors: Record<string, string> = {
   Unity: 'purple',
   Unreal: 'purple',
@@ -48,13 +47,6 @@ const typeColors: Record<string, string> = {
   Java: 'pink',
   Folder: 'gray',
 };
-function ProjectIcon({ type }: { type: string }) {
-  if (type === 'Unity' || type === 'Unreal') return <Box size={25} strokeWidth={1.6} />;
-  if (type === 'Folder') return <Folder size={25} strokeWidth={1.6} />;
-  if (type === 'JavaScript' || type === '.NET' || type === 'Rust')
-    return <Braces size={25} strokeWidth={1.6} />;
-  return <Code2 size={25} strokeWidth={1.6} />;
-}
 function relativeTime(time: number) {
   const days = Math.floor((Date.now() - time) / 86400000);
   if (days <= 0) return '今天';
@@ -72,10 +64,14 @@ function App() {
   const [recentSort, setRecentSort] = useState('opened');
   const [view, setView] = useState('grid');
   const [settings, setSettings] = useState(false);
+  const [glassPreview, setGlassPreview] = useState<number | null>(null);
   const [managementDialog, setManagementDialog] = useState<ManagementDialog | null>(null);
   const [removalTarget, setRemovalTarget] = useState<RemovalTarget | null>(null);
   const [session, setSession] = useState<WorkbenchSession | null>(null);
   const theme = state?.settings.theme ?? 'system';
+  const glassMode = state?.settings.glassMode ?? 'full';
+  const nativeGlass = state?.nativeGlass ?? false;
+  const glassTransparency = state?.settings.glassTransparency ?? 60;
   const palette = state?.settings.palette ?? 'default';
   async function perform(task: () => Promise<AppState>, success?: string) {
     setBusy(true);
@@ -94,14 +90,19 @@ function App() {
     }
   }
   useEffect(() => {
+    const unsubscribeState = api.onStateChanged(setState);
     const unsubscribeMenu = api.onMenuAction((action) => {
       if (action === 'settings' && !document.querySelector('.management-modal')) setSettings(true);
     });
     void (async () => {
       try {
-        const initial = await api.getState();
+        const [initial, currentSession] = await Promise.all([
+          api.getState(),
+          api.getCurrentWorkbench(),
+        ]);
         setState(initial);
-        if (initial.settings.workspace) setState(await api.scan());
+        setSession(currentSession);
+        if (!projectWindow && initial.settings.workspace) setState(await api.scan());
       } catch (e) {
         setError(e instanceof Error ? e.message : '工作空间读取失败');
       } finally {
@@ -116,6 +117,7 @@ function App() {
     document.addEventListener('keydown', handleKey);
     return () => {
       unsubscribeMenu();
+      unsubscribeState();
       document.removeEventListener('keydown', handleKey);
     };
   }, []);
@@ -125,6 +127,21 @@ function App() {
       return () => clearTimeout(timer);
     }
   }, [message]);
+  useLayoutEffect(() => {
+    document.documentElement.dataset.glass = glassMode;
+    document.documentElement.dataset.nativeGlass = String(nativeGlass);
+  }, [glassMode, nativeGlass]);
+  useEffect(() => {
+    if (!settings) setGlassPreview(null);
+  }, [settings]);
+  useLayoutEffect(() => {
+    const transparency = glassPreview ?? glassTransparency;
+    document.documentElement.style.setProperty('--glass-tint', `${100 - transparency}%`);
+    document.documentElement.style.setProperty(
+      '--glass-content-tint',
+      `${(1000 - transparency * 6) / 10}%`,
+    );
+  }, [glassPreview, glassTransparency]);
   useLayoutEffect(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)');
     let frame = 0;
@@ -243,10 +260,6 @@ function App() {
   const choose = () =>
     perform(async () => {
       const next = await api.chooseWorkspace();
-      if (session && next.settings.workspace !== state?.settings.workspace) {
-        await api.closeWorkbench(session.id).catch(() => {});
-        setSession(null);
-      }
       return next;
     });
   const changeAppearance = async (task: () => Promise<AppState>) => {
@@ -262,8 +275,10 @@ function App() {
     });
   };
   const changeTheme = (value: ThemePreference) => changeAppearance(() => api.setTheme(value));
-  const open = (project: Project, action: 'default' | 'folder' | 'terminal' = 'default') =>
-    perform(() => api.openProject(project.id, action), `已打开 ${project.name}`);
+  const open = (
+    project: Project,
+    action: 'default' | 'folder' | 'terminal' | 'vscode' = 'default',
+  ) => perform(() => api.openProject(project.id, action), `已打开 ${project.name}`);
   async function enterProject(project: Project) {
     if (busy) return;
     setBusy(true);
@@ -271,21 +286,17 @@ function App() {
     try {
       const result = await api.openWorkbench(project.id);
       setState(result.state);
-      setSession(result.session);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : '项目打开失败');
     } finally {
       setBusy(false);
     }
   }
-  async function leaveProject() {
-    if (!session) return;
+  async function showProjectList() {
     try {
-      await api.closeWorkbench(session.id);
+      await api.showManager();
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : '项目关闭失败');
-    } finally {
-      setSession(null);
+      setError(reason instanceof Error ? reason.message : '项目列表打开失败');
     }
   }
   const platform = api?.platform;
@@ -325,6 +336,53 @@ function App() {
         <h3 className="settings-label">外观</h3>
         <ThemeSelector value={theme} onChange={changeTheme} disabled={busy} />
         <p className="theme-help">立即生效并自动保存。跟随系统会使用系统的外观设置。</p>
+        <h3 className="settings-label">毛玻璃效果</h3>
+        <div className="glass-selector" role="radiogroup" aria-label="毛玻璃效果">
+          {(
+            [
+              { value: 'off', label: '关闭', detail: '关闭全部效果' },
+              { value: 'medium', label: '中等', detail: '仅返回栏与工具栏' },
+              { value: 'full', label: '完整', detail: '所有区域按比例开启' },
+            ] as const
+          ).map(({ value, label, detail }) => (
+            <label key={value} className={`glass-option ${glassMode === value ? 'selected' : ''}`}>
+              <input
+                type="radio"
+                name="settings-glass"
+                value={value}
+                aria-label={label}
+                checked={glassMode === value}
+                disabled={busy}
+                onChange={() => void changeAppearance(() => api.setGlassMode(value))}
+              />
+              <span>
+                {label}
+                {glassMode === value && <Check size={13} />}
+              </span>
+              <small>{detail}</small>
+            </label>
+          ))}
+        </div>
+        <p className="theme-help">
+          完整模式按区域比例应用透明度；中等仅保留工具栏效果，关闭则全部恢复实色。
+        </p>
+        <GlassTransparency
+          value={glassTransparency}
+          disabled={busy || glassMode === 'off'}
+          onPreview={setGlassPreview}
+          onSave={async (value) => {
+            try {
+              setState(await api.setGlassTransparency(value));
+            } catch (reason) {
+              setError(reason instanceof Error ? reason.message : '透明度保存失败');
+              throw reason;
+            }
+          }}
+        />
+        <p className="theme-help" id="glass-transparency-help">
+          越往右越通透，松开后保存。完整模式下，侧栏与终端 {glassPreview ?? glassTransparency}%，
+          项目区与代码区 {((glassPreview ?? glassTransparency) * 6) / 10}%。
+        </p>
         <h3 className="settings-label">配色主题</h3>
         <PaletteSelector
           value={palette}
@@ -334,7 +392,6 @@ function App() {
         <p className="theme-help">七款内置配色，搭配任意亮暗模式。切换仅改变颜色，布局保持一致。</p>
         <label className="settings-label">工作空间目录</label>
         <div className="settings-path">{state?.settings.workspace || '尚未选择工作空间'}</div>
-        {session && <p className="theme-help">更换工作空间会返回项目列表，并关闭当前项目终端。</p>}
         <button className="secondary-button" disabled={busy} onClick={choose}>
           <FolderOpen size={15} />
           {state?.settings.workspace ? '更换工作空间' : '选择工作空间'}
@@ -471,7 +528,7 @@ function App() {
           <ProjectWorkbench
             session={session}
             opener={state!.settings}
-            onBack={() => void leaveProject()}
+            onBack={() => void showProjectList()}
             onExternal={() => open(session.project)}
             onGitHub={() => void perform(() => api.openGitHub(session.project.id))}
             busy={busy}
@@ -481,6 +538,18 @@ function App() {
         </Suspense>
         {settingsDialog}
       </>
+    );
+
+  if (projectWindow)
+    return (
+      <div className="viewer-empty" role="status">
+        {error || (
+          <>
+            <Loader2 className="spin" size={30} />
+            正在打开项目工作台
+          </>
+        )}
+      </div>
     );
 
   return (
@@ -608,101 +677,144 @@ function App() {
                   className={`project-grid ${view === 'list' ? 'list-view' : ''}`}
                   aria-label="项目列表"
                 >
-                  {filtered.map((project) => (
-                    <article className="project-card" key={project.id}>
-                      <div className="card-head">
-                        <span className={`project-icon ${typeColors[project.type] || 'gray'}`}>
-                          <ProjectIcon type={project.type} />
-                        </span>
-                        <span className={`card-category ${categoryStyle(project.category).color}`}>
-                          <CategoryIcon style={categoryStyle(project.category)} size={12} />
-                          <span>{project.category}</span>
-                        </span>
-                        <button
-                          className={`favorite-button ${favorites.includes(project.id) ? 'is-favorite' : ''}`}
-                          aria-label={`${favorites.includes(project.id) ? '取消收藏' : '收藏'} ${project.name}`}
-                          aria-pressed={favorites.includes(project.id)}
-                          disabled={busy}
-                          onClick={() => perform(() => api.toggleFavorite(project.id))}
-                        >
-                          <Star
-                            size={17}
-                            fill={favorites.includes(project.id) ? 'currentColor' : 'none'}
-                          />
-                        </button>
-                      </div>
-                      <div className="card-body" onDoubleClick={() => void enterProject(project)}>
-                        <h2 title={project.name}>{project.name}</h2>
-                        <p className="project-path" title={project.path}>
-                          {project.relativePath}
-                        </p>
-                        <div className="project-meta">
-                          <span className={`type-tag ${typeColors[project.type] || 'gray'}`}>
-                            <span />
-                            {project.type === 'Folder' ? '文件夹' : project.type}
+                  {filtered.map((project) => {
+                    const running = state?.runningProjects.includes(project.id) ?? false;
+                    const focusProject = () => void perform(() => api.focusWorkbench(project.id));
+                    return (
+                      <article
+                        className={`project-card ${running ? 'is-running' : ''}`}
+                        key={project.id}
+                        onClick={
+                          running
+                            ? (event) => {
+                                if (
+                                  !(event.target as HTMLElement).closest('button, a, input, select')
+                                )
+                                  focusProject();
+                              }
+                            : undefined
+                        }
+                        onKeyDown={
+                          running
+                            ? (event) => {
+                                if (
+                                  event.target === event.currentTarget &&
+                                  (event.key === 'Enter' || event.key === ' ')
+                                ) {
+                                  event.preventDefault();
+                                  focusProject();
+                                }
+                              }
+                            : undefined
+                        }
+                        tabIndex={running ? 0 : undefined}
+                        aria-label={
+                          running ? `${project.name}，运行中，点击切换到项目窗口` : undefined
+                        }
+                      >
+                        <div className="card-head">
+                          <span
+                            className={`card-category ${categoryStyle(project.category).color}`}
+                          >
+                            <CategoryIcon style={categoryStyle(project.category)} size={12} />
+                            <span>{project.category}</span>
                           </span>
-                          {project.git && (
-                            <span className="git-tag">
-                              <GitBranch size={12} />
-                              Git
+                          <button
+                            className={`favorite-button ${favorites.includes(project.id) ? 'is-favorite' : ''}`}
+                            aria-label={`${favorites.includes(project.id) ? '取消收藏' : '收藏'} ${project.name}`}
+                            aria-pressed={favorites.includes(project.id)}
+                            disabled={busy}
+                            onClick={() => perform(() => api.toggleFavorite(project.id))}
+                          >
+                            <Star
+                              size={17}
+                              fill={favorites.includes(project.id) ? 'currentColor' : 'none'}
+                            />
+                          </button>
+                        </div>
+                        <div className="card-body">
+                          <h2 title={project.name}>{project.name}</h2>
+                          <p className="project-path" title={project.path}>
+                            {project.relativePath}
+                          </p>
+                          <div className="project-meta">
+                            <span className={`type-tag ${typeColors[project.type] || 'gray'}`}>
+                              <span />
+                              {project.type === 'Folder' ? '文件夹' : project.type}
                             </span>
-                          )}
-                          <span className="modified-time" title="目录修改时间">
-                            <Clock3 size={12} />
-                            {relativeTime(project.modifiedAt)}
-                          </span>
+                            {project.git && (
+                              <span className="git-tag">
+                                <GitBranch size={12} />
+                                Git
+                              </span>
+                            )}
+                            <span className="modified-time" title="目录修改时间">
+                              <Clock3 size={12} />
+                              {relativeTime(project.modifiedAt)}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                      <div className="card-footer">
-                        <button
-                          className="open-project"
-                          disabled={busy}
-                          onClick={() => void enterProject(project)}
-                        >
-                          <span>打开项目</span>
-                          <ArrowUpRight size={14} />
-                        </button>
-                        <div className="card-tools">
-                          <GitHubButton
-                            project={project}
-                            busy={busy}
-                            onOpen={() => void perform(() => api.openGitHub(project.id))}
-                          />
+                        <div className="card-footer">
+                          <div className="card-tools">
+                            <GitHubButton
+                              project={project}
+                              busy={busy}
+                              onOpen={() => void perform(() => api.openGitHub(project.id))}
+                            />
+                            <button
+                              title="移除项目或手动删除"
+                              aria-label={`移除项目 ${project.name}`}
+                              disabled={busy}
+                              onClick={() =>
+                                setRemovalTarget({
+                                  kind: 'project',
+                                  key: project.id,
+                                  name: project.name,
+                                  path: project.path,
+                                })
+                              }
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                            <button
+                              title={`在 ${folderName} 中打开`}
+                              aria-label={`打开 ${project.name} 文件夹`}
+                              disabled={busy}
+                              onClick={() => open(project, 'folder')}
+                            >
+                              <FolderOpen size={16} />
+                            </button>
+                            <button
+                              title="在 VS Code 中打开"
+                              aria-label={`在 VS Code 中打开 ${project.name}`}
+                              disabled={busy}
+                              onClick={() => open(project, 'vscode')}
+                            >
+                              <img src={vscodeIcon} width={16} height={16} alt="" />
+                            </button>
+                            <button
+                              title="在终端中打开"
+                              aria-label={`打开 ${project.name} 终端`}
+                              disabled={busy}
+                              onClick={() => open(project, 'terminal')}
+                            >
+                              <Terminal size={16} />
+                            </button>
+                          </div>
                           <button
-                            title="移除项目或手动删除"
-                            aria-label={`移除项目 ${project.name}`}
+                            className={`open-project ${running ? 'is-running' : ''}`}
+                            title={running ? '切换到项目窗口' : '在独立窗口中打开项目'}
                             disabled={busy}
-                            onClick={() =>
-                              setRemovalTarget({
-                                kind: 'project',
-                                key: project.id,
-                                name: project.name,
-                                path: project.path,
-                              })
-                            }
+                            onClick={running ? focusProject : () => void enterProject(project)}
                           >
-                            <Trash2 size={16} />
-                          </button>
-                          <button
-                            title={`在 ${folderName} 中打开`}
-                            aria-label={`打开 ${project.name} 文件夹`}
-                            disabled={busy}
-                            onClick={() => open(project, 'folder')}
-                          >
-                            <FolderOpen size={16} />
-                          </button>
-                          <button
-                            title="在终端中打开"
-                            aria-label={`打开 ${project.name} 终端`}
-                            disabled={busy}
-                            onClick={() => open(project, 'terminal')}
-                          >
-                            <Terminal size={16} />
+                            {running && <span className="running-dot" aria-hidden="true" />}
+                            <span>{running ? '运行中' : '启动项目'}</span>
+                            {!running && <ArrowRight size={14} />}
                           </button>
                         </div>
-                      </div>
-                    </article>
-                  ))}
+                      </article>
+                    );
+                  })}
                 </section>
               ) : (
                 <div className="empty-state">

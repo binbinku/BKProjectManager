@@ -1,5 +1,13 @@
 const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('workspaceAPI', {
+  onStateChanged: (callback) => {
+    const listener = (_event, state) => callback(state);
+    ipcRenderer.on('app:state-changed', listener);
+    return () => ipcRenderer.removeListener('app:state-changed', listener);
+  },
+  getCurrentWorkbench: () => ipcRenderer.invoke('workbench:current'),
+  focusWorkbench: (id) => ipcRenderer.invoke('workbench:focus', id),
+  showManager: () => ipcRenderer.invoke('manager:show'),
   onMenuAction: (callback) => {
     const listener = (_event, action) => callback(action);
     ipcRenderer.on('app:menu-action', listener);
@@ -37,6 +45,8 @@ contextBridge.exposeInMainWorld('workspaceAPI', {
   openGitHub: (id) => ipcRenderer.invoke('project:github', id),
   setOpener: (value) => ipcRenderer.invoke('settings:opener', value),
   setTheme: (value) => ipcRenderer.invoke('settings:theme', value),
+  setGlassMode: (value) => ipcRenderer.invoke('settings:glass-mode', value),
+  setGlassTransparency: (value) => ipcRenderer.invoke('settings:glass-transparency', value),
   setPalette: (value) => ipcRenderer.invoke('settings:palette', value),
   chooseEditor: () => ipcRenderer.invoke('settings:editor'),
   platform: process.platform,

@@ -26,6 +26,8 @@ const defaults = () => ({
   customEditor: null,
   theme: 'system',
   palette: 'default',
+  glassMode: 'full',
+  glassTransparency: 60,
   categoryStyles: {},
   visibility: {},
 });
@@ -57,6 +59,13 @@ class Store {
           typeof saved.palette === 'string' && Object.hasOwn(palettes, saved.palette)
             ? saved.palette
             : 'default',
+        glassMode: ['off', 'medium', 'full'].includes(saved.glassMode) ? saved.glassMode : 'full',
+        glassTransparency:
+          Number.isInteger(saved.glassTransparency) &&
+          saved.glassTransparency >= 0 &&
+          saved.glassTransparency <= 100
+            ? saved.glassTransparency
+            : 60,
         categoryStyles: loadCategoryStyles(saved.categoryStyles),
         visibility: loadVisibility(saved.visibility),
       };

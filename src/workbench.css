@@ -15,9 +15,9 @@
   align-items: center;
   min-height: 52px;
   padding: 0 12px;
-  background: color-mix(in srgb, var(--sidebar) 45%, transparent);
-  -webkit-backdrop-filter: blur(14px) saturate(130%);
-  backdrop-filter: blur(14px) saturate(130%);
+  background: transparent;
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
   flex-shrink: 0;
   -webkit-app-region: drag;
 }
@@ -49,17 +49,11 @@
   border-radius: 6px;
   color: var(--secondary);
 }
-.back-projects:hover,
-.external-open:hover {
+.back-projects:hover {
   background: var(--hover);
 }
 .external-open {
-  display: grid;
-  place-items: center;
   flex-shrink: 0;
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
 }
 .workbench-layout {
   display: grid;
@@ -94,8 +88,25 @@
 }
 .terminal-panel {
   flex: 1;
+  background: var(--canvas);
+}
+.file-panel,
+.terminal-panel {
+  position: relative;
+}
+.workbench-drag-region {
+  position: absolute;
+  top: 0;
+  left: 2px;
+  right: 2px;
+  height: 52px;
+  z-index: 2;
+  background: transparent;
+  user-select: none;
+  -webkit-app-region: drag;
 }
 .explorer-panel {
+  position: relative;
   background: var(--sidebar);
 }
 .file-panel {
@@ -104,6 +115,8 @@
   background: var(--editor-background);
 }
 .explorer-scroll {
+  contain: paint;
+  transform: translateZ(0);
   overflow: auto;
   flex: 1;
   min-height: 0;

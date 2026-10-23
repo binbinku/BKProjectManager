@@ -1,5 +1,7 @@
 :root {
   color-scheme: light dark;
+  --glass-tint: 40%;
+  --glass-content-tint: 64%;
   --canvas: light-dark(#ffffff, #191919);
   --sidebar: light-dark(#f7f7f6, #141414);
   --surface: light-dark(#ffffff, #202020);
@@ -36,6 +38,135 @@
 :root[data-theme='dark'] {
   color-scheme: dark;
   --shadow: 0 16px 60px #00000040;
+}
+:root[data-glass='full'][data-native-glass='true'] {
+  background: transparent;
+}
+:root[data-glass='full'][data-native-glass='true'] .sidebar,
+:root[data-glass='full'][data-native-glass='true'] .explorer-panel,
+:root[data-glass='full'][data-native-glass='true'] main,
+:root[data-glass='full'][data-native-glass='true'] .file-panel,
+:root[data-glass='full'][data-native-glass='true'] .terminal-panel {
+  background: transparent;
+  isolation: isolate;
+}
+:root[data-glass='full'][data-native-glass='true'] .sidebar::before,
+:root[data-glass='full'][data-native-glass='true'] .explorer-panel::before,
+:root[data-glass='full'][data-native-glass='true'] main::before,
+:root[data-glass='full'][data-native-glass='true'] .file-panel::before,
+:root[data-glass='full'][data-native-glass='true'] .terminal-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--sidebar) var(--glass-tint), transparent);
+}
+/* Paint each pane's tint once, below its independently scrolling content. */
+:root[data-glass='full'][data-native-glass='true'] main::before,
+:root[data-glass='full'][data-native-glass='true'] .file-panel::before {
+  background: color-mix(in srgb, var(--canvas) var(--glass-content-tint), transparent);
+}
+:root[data-glass='full'][data-native-glass='true'] .terminal-panel::before {
+  background: color-mix(in srgb, var(--canvas) var(--glass-tint), transparent);
+}
+:root[data-glass='full'][data-native-glass='true'] .file-panel {
+  --editor-background: transparent;
+}
+:root[data-glass='full'][data-native-glass='true'] .code-content {
+  clip-path: inset(0 0 0 var(--code-clip, 0px));
+}
+:root[data-glass='full'][data-native-glass='true'] .xterm-viewport {
+  background: transparent !important;
+}
+:root[data-glass='full'][data-native-glass='true'] .workbench-navigation-header {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+:root[data-glass='full'][data-native-glass='true'] .project-workbench {
+  background: transparent;
+}
+:root[data-glass='off'] *,
+:root[data-glass='off'] *::before,
+:root[data-glass='off'] *::after {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+:root[data-glass='off'] .project-tools,
+:root[data-glass='off'] .workbench-navigation-header {
+  background: var(--sidebar);
+}
+:root[data-glass='medium'] .modal-backdrop {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.glass-selector {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.glass-option {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface-soft);
+  padding: 10px;
+  cursor: pointer;
+}
+.glass-option.selected {
+  border-color: var(--text);
+}
+.glass-option > span {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 500;
+}
+.glass-option small {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  margin-top: 5px;
+}
+.glass-option input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+.glass-option:has(input:focus-visible) {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+.glass-option:has(input:disabled) {
+  opacity: 0.5;
+  cursor: wait;
+}
+.glass-transparency {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+  margin-top: 16px;
+  font-size: 12px;
+}
+.glass-transparency output {
+  color: var(--secondary);
+  font-variant-numeric: tabular-nums;
+}
+.glass-transparency input {
+  grid-column: 1 / -1;
+  width: 100%;
+  margin: 0;
+  accent-color: var(--text);
+  cursor: pointer;
+}
+.glass-transparency:has(input:disabled) {
+  opacity: 0.45;
 }
 .palette-selector {
   display: grid;
@@ -309,6 +440,8 @@ h3 {
   margin-top: 27px;
 }
 .category-nav {
+  contain: paint;
+  transform: translateZ(0);
   overflow: auto;
   min-height: 0;
   flex: 1;
@@ -602,9 +735,11 @@ h3 {
   padding: 14px;
 }
 main {
+  position: relative;
   margin-left: 238px;
   flex: 1;
   min-width: 0;
+  background: var(--canvas);
 }
 .sr-only {
   position: absolute;
@@ -644,7 +779,7 @@ main {
   padding: 6px;
   border: 1px solid var(--border);
   border-radius: 15px;
-  background: color-mix(in srgb, var(--sidebar) 45%, transparent);
+  background: color-mix(in srgb, var(--sidebar) var(--glass-tint), transparent);
   -webkit-backdrop-filter: blur(14px) saturate(130%);
   backdrop-filter: blur(14px) saturate(130%);
   box-shadow: 0 8px 30px #00000016;
@@ -814,28 +949,21 @@ select option {
 .project-card:hover {
   border-color: var(--border-strong);
 }
+.project-card.is-running {
+  cursor: pointer;
+}
+.project-card:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
 .card-head {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 17px 17px 0;
 }
-.project-icon {
-  display: grid;
-  place-items: center;
-  background: var(--surface-soft);
-  color: var(--secondary);
-  width: 38px;
-  height: 38px;
-  border-radius: 7px;
-  border: 1px solid var(--border);
-}
-.project-icon svg {
-  width: 22px;
-  height: 22px;
-}
 .card-category {
-  margin-left: auto;
+  margin-right: auto;
   font-size: 10px;
   color: var(--muted);
   max-width: 115px;
@@ -919,6 +1047,7 @@ select option {
   padding: 9px 16px;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
 }
 .open-project {
   display: flex;
@@ -926,25 +1055,65 @@ select option {
   gap: 8px;
   color: var(--secondary);
   font-size: 11px;
-  padding: 4px 0;
+  font-weight: 500;
+  padding: 7px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--surface-soft);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .open-project:hover {
+  background: var(--hover);
   color: var(--text);
+}
+.open-project.is-running {
+  color: light-dark(#297044, #9ed5ae);
+  border-color: light-dark(#b7d9c0, #3c674a);
+  background: light-dark(#edf6ef, #23382a);
+}
+.open-project.is-running:hover {
+  background: light-dark(#e0efe4, #2b4533);
+}
+.running-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
 }
 .card-tools {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
 }
-.card-tools button {
-  padding: 5px;
-  color: var(--muted);
+.card-tools button,
+.workbench-navigation .external-open {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  color: var(--secondary);
   display: flex;
-  border-radius: 4px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s,
+    transform 0.1s;
 }
-.card-tools button:hover {
+.card-tools button:hover,
+.workbench-navigation .external-open:hover:not(:disabled) {
   color: var(--text);
   background: var(--hover);
+  border-color: var(--border-strong);
+}
+.card-tools button:active:not(:disabled),
+.workbench-navigation .external-open:active:not(:disabled),
+.open-project:active:not(:disabled) {
+  transform: translateY(1px);
 }
 .empty-state {
   padding: 85px 20px;
@@ -988,24 +1157,9 @@ select option {
   padding: 14px;
   flex-shrink: 0;
 }
-.list-view .project-icon {
-  height: 32px;
-  width: 32px;
-  border-radius: 6px;
-  flex-shrink: 0;
-}
-.list-view .project-icon svg {
-  width: 18px;
-  height: 18px;
-}
 .list-view .card-category {
   margin-left: 0;
   max-width: 100px;
-}
-.list-view .favorite-button {
-  order: -1;
-  margin-left: -3px;
-  margin-right: 0;
 }
 .list-view .card-body {
   flex: 1;
@@ -1387,6 +1541,11 @@ select option {
 @media (min-width: 1700px) {
   .project-grid:not(.list-view) {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (max-width: 1250px) {
+  .project-grid:not(.list-view) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 @media (max-width: 1150px) {

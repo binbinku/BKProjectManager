@@ -44,7 +44,7 @@ Scan your workspace, browse categories and quickly find projects through categor
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/workspace-dark.png" />
-  <img src="docs/assets/workspace-light.png" alt="Project management page with categories, project cards, favorites, recent projects and vertical floating tools" width="1360" />
+  <img src="docs/assets/workspace-light.png" alt="Project manager with categories, launch/running states, GitHub and editor buttons" width="1360" />
 </picture>
 
 <p align="center">
@@ -55,19 +55,19 @@ Scan your workspace, browse categories and quickly find projects through categor
 
 ## 💻 Editor view · Open a project and continue working
 
-Open a project card to enter the three-panel workbench: browse files on the left, preview code in the center and run commands in the terminal on the right. Frosted navigation, Material file icons and thin dividers keep the content clear. The code viewer and terminal share the palette background, with a related sidebar tone keeping all three panels coordinated.
+In v0.2.1, click the gray **启动项目** (Launch project) button to open an independent three-panel window: browse files on the left, preview code in the center and run commands in the terminal on the right. Frosted navigation, Material file icons and thin dividers keep the content clear. The code viewer and terminal share the palette background, with a related sidebar tone keeping all three panels coordinated.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/workbench-dark.png" />
-  <img src="docs/assets/workbench-light.png" alt="Editor view with Material file icons, a single-file read-only code preview and interactive terminal" width="1360" />
+  <img src="docs/assets/workbench-light.png" alt="Independent workbench with a matching sidebar header, GitHub and editor buttons, read-only code and transparent terminal" width="1360" />
 </picture>
 
 <p align="center">
   <a href="docs/assets/workbench-light.png">☀️ Light editor view</a> · <a href="docs/assets/workbench-dark.png">🌙 Dark editor view</a><br />
-  <sub>Both views use sample projects and follow your GitHub light or dark appearance. The app UI is currently in Chinese.</sub>
+  <sub>Both views use sample projects on neutral backdrops and follow your GitHub light or dark appearance. The app UI is currently in Chinese.</sub>
 </p>
 
-> **v0.2.0 includes the complete workbench, seven built-in palettes and unified floating controls.** [Download an installer](#downloads) or [run from source](#quick-start). Code preview is read-only; editing and saving files are not supported.
+> **v0.2.1 adds independent project windows, launch/running states, GitHub shortcuts and glass transparency with per-pane ratios.** [Download an installer](#downloads) or [run from source](#quick-start). Code preview is read-only; editing and saving files are not supported.
 
 <a id="features"></a>
 
@@ -98,12 +98,12 @@ Open a project card to enter the three-panel workbench: browse files on the left
 
 ## 🧩 Using the workbench
 
-Open a project to enter the three-panel workbench, available in both v0.2.0 installers and source builds.
+Open a project to enter the three-panel workbench, available in both v0.2.1 installers and source builds.
 
-- **Left:** a fixed header contains Back, the project name and the actual icon of your default external app. The tree starts below it and scrolls behind its translucent frosted surface. Bundled Material Icon Theme icons support folder expansion and light/dark appearance.
+- **Left:** a fixed header contains Back, the project name and the actual icon of your default external app. The header shares the sidebar material, with the tree scrolling independently below it. GitHub and external-open controls use the same rounded button styling as project cards. Bundled Material Icon Theme icons support folder expansion and light/dark appearance.
 - **Center:** a viewer extending from the top to the bottom of the window, showing one read-only file at a time, with line numbers and VS Code Light+ / Dark+ syntax highlighting. No file tabs or editing controls. Common images can also be previewed.
 - **Right:** an interactive terminal extending from the top to the bottom of the window, starting in the project directory, with scrolling, Ctrl+C, clear and restart. Clear and restart are available in the native Terminal menu. macOS uses your login shell; Windows 11 uses PowerShell.
-- **Compact layout:** the viewer and terminal extend to the top and bottom edges. Visible 1px dividers retain a wider drag area for resizing. Returning to the project list closes the project's terminal.
+- **Compact layout:** the viewer and terminal extend to the top and bottom edges. Visible 1px dividers retain a wider drag area for resizing. Returning to the project list keeps the project and its terminal running; closing the project window ends its terminal.
 - **Scrolling and appearance:** scrollbars are hidden; mouse-wheel, trackpad and horizontal scrolling remain available. Light, dark and system appearance are available through Settings in the native menu.
 
 Preview supports UTF-8 and UTF-16 text and common images up to 2 MiB. Files over 200,000 characters use plain-text preview. Binary or unsupported files show an explanation. Project browsing stays within the selected project; symbolic links are not expandable in the tree.
@@ -124,31 +124,41 @@ Settings, file refresh and terminal actions live in the native menu bar. Menu la
 | Sort projects                | Bottom-right floating toolbar → 项目排序                 | —        | —          |
 | Interrupt a terminal command | Focus the terminal                                       | `Ctrl+C` | `Ctrl+C`   |
 
-Click the app icon in the header to open the project using your default external opener; hover to see its name. After running `exit`, restart through the Terminal menu. **Returning to the project list or restarting the terminal ends its current process.**
+Click the app icon in the header to open the project using your default external opener; hover to see its name. After running `exit`, restart through the Terminal menu. **Closing the project window or restarting the terminal ends its current process. Returning to the project list keeps the terminal running.**
 
-### GitHub repository shortcut (v0.2.1 source and local builds)
+### Glass effects (v0.2.1)
+
+Settings offers **关闭 / 中等 / 完整** (Off / Medium / Full). Off disables all glass effects; Medium keeps only the navigation and floating toolbar effects; Full enables native materials across the panes and modal backdrop blur. Full is the default. Changes are saved and synchronized across windows without restarting project terminals. In Full mode, the manager sidebar uses **100%** of the slider value and the project area uses **60%**. The workbench uses **100% / 60% / 100%** for the file tree, code viewer and terminal. At an 80% slider value, these become 80% / 48% / 80%. Syntax and ANSI colors stay unchanged; Medium and Off restore opaque content backgrounds. Sidebars use the native macOS material or Mica on Windows 11 22H2 and newer, with a solid-color fallback when native materials are unavailable.
+
+The **glass transparency** slider ranges from 0–100% (default: 60%); higher values reveal more of the backdrop. Drag for a live preview, then release or finish keyboard adjustment to save and sync with other windows. Off disables the slider while preserving its value. Scrolling sidebar content is composited separately from the glass background to reduce stale frames.
+
+### Independent project windows (v0.2.1)
+
+Each project has its own file preview and terminal. Multiple projects can stay open together, with one window per project. Click a running card or its status button to focus that window and restore it if minimized. Favorite, GitHub, folder, VS Code, terminal and removal buttons retain their own actions. Closing the manager keeps project windows running; the Back button in a project shows or recreates the manager without stopping the project.
+
+### GitHub repository shortcut (v0.2.1)
 
 GitHub projects show a GitHub icon in cards, list rows and the workbench header. Click it to open the repository homepage in your default browser. HTTPS and SSH remotes are supported, including Git worktree and submodule metadata. Detection reads local Git configuration without requiring Git or a token; credentials in clone URLs never reach the interface or browser.
 
-A single repository opens directly. Multiple repositories appear in a native menu with `origin` first and duplicate URLs merged. Local projects and non-GitHub remotes have no extra button. Rescan after changing remotes; clicking also revalidates the local configuration. This shortcut is not included in the v0.2.0 installers below.
+A single repository opens directly. Multiple repositories appear in a native menu with `origin` first and duplicate URLs merged. Local projects and non-GitHub remotes have no extra button. Rescan after changing remotes; clicking also revalidates the local configuration.
 
 <a id="downloads"></a>
 
 ## 📦 Downloads
 
-**Latest version: v0.2.0.** Includes project management, the three-panel workbench, a real terminal, category and empty-project creation, removal and restore, and seven built-in palettes. Download from the [latest release](https://github.com/binbinku/BKProjectManager/releases/latest):
+**Latest version: v0.2.1.** Includes independent project windows with running states, GitHub shortcuts, three glass levels and a transparency slider, alongside category management, a real terminal and seven built-in palettes. Download from the [latest release](https://github.com/binbinku/BKProjectManager/releases/latest):
 
-See the [v0.2.0 release notes](docs/releases/v0.2.0.md) for changes and upgrade instructions.
+See the [v0.2.1 release notes](docs/releases/v0.2.1.md) for changes and upgrade instructions.
 
 | Platform                         | Installer                                                                                                                 | ZIP archive                                                                                                                |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| macOS · Apple Silicon (M series) | [DMG](https://github.com/binbinku/BKProjectManager/releases/download/v0.2.0/BKProjectManager-0.2.0-mac-arm64.dmg)         | [ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.2.0/BKProjectManager-0.2.0-mac-arm64.zip)          |
-| macOS · Intel                    | [DMG](https://github.com/binbinku/BKProjectManager/releases/download/v0.2.0/BKProjectManager-0.2.0-mac-x64.dmg)           | [ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.2.0/BKProjectManager-0.2.0-mac-x64.zip)            |
-| Windows · x64                    | [EXE installer](https://github.com/binbinku/BKProjectManager/releases/download/v0.2.0/BKProjectManager-0.2.0-win-x64.exe) | [No-install ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.2.0/BKProjectManager-0.2.0-win-x64.zip) |
+| macOS · Apple Silicon (M series) | [DMG](https://github.com/binbinku/BKProjectManager/releases/download/v0.2.1/BKProjectManager-0.2.1-mac-arm64.dmg)         | [ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.2.1/BKProjectManager-0.2.1-mac-arm64.zip)          |
+| macOS · Intel                    | [DMG](https://github.com/binbinku/BKProjectManager/releases/download/v0.2.1/BKProjectManager-0.2.1-mac-x64.dmg)           | [ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.2.1/BKProjectManager-0.2.1-mac-x64.zip)            |
+| Windows · x64                    | [EXE installer](https://github.com/binbinku/BKProjectManager/releases/download/v0.2.1/BKProjectManager-0.2.1-win-x64.exe) | [No-install ZIP](https://github.com/binbinku/BKProjectManager/releases/download/v0.2.1/BKProjectManager-0.2.1-win-x64.zip) |
 
 On macOS, open the DMG and drag the app into Applications. On Windows, run the installer or extract the ZIP and launch the application. Choose a workspace on first launch.
 
-> v0.2.0 does not have developer code signing or macOS notarization, so your operating system may display trust prompts. Each release includes `SHA256SUMS.txt` for download verification.
+> v0.2.1 does not have developer code signing or macOS notarization, so your operating system may display trust prompts. Each release includes `SHA256SUMS.txt` for download verification.
 
 <a id="quick-start"></a>
 
@@ -165,7 +175,7 @@ npm run dev
 
 1. On first launch, choose a workspace such as `~/Workspace` or `D:\Workspace`.
 2. The app reads your directory structure and builds the project categories and list.
-3. Click **打开项目** (Open project) to enter the workbench: expand folders on the left, preview files in the center and type commands in the terminal.
+3. Click the gray **启动项目** (Launch project) button to open an independent workbench window. The card turns green and shows **运行中** (Running); click a running card to switch to its window. Closing that window restores the Launch project button.
 4. Open **设置…** (Settings) from the native menu to choose light, dark or system appearance, a color palette and your default editor. The app icon in the header opens the project externally.
 
 Click **Rescan** after adding or moving projects. You can switch workspaces through **Settings…** in the native menu (macOS: app menu, `⌘,`; Windows: File menu, `Ctrl+,`).
@@ -218,7 +228,7 @@ Click the trash icon on a project card, or choose **… → 移除分类** (Remo
 
 Restoring clears the hidden entry only; folders deleted or moved outside the app are not recreated.
 
-> **Validation scope:** v0.2.0 packaged applications are tested on macOS Apple Silicon and Intel through Rosetta 2. Windows x64 installers are cross-built on macOS and still await Windows 11 runtime testing. Dependency installation needs internet access for npm packages and Electron; bundled icons load offline at runtime.
+> **Validation scope:** v0.2.1 packaged applications are tested on macOS Apple Silicon and Intel through Rosetta 2. Windows x64 installers are cross-built on macOS and still await Windows 11 runtime testing. Dependency installation needs internet access for npm packages and Electron; bundled icons load offline at runtime.
 
 <a id="previews"></a>
 
@@ -329,21 +339,23 @@ For example, if `AndroidDev/Projects` contains `settings.gradle.kts`, it is trea
 
 **Electron · React · TypeScript · Vite**
 
-| Command                    | Purpose                                                             |
-| -------------------------- | ------------------------------------------------------------------- |
-| `npm run dev`              | Start the development environment                                   |
-| `npm run build`            | Generate file icons, check TypeScript and build the frontend        |
-| `npm start`                | Launch the built desktop application                                |
-| `npm test`                 | Test discovery, settings, project files and sessions                |
-| `npm run test:workbench`   | Test project browsing, file preview, real terminal and cleanup      |
-| `npm run test:smoke`       | Verify key interactions in a real Electron window                   |
-| `npm run test:management`  | Test category appearance, new folders and restart persistence       |
-| `npm run test:removal`     | Test removal dialogs, reveal, restore and filesystem integrity      |
-| `npm run test:category`    | Test the minimal category page, floating tools, sort and views      |
-| `npm run test:palettes`    | Test palettes, light/dark appearance, stable layout and persistence |
-| `npm run test:github`      | Test GitHub shortcuts, remote selection and workbench session       |
-| `npm run format:check`     | Check source formatting                                             |
-| `npm run docs:screenshots` | Build the app and regenerate screenshots with sample data           |
+| Command                    | Purpose                                                               |
+| -------------------------- | --------------------------------------------------------------------- |
+| `npm run dev`              | Start the development environment                                     |
+| `npm run build`            | Generate file icons, check TypeScript and build the frontend          |
+| `npm start`                | Launch the built desktop application                                  |
+| `npm test`                 | Test discovery, settings, project files and sessions                  |
+| `npm run test:workbench`   | Test project browsing, file preview, real terminal and cleanup        |
+| `npm run test:smoke`       | Verify key interactions in a real Electron window                     |
+| `npm run test:management`  | Test category appearance, new folders and restart persistence         |
+| `npm run test:removal`     | Test removal dialogs, reveal, restore and filesystem integrity        |
+| `npm run test:category`    | Test the minimal category page, floating tools, sort and views        |
+| `npm run test:palettes`    | Test palettes, light/dark appearance, stable layout and persistence   |
+| `npm run test:glass`       | Test glass levels, pane ratios, transparent terminals and persistence |
+| `npm run test:windows`     | Test independent windows, status, focus, isolation and cleanup        |
+| `npm run test:github`      | Test GitHub shortcuts, remote selection and workbench session         |
+| `npm run format:check`     | Check source formatting                                               |
+| `npm run docs:screenshots` | Build the app and regenerate screenshots with sample data             |
 
 Desktop interaction tests and screenshot generation require a desktop session. They use temporary workspaces and isolated settings, leaving your preferences intact. Documentation screenshots never read your project directories.
 

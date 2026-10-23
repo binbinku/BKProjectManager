@@ -36,6 +36,9 @@ async function launch() {
   page.setDefaultTimeout(30000);
   page.on('pageerror', (error) => errors.push(error.message));
   await page.waitForLoadState('domcontentloaded');
+  // Exact theme colors in this suite use solid panes; glass has its own renderer tests.
+  await page.evaluate(() => window.workspaceAPI.setGlassMode('medium'));
+  await page.waitForFunction(() => document.documentElement.dataset.glass === 'medium');
   return page;
 }
 async function chooseTheme(page, value, group = '设置外观主题') {

@@ -1,4 +1,4 @@
-import { clickMenu } from './native-menu.mjs';
+import { clickMenu, startProject, closeProject } from './native-menu.mjs';
 import { _electron as electron } from 'playwright';
 import { mkdtemp, mkdir, writeFile, rm, realpath, copyFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -31,6 +31,13 @@ await writeFile(
   path.join(project, 'public', 'logo.svg'),
   '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect width="120" height="120" rx="28" fill="#191919"/><circle cx="60" cy="60" r="22" fill="#9ab79e"/></svg>',
 );
+if (process.argv.includes('--docs')) {
+  await mkdir(path.join(project, '.git'));
+  await writeFile(
+    path.join(project, '.git/config'),
+    '[remote "origin"]\nurl = https://github.com/example/orbit.git\n',
+  );
+}
 await mkdir('artifacts', { recursive: true });
 await mkdir(path.join(directory, 'shell'), { recursive: true });
 let app;
@@ -53,7 +60,8 @@ try {
       CI: 'true',
     },
   });
-  const page = await app.firstWindow();
+  let page = await app.firstWindow();
+  const manager = page;
   page.setDefaultTimeout(15000);
   page.on('pageerror', (error) => errors.push(error.message));
   await page.getByRole('button', { name: '选择工作空间', exact: true }).waitFor();
@@ -62,13 +70,14 @@ try {
   }, workspace);
   await page.getByRole('button', { name: '选择工作空间', exact: true }).click();
   await page.locator('.project-card').waitFor();
+  page = await startProject(app, manager);
+  page.on('pageerror', (error) => errors.push(error.message));
   await page.evaluate(() => {
     window.__terminalEvents = [];
     window.__terminalUnsubscribe = window.workspaceAPI.onTerminalEvent((event) =>
       window.__terminalEvents.push(event),
     );
   });
-  await page.getByRole('button', { name: '打开项目', exact: true }).click();
   await page.getByRole('tree', { name: '项目文件目录' }).waitFor();
   await page.locator('.terminal-host[data-running="true"]').waitFor();
   assert.equal(await page.getByRole('button', { name: '设置', exact: true }).count(), 0);
@@ -90,10 +99,10 @@ try {
   });
   await external.click();
   await clickMenu(app, 'settings');
-  await page.getByLabel('默认打开方式', { exact: true }).selectOption('vscode');
+  await manager.getByLabel('默认打开方式', { exact: true }).selectOption('vscode');
   await page.getByRole('button', { name: '在 VS Code 中打开', exact: true }).waitFor();
-  await page.getByLabel('默认打开方式', { exact: true }).selectOption('folder');
-  await page.getByRole('button', { name: '完成', exact: true }).click();
+  await manager.getByLabel('默认打开方式', { exact: true }).selectOption('folder');
+  await manager.getByRole('button', { name: '完成', exact: true }).click();
   const assertTreeIcon = async (label, filename) => {
     const icon = page
       .getByRole('treeitem', { name: label, exact: true })
@@ -163,7 +172,7 @@ try {
     Array.from({ length: 160 }, (_, index) => `${index}: ${'scroll '.repeat(80)}`).join('\n'),
   );
   await writeFile(path.join(scrollFixture, 'unknown.bkpm'), 'Unknown file type\n');
-  await clickMenu(app, 'refresh-files');
+  await clickMenu(app, 'refresh-files', page);
   await assertTreeIcon('展开 scroll-fixture', 'folder.svg');
   await page.getByRole('treeitem', { name: '展开 scroll-fixture', exact: true }).click();
   await assertTreeIcon('折叠 scroll-fixture', 'folder-open.svg');
@@ -188,17 +197,17 @@ try {
       y: bounds.y,
       border: style.borderBottomWidth,
       filter: style.backdropFilter,
-      overlapsRows: [...document.querySelectorAll('.file-tree-row')].some((row) => {
-        const rect = row.getBoundingClientRect();
-        return rect.y < bounds.bottom && rect.bottom > bounds.top;
-      }),
+      bottom: bounds.bottom,
+      scrollStart: document.querySelector('.explorer-scroll').getBoundingClientRect().top,
       coversRows: header.contains(document.elementFromPoint(bounds.right - 8, bounds.y + 26)),
     };
   });
   assert.equal(glass.y, 0);
   assert.equal(glass.border, '0px');
-  assert.ok(glass.filter.includes('blur('));
-  assert.ok(glass.overlapsRows && glass.coversRows);
+  assert.ok(
+    glass.scrollStart >= glass.bottom && glass.coversRows,
+    'Directory scrolling stays below the shared-material header',
+  );
   await page.screenshot({ path: 'artifacts/explorer-glass.png' });
   for (const selector of ['.file-viewport', '.explorer-scroll', '.xterm-viewport']) {
     assert.equal(
@@ -209,7 +218,7 @@ try {
   for (const scrollbar of await page.locator('.xterm-scrollable-element > .scrollbar').all())
     assert.equal(await scrollbar.evaluate((element) => getComputedStyle(element).display), 'none');
   await rm(scrollFixture, { recursive: true });
-  await clickMenu(app, 'refresh-files');
+  await clickMenu(app, 'refresh-files', page);
   await page.getByRole('treeitem', { name: '展开 src', exact: true }).click();
 
   const output = async () =>
@@ -272,7 +281,7 @@ try {
   );
   await assert.rejects(
     page.evaluate(() => window.workspaceAPI.listProjectFiles('wrong-session', '')),
-    /已关闭/,
+    /当前窗口|已关闭/,
   );
   if (!windows) {
     await command('sleep 20');
@@ -325,39 +334,40 @@ try {
     );
     await command('ls src');
   }
+  if (process.argv.includes('--docs')) {
+    await manager.evaluate(() => window.workspaceAPI.setOpener('vscode'));
+    await page.getByRole('button', { name: '在 VS Code 中打开', exact: true }).waitFor();
+    await page.addStyleTag({ content: ':root { background: var(--canvas) !important; }' });
+  }
   // Check both themes while the terminal and file viewer remain mounted.
   for (const theme of ['dark', 'light']) {
     await clickMenu(app, 'settings');
-    await page
+    await manager
       .getByRole('radio', { name: theme === 'dark' ? '暗色' : '亮色', exact: true })
       .click();
     await page.waitForFunction((theme) => document.documentElement.dataset.theme === theme, theme);
-    await page.waitForFunction(
+    await manager.waitForFunction(
       () => !document.querySelector('input[name="settings-theme"]:checked').disabled,
     );
-    await page.getByRole('button', { name: '完成', exact: true }).click();
+    await manager.getByRole('button', { name: '完成', exact: true }).click();
     await assertTreeIcon('查看 config.toml', theme === 'light' ? 'toml_light.svg' : 'toml.svg');
     await assertFullHeight();
     await page.screenshot({ path: `artifacts/workbench-${theme}.png` });
     if (process.argv.includes('--docs'))
       await copyFile(`artifacts/workbench-${theme}.png`, `docs/assets/workbench-${theme}.png`);
   }
-  await app.evaluate(({ BrowserWindow }) =>
-    BrowserWindow.getAllWindows()[0].setContentSize(980, 660),
-  );
+  await (await app.browserWindow(page)).evaluate((target) => target.setContentSize(980, 660));
   await page.waitForFunction(
     () =>
       document.querySelector('.terminal-panel').getBoundingClientRect().right <= window.innerWidth,
   );
   assert.ok((await page.locator('.file-panel').boundingBox()).width >= 260);
   await assertFullHeight();
-  await app.evaluate(({ BrowserWindow }) =>
-    BrowserWindow.getAllWindows()[0].setContentSize(1380, 900),
-  );
+  await (await app.browserWindow(page)).evaluate((target) => target.setContentSize(1380, 900));
   const pid = (await output()).match(/BKPM_PID_(\d+)/)?.[1];
   await command('exit');
   await page.locator('.terminal-host[data-running="false"]').waitFor();
-  await clickMenu(app, 'terminal-restart');
+  await clickMenu(app, 'terminal-restart', page);
   await page.locator('.terminal-host[data-running="true"]').waitFor();
   await command(
     windows
@@ -371,10 +381,13 @@ try {
   );
   const livePID = (await output()).match(/LIVE_PID_(\d+)/)?.[1];
   await page.getByRole('button', { name: '返回项目列表' }).click();
-  await page.locator('.project-card').waitFor();
+  await manager.locator('.project-card.is-running').waitFor();
+  await closeProject(app, page);
+  page = manager;
+  await page.getByRole('button', { name: '启动项目', exact: true }).waitFor();
   await assert.rejects(
     page.evaluate((id) => window.workspaceAPI.listProjectFiles(id, ''), session),
-    /已关闭/,
+    /当前窗口|已关闭/,
   );
   for (const candidate of [pid, livePID].filter(Boolean)) {
     let alive = true;
@@ -391,11 +404,11 @@ try {
     }
     assert.equal(alive, false, `Terminal process ${candidate} must exit after leaving the project`);
   }
-  await page.getByRole('button', { name: '打开项目', exact: true }).click();
+  page = await startProject(app, manager);
   await page.locator('.terminal-host[data-running="true"]').waitFor();
   await page.getByRole('treeitem', { name: '查看 package.json', exact: true }).click();
   await page.locator('.code-content .shiki span[style]').first().waitFor();
-  await page.getByRole('button', { name: '返回项目列表' }).click();
+  await closeProject(app, page);
   assert.deepEqual(errors, []);
   console.log(
     'Workbench smoke passed: full-height viewer and terminal, hidden scrollbars with working tree/code/terminal scrolling, lazy tree, single-file preview, syntax highlighting, escaped content, images, binary fallback, real PTY input/cwd, Ctrl+C, panel resize, themes, terminal restart, session revocation and process cleanup.',

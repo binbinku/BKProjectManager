@@ -1,4 +1,4 @@
-import { clickMenu } from './native-menu.mjs';
+import { clickMenu, startProject } from './native-menu.mjs';
 import { _electron as electron } from 'playwright';
 import { mkdir, mkdtemp, rm, utimes, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -24,7 +24,13 @@ try {
     await mkdir(target, { recursive: true });
     for (const file of files) {
       await mkdir(path.dirname(path.join(target, file)), { recursive: true });
-      await writeFile(path.join(target, file), '{}');
+      if (file === '.git') {
+        await mkdir(path.join(target, '.git'), { recursive: true });
+        await writeFile(
+          path.join(target, '.git/config'),
+          `[remote "origin"]\nurl = https://github.com/example/${path.basename(target)}.git\n`,
+        );
+      } else await writeFile(path.join(target, file), '{}');
     }
     const modified = new Date(Date.now() - index * 86400000);
     await utimes(target, modified, modified);
@@ -40,6 +46,8 @@ try {
   });
   const page = await application.firstWindow();
   page.setDefaultTimeout(15000);
+  // Neutral matte keeps translucent pixels readable when embedded on GitHub.
+  await page.addStyleTag({ content: ':root { background: var(--canvas) !important; }' });
   console.log('Documentation window ready.');
   await application.evaluate(({ BrowserWindow }) =>
     BrowserWindow.getAllWindows()[0].setContentSize(1360, 900),
@@ -104,6 +112,17 @@ try {
     await page.getByRole('button', { name: `收藏 ${name}`, exact: true }).click();
     await page.getByRole('button', { name: `取消收藏 ${name}`, exact: true }).waitFor();
   }
+  const running = await startProject(
+    application,
+    page,
+    page
+      .locator('.project-card')
+      .filter({ has: page.getByRole('heading', { name: 'DesignSystem', exact: true }) })
+      .getByRole('button', { name: '启动项目', exact: true }),
+  );
+  await running.locator('.terminal-host[data-running="true"]').waitFor();
+  await page.evaluate(() => window.workspaceAPI.showManager());
+  await page.getByRole('button', { name: '运行中', exact: true }).waitFor();
   await capture('workspace-light.png');
   await theme('dark');
   await capture('workspace-dark.png');

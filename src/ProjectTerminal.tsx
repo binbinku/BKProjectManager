@@ -28,6 +28,7 @@ export function ProjectTerminal({ sessionId }: { sessionId: string }) {
       lineHeight: 1.35,
       scrollback: 5000,
       cursorBlink: true,
+      allowTransparency: true,
       allowProposedApi: false,
       screenReaderMode: true,
     });
@@ -39,9 +40,14 @@ export function ProjectTerminal({ sessionId }: { sessionId: string }) {
     const applyTheme = () => {
       const dark = getComputedStyle(document.documentElement).colorScheme === 'dark';
       const colors = currentPaletteColors();
+      const root = document.documentElement;
+      const background =
+        root.dataset.glass === 'full' && root.dataset.nativeGlass === 'true'
+          ? '#00000000'
+          : colors.canvas;
       terminal.options.theme = dark
         ? {
-            background: colors.canvas,
+            background,
             foreground: colors.text,
             cursor: colors.text,
             selectionBackground: `${colors.focus}70`,
@@ -56,7 +62,7 @@ export function ProjectTerminal({ sessionId }: { sessionId: string }) {
             brightBlack: '#92928b',
           }
         : {
-            background: colors.canvas,
+            background,
             foreground: colors.text,
             cursor: colors.text,
             selectionBackground: `${colors.focus}60`,
@@ -75,7 +81,7 @@ export function ProjectTerminal({ sessionId }: { sessionId: string }) {
     const themeObserver = new MutationObserver(applyTheme);
     themeObserver.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ['data-theme', 'data-palette'],
+      attributeFilter: ['data-theme', 'data-palette', 'data-glass', 'data-native-glass'],
     });
 
     const fitTerminal = () => {
@@ -201,6 +207,7 @@ export function ProjectTerminal({ sessionId }: { sessionId: string }) {
 
   return (
     <section className="terminal-panel" aria-label="项目终端">
+      <div className="workbench-drag-region" aria-hidden="true" />
       {error && (
         <div className="terminal-error" role="alert">
           {error}

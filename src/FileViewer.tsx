@@ -56,11 +56,23 @@ export function FileViewer({
   );
   useEffect(() => {
     viewport.current?.scrollTo(0, 0);
+    viewport.current?.style.setProperty('--code-clip', '0px');
   }, [selected]);
 
   return (
     <section className="file-panel" aria-label={selected ? `文件内容：${selected}` : '文件内容'}>
-      <div className="file-viewport" ref={viewport} aria-busy={loading}>
+      <div className="workbench-drag-region" aria-hidden="true" />
+      <div
+        className="file-viewport"
+        ref={viewport}
+        aria-busy={loading}
+        onScroll={(event) =>
+          event.currentTarget.style.setProperty(
+            '--code-clip',
+            `${event.currentTarget.scrollLeft}px`,
+          )
+        }
+      >
         {loading ? (
           <div className="viewer-empty">
             <Loader2 size={26} className="spin" />

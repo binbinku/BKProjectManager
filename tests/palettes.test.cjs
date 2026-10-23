@@ -63,3 +63,44 @@ test('Existing settings migrate to the default palette; valid palette and appear
     assert.equal(restored.data.theme, 'system');
   }
 });
+
+test('Glass modes migrate safely and persist without changing palettes or other settings', async (t) => {
+  const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'bkpm-glass-store-'));
+  t.after(() => fs.rm(directory, { recursive: true, force: true }));
+  const file = path.join(directory, 'settings.json');
+  for (const mode of [undefined, null, true, 'invalid', 'off', 'medium', 'full']) {
+    await fs.writeFile(
+      file,
+      JSON.stringify({ glassMode: mode, palette: 'neo', favorites: ['kept'] }),
+    );
+    const store = new Store(directory);
+    await store.load();
+    const expected = ['off', 'medium', 'full'].includes(mode) ? mode : 'full';
+    assert.equal(store.data.glassMode, expected);
+    await store.save();
+    const restored = new Store(directory);
+    await restored.load();
+    assert.equal(restored.data.glassMode, expected);
+    assert.equal(restored.data.palette, 'neo');
+    assert.deepEqual(restored.data.favorites, ['kept']);
+  }
+});
+
+test('Glass transparency validates old settings and persists both endpoints', async (t) => {
+  const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'bkpm-glass-opacity-'));
+  t.after(() => fs.rm(directory, { recursive: true, force: true }));
+  for (const value of [undefined, null, '75', -1, 101, 0.5, 0, 60, 100]) {
+    await fs.writeFile(
+      path.join(directory, 'settings.json'),
+      JSON.stringify({ glassTransparency: value }),
+    );
+    const store = new Store(directory);
+    await store.load();
+    const expected = Number.isInteger(value) && value >= 0 && value <= 100 ? value : 60;
+    assert.equal(store.data.glassTransparency, expected);
+    await store.save();
+    const restored = new Store(directory);
+    await restored.load();
+    assert.equal(restored.data.glassTransparency, expected);
+  }
+});

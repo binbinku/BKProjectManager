@@ -107,7 +107,14 @@ try {
           };
         })(),
         position: getComputedStyle(bar).position,
-        background: style.backgroundColor,
+        alpha: (() => {
+          const canvas = document.createElement('canvas');
+          canvas.width = canvas.height = 1;
+          const context = canvas.getContext('2d');
+          context.fillStyle = style.backgroundColor;
+          context.fillRect(0, 0, 1, 1);
+          return context.getImageData(0, 0, 1, 1).data[3];
+        })(),
         backdrop: style.backdropFilter,
         paddingLeft: content.paddingLeft,
         paddingRight: content.paddingRight,
@@ -152,7 +159,7 @@ try {
     );
     assert.equal(result.paddingRight, result.paddingLeft);
     assert.ok(result.backdrop.includes('blur(14px)'));
-    assert.ok(result.background.includes('0.45'), 'The toolbar background is translucent');
+    assert.ok(result.alpha > 0 && result.alpha < 255, 'The toolbar background is translucent');
     assert.ok(result.bounds.y + result.bounds.height < result.viewport.height);
     assert.ok(result.scrollWidth <= result.viewport.width, 'No horizontal overflow');
     return result;

@@ -23,6 +23,7 @@ export interface Snapshot {
   scannedAt: number;
 }
 export type ThemePreference = 'light' | 'dark' | 'system';
+export type GlassMode = 'off' | 'medium' | 'full';
 export type PaletteName = 'default' | 'graphite' | 'sand' | 'forest' | 'github' | 'apple' | 'neo';
 export interface CategoryStyle {
   color: string;
@@ -36,17 +37,25 @@ export interface Settings {
   customEditor: string | null;
   theme: ThemePreference;
   palette: PaletteName;
+  glassMode: GlassMode;
+  glassTransparency: number;
   categoryStyles: Record<string, Record<string, CategoryStyle>>;
   visibility: Record<string, { categories: string[]; projects: string[] }>;
 }
 export interface AppState {
   settings: Settings;
   snapshot: Snapshot | null;
+  runningProjects: string[];
+  nativeGlass: boolean;
 }
 export interface WorkspaceAPI {
+  onStateChanged(callback: (state: AppState) => void): () => void;
+  getCurrentWorkbench(): Promise<WorkbenchSession | null>;
+  focusWorkbench(id: string): Promise<AppState>;
+  showManager(): Promise<void>;
   onMenuAction(callback: (action: MenuAction) => void): () => void;
   getOpenerInfo(): Promise<{ name: string; icon: string | null }>;
-  openWorkbench(id: string): Promise<{ session: WorkbenchSession; state: AppState }>;
+  openWorkbench(id: string): Promise<{ state: AppState }>;
   closeWorkbench(id: string): Promise<void>;
   listProjectFiles(id: string, relative: string): Promise<DirectoryListing>;
   readProjectFile(id: string, relative: string): Promise<FilePreview>;
@@ -67,10 +76,12 @@ export interface WorkspaceAPI {
   setCategoryStyle(category: string, style: CategoryStyle): Promise<AppState>;
   createProject(category: string, name: string): Promise<AppState>;
   toggleFavorite(id: string): Promise<AppState>;
-  openProject(id: string, action?: 'default' | 'folder' | 'terminal'): Promise<AppState>;
+  openProject(id: string, action?: 'default' | 'folder' | 'terminal' | 'vscode'): Promise<AppState>;
   openGitHub(id: string): Promise<AppState>;
   setOpener(value: string): Promise<AppState>;
   setTheme(value: ThemePreference): Promise<AppState>;
+  setGlassMode(value: GlassMode): Promise<AppState>;
+  setGlassTransparency(value: number): Promise<AppState>;
   setPalette(value: PaletteName): Promise<AppState>;
   chooseEditor(): Promise<AppState>;
 }

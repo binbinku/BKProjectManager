@@ -4,7 +4,7 @@ import path from 'node:path';
 import os from 'node:os';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
-import { clickMenu } from './native-menu.mjs';
+import { clickMenu, startProject } from './native-menu.mjs';
 const palettes = createRequire(import.meta.url)('../electron/palettes.json');
 const temporary = await mkdtemp(path.join(os.tmpdir(), 'bkpm-palette-ui-'));
 const workspace = path.join(temporary, 'Workspace');
@@ -13,7 +13,7 @@ await mkdir(project, { recursive: true });
 await writeFile(path.join(project, 'package.json'), '{}');
 await writeFile(path.join(project, 'sample.ts'), 'export const theme = "colors only";\n');
 await mkdir('artifacts', { recursive: true });
-let app;
+let app, manager;
 const errors = [];
 async function launch() {
   app = await electron.launch({
@@ -30,13 +30,18 @@ async function launch() {
   const page = await app.firstWindow();
   page.setDefaultTimeout(20000);
   page.on('pageerror', (error) => errors.push(error.message));
+  // Keep this suite's exact solid-color assertions independent of OS materials.
+  await page.evaluate(() => window.workspaceAPI.setGlassMode('medium'));
+  await page.waitForFunction(() => document.documentElement.dataset.glass === 'medium');
+  manager = page;
   return page;
 }
 async function settings(page) {
   await clickMenu(app, 'settings');
   await page.getByRole('dialog', { name: '设置', exact: true }).waitFor();
 }
-async function appearance(page, mode, palette) {
+async function appearance(target, mode, palette) {
+  const page = manager;
   await settings(page);
   const radio = page
     .getByRole('radiogroup', { name: '设置外观主题', exact: true })
@@ -64,6 +69,12 @@ async function appearance(page, mode, palette) {
       mode,
     );
   await page.getByRole('button', { name: '完成', exact: true }).click();
+  await target.waitForFunction(
+    ({ mode, palette }) =>
+      document.documentElement.dataset.palette === palette &&
+      (mode === 'system' || document.documentElement.dataset.theme === mode),
+    { mode, palette },
+  );
 }
 async function geometry(page, selectors) {
   return page.evaluate(
@@ -90,9 +101,9 @@ async function checkColors(page, palette, mode) {
   assert.equal(actual.background, rgb(colors.canvas));
   assert.equal(actual.foreground, rgb(colors.text));
   assert.equal(actual.sidebar, rgb(colors.sidebar));
-  const native = await app.evaluate(({ BrowserWindow }) =>
-    BrowserWindow.getAllWindows()[0].getBackgroundColor(),
-  );
+  const native = await (
+    await app.browserWindow(page)
+  ).evaluate((target) => target.getBackgroundColor());
   assert.equal(native.slice(-6).toLowerCase(), colors.canvas.slice(1));
 }
 try {
@@ -141,7 +152,8 @@ try {
       !document.querySelector('input[name="settings-palette"]:checked').disabled,
   );
   await page.getByRole('button', { name: '完成', exact: true }).click();
-  await page.getByRole('button', { name: '打开项目', exact: true }).click();
+  page = await startProject(app, manager);
+  page.on('pageerror', (error) => errors.push(error.message));
   await page.getByRole('treeitem', { name: '查看 sample.ts', exact: true }).click();
   await page.locator('.code-content .shiki span[style]').first().waitFor();
   const terminal = page.locator('.terminal-host .xterm-helper-textarea');
@@ -243,11 +255,11 @@ try {
     );
   }
   await assert.rejects(
-    page.evaluate(() => window.workspaceAPI.setPalette('invalid')),
+    manager.evaluate(() => window.workspaceAPI.setPalette('invalid')),
     /无效的配色主题/,
   );
   await assert.rejects(
-    page.evaluate(() => window.workspaceAPI.setPalette('__proto__')),
+    manager.evaluate(() => window.workspaceAPI.setPalette('__proto__')),
     /无效的配色主题/,
   );
   await appearance(page, 'dark', 'neo');

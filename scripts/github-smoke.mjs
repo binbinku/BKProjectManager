@@ -1,3 +1,4 @@
+import { startProject, closeProject } from './native-menu.mjs';
 import { _electron as electron } from 'playwright';
 import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
 import os from 'node:os';
@@ -45,7 +46,8 @@ try {
       ELECTRON_RENDERER_URL: '',
     },
   });
-  const page = await app.firstWindow();
+  let page = await app.firstWindow();
+  const manager = page;
   page.setDefaultTimeout(15000);
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -112,7 +114,12 @@ try {
   await page.waitForFunction(() => !document.querySelector('.github-open').disabled);
   assert.equal((await opened()).at(-1), 'https://github.com/demo/renamed');
   assert.ok(!(await page.locator('body').innerText()).includes('secret-token'));
-  await card('Single').getByRole('button', { name: '打开项目', exact: true }).click();
+  page = await startProject(
+    app,
+    manager,
+    card('Single').getByRole('button', { name: '启动项目', exact: true }),
+  );
+  page.on('pageerror', (error) => errors.push(error.message));
   await page.getByRole('treeitem', { name: '查看 sample.ts', exact: true }).click();
   await page.locator('.code-content .shiki').waitFor();
   await page.locator('.terminal-host[data-running="true"]').waitFor();
@@ -129,9 +136,7 @@ try {
     true,
   );
   assert.ok((await page.locator('.code-content').textContent()).includes('repository'));
-  await app.evaluate(({ BrowserWindow }) =>
-    BrowserWindow.getAllWindows()[0].setContentSize(980, 660),
-  );
+  await (await app.browserWindow(page)).evaluate((target) => target.setContentSize(980, 660));
   const header = await page.locator('.workbench-navigation-header').boundingBox();
   for (const selector of ['.back-projects', '.github-open', '.external-open:not(.github-open)']) {
     const rect = await page.locator(selector).boundingBox();
@@ -140,7 +145,7 @@ try {
   await page.screenshot({ path: 'artifacts/github-workbench.png' });
   await assert.rejects(
     page.evaluate(() => window.workspaceAPI.openGitHub('https://evil.test/repo')),
-    /项目已不存在/,
+    /只能操作当前窗口/,
   );
   const state = await page.evaluate(() => window.workspaceAPI.getState());
   const single = state.snapshot.projects.find((project) => project.name === 'Single');
@@ -149,7 +154,8 @@ try {
     page.evaluate((id) => window.workspaceAPI.openGitHub(id), single.id),
     /未找到 GitHub/,
   );
-  await page.getByRole('button', { name: '返回项目列表', exact: true }).click();
+  await closeProject(app, page);
+  page = manager;
   await page.getByRole('button', { name: '重新扫描', exact: true }).click();
   await page.waitForFunction(() => document.querySelectorAll('.github-open').length === 1);
   assert.deepEqual(errors, []);

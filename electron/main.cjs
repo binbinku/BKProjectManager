@@ -30,7 +30,12 @@ let window,
   store,
   snapshot = null;
 let scanJob;
-let workbench;
+const projectWindows = new Map();
+const projectOpenings = new Map();
+let quitting = false;
+let nativeGlass =
+  process.platform === 'darwin' ||
+  (process.platform === 'win32' && Number(os.release().split('.')[2]) >= 22621);
 let pendingSettings = false;
 let workspaceQueue = Promise.resolve();
 function workspaceTask(task) {
@@ -51,17 +56,26 @@ async function saveCategoryStyle(workspace, category, style) {
     throw error;
   }
 }
+function focusWindow(target) {
+  if (target.isMinimized()) target.restore();
+  target.show();
+  target.focus();
+}
+function showManager() {
+  if (!window || window.isDestroyed()) createWindow();
+  focusWindow(window);
+}
 function menuAction(action) {
-  if (!window || window.isDestroyed()) {
-    if (action === 'settings') {
-      pendingSettings = true;
-      createWindow();
-    }
+  if (action === 'settings') {
+    const existing = window && !window.isDestroyed();
+    if (!existing) pendingSettings = true;
+    showManager();
+    if (existing) window.webContents.send('app:menu-action', action);
     return;
   }
-  window.show();
-  window.focus();
-  window.webContents.send('app:menu-action', action);
+  const focused = BrowserWindow.getFocusedWindow();
+  if (focused && [...projectWindows.values()].some((entry) => entry.window === focused))
+    focused.webContents.send('app:menu-action', action);
 }
 function createMenu() {
   const settings = {
@@ -96,7 +110,8 @@ function createMenu() {
         label: '文件',
         submenu: [
           ...(process.platform === 'darwin' ? [] : [settings, { type: 'separator' }]),
-          { role: process.platform === 'darwin' ? 'close' : 'quit' },
+          { role: 'close' },
+          ...(process.platform === 'darwin' ? [] : [{ role: 'quit' }]),
         ],
       },
       {
@@ -157,7 +172,14 @@ async function scan() {
   return scanJob;
 }
 function state() {
-  return { settings: store.data, snapshot: visibleSnapshot(snapshot, getVisibility(store.data)) };
+  return {
+    settings: store.data,
+    snapshot: visibleSnapshot(snapshot, getVisibility(store.data)),
+    nativeGlass,
+    runningProjects: [...projectWindows.entries()]
+      .filter(([, entry]) => entry.ready && !entry.window.isDestroyed())
+      .map(([id]) => id),
+  };
 }
 async function removeItem(kind, key, reveal = false) {
   const visible = state().snapshot;
@@ -185,13 +207,96 @@ async function removeItem(kind, key, reveal = false) {
   return state();
 }
 function windowBackground() {
+  if (nativeGlass && store?.data.glassMode === 'full') return '#00000000';
   return palettes[store?.data.palette ?? 'default'].colors[
     nativeTheme.shouldUseDarkColors ? 'dark' : 'light'
   ].canvas;
 }
+function broadcastState() {
+  for (const target of BrowserWindow.getAllWindows())
+    if (!target.isDestroyed()) target.webContents.send('app:state-changed', state());
+}
+function updateWindowBackgrounds() {
+  for (const target of BrowserWindow.getAllWindows()) target.setBackgroundColor(windowBackground());
+}
+function applyWindowMaterial(target) {
+  const full = nativeGlass && store.data.glassMode === 'full';
+  try {
+    if (process.platform === 'darwin') target.setVibrancy(full ? 'sidebar' : null);
+    if (process.platform === 'win32' && nativeGlass)
+      target.setBackgroundMaterial(full ? 'mica' : 'none');
+  } catch {
+    nativeGlass = false;
+  }
+  target.setBackgroundColor(windowBackground());
+}
 function applyTheme(theme) {
   nativeTheme.themeSource = theme;
-  if (window && !window.isDestroyed()) window.setBackgroundColor(windowBackground());
+  updateWindowBackgrounds();
+}
+function projectById(id) {
+  return (
+    state().snapshot?.projects.find((item) => item.id === id) ||
+    projectWindows.get(id)?.session.project
+  );
+}
+function entryForEvent(event) {
+  return [...projectWindows.values()].find((entry) => entry.window.webContents === event.sender);
+}
+function ownWorkbench(event, id) {
+  const entry = entryForEvent(event);
+  if (!entry || entry.session.id !== id) throw new Error('只能操作当前窗口的项目');
+  return entry.workbench;
+}
+async function openProjectWindow(id) {
+  const existing = projectWindows.get(id);
+  if (existing?.ready && !existing.window.isDestroyed()) {
+    focusWindow(existing.window);
+    return { state: state() };
+  }
+  if (projectOpenings.has(id)) return projectOpenings.get(id);
+  const job = (async () => {
+    const project = state().snapshot?.projects.find((item) => item.id === id);
+    if (!project) throw new Error('项目已不存在，请重新扫描');
+    let projectWindow;
+    const workbench = new Workbench((event) => {
+      if (projectWindow && !projectWindow.isDestroyed())
+        projectWindow.webContents.send('terminal:event', event);
+    });
+    try {
+      const session = await workbench.open(project);
+      if (quitting) throw new Error('应用正在退出');
+      projectWindow = makeWindow(project.name, false);
+      const entry = { window: projectWindow, workbench, session, ready: false };
+      projectWindows.set(id, entry);
+      projectWindow.on('closed', () => {
+        workbench.dispose();
+        if (projectWindows.get(id) === entry) projectWindows.delete(id);
+        broadcastState();
+      });
+      projectWindow.webContents.on('render-process-gone', () => {
+        if (!projectWindow.isDestroyed()) projectWindow.destroy();
+      });
+      store.data.recent[id] = Date.now();
+      await store.save();
+      await loadWindow(projectWindow, true);
+      if (projectWindow.isDestroyed() || quitting) throw new Error('项目打开已取消');
+      entry.ready = true;
+      focusWindow(projectWindow);
+      broadcastState();
+      return { state: state() };
+    } catch (error) {
+      workbench.dispose();
+      if (projectWindow && !projectWindow.isDestroyed()) projectWindow.destroy();
+      throw error;
+    }
+  })();
+  projectOpenings.set(id, job);
+  try {
+    return await job;
+  } finally {
+    projectOpenings.delete(id);
+  }
 }
 function run(executable, args, waitForExit = false) {
   return new Promise((resolve, reject) => {
@@ -246,7 +351,7 @@ function registerHandlers() {
   const handlers = {
     'project:github': (id) =>
       workspaceTask(async () => {
-        const project = state().snapshot?.projects.find((item) => item.id === id);
+        const project = projectById(id);
         if (!project) throw new Error('项目已不存在或已移除，请重新扫描');
         const remotes = await readGitHubRemotes(project.path);
         project.githubRemotes = remotes;
@@ -265,7 +370,7 @@ function registerHandlers() {
               })),
             );
             menu.popup({
-              window,
+              window: BrowserWindow.getFocusedWindow() || window,
               callback: () => {
                 if (!selected) resolve();
               },
@@ -301,27 +406,15 @@ function registerHandlers() {
         return { name, icon: null };
       }
     },
-    'workbench:open': async (id) => {
-      const project = state().snapshot?.projects.find((item) => item.id === id);
-      if (!project) throw new Error('项目已不存在，请重新扫描');
-      const session = await workbench.open(project);
-      try {
-        store.data.recent[id] = Date.now();
-        await store.save();
-      } catch (error) {
-        workbench.close(session.id);
-        throw error;
-      }
-      return { session, state: state() };
+    'workbench:open': openProjectWindow,
+    'workbench:focus': async (id) => {
+      const entry = projectWindows.get(id);
+      if (!entry?.ready || entry.window.isDestroyed())
+        throw new Error('项目窗口已关闭，请重新启动');
+      focusWindow(entry.window);
+      return state();
     },
-    'workbench:close': async (id) => workbench.close(id),
-    'workbench:list': async (id, relative) => workbench.requireSession(id).files.list(relative),
-    'workbench:read': async (id, relative) => workbench.requireSession(id).files.read(relative),
-    'terminal:start': async (...args) => workbench.startTerminal(...args),
-    'terminal:input': async (...args) => workbench.write(...args),
-    'terminal:resize': async (...args) => workbench.resize(...args),
-    'terminal:acknowledge': async (...args) => workbench.acknowledge(...args),
-    'terminal:stop': async (...args) => workbench.stopTerminal(...args),
+    'manager:show': async () => showManager(),
     'workspace:state': async () => {
       if (pendingSettings) {
         pendingSettings = false;
@@ -432,6 +525,33 @@ function registerHandlers() {
       applyTheme(store.data.theme);
       return state();
     },
+    'settings:glass-mode': async (value) => {
+      if (!['off', 'medium', 'full'].includes(value)) throw new Error('无效的毛玻璃档位');
+      const previous = store.data.glassMode;
+      store.data.glassMode = value;
+      try {
+        await store.save();
+      } catch (error) {
+        store.data.glassMode = previous;
+        throw error;
+      }
+      for (const target of BrowserWindow.getAllWindows()) applyWindowMaterial(target);
+      return state();
+    },
+    'settings:glass-transparency': (value) =>
+      workspaceTask(async () => {
+        if (!Number.isInteger(value) || value < 0 || value > 100)
+          throw new Error('无效的毛玻璃透明度');
+        const previous = store.data.glassTransparency;
+        store.data.glassTransparency = value;
+        try {
+          await store.save();
+        } catch (error) {
+          store.data.glassTransparency = previous;
+          throw error;
+        }
+        return state();
+      }),
     'settings:editor': async () => {
       const result = await dialog.showOpenDialog(window, {
         title: '选择编辑器应用',
@@ -451,8 +571,10 @@ function registerHandlers() {
       return state();
     },
     'project:open': async (id, action = 'default') => {
-      if (!['default', 'folder', 'terminal'].includes(action)) throw new Error('无效的项目操作');
-      const project = state().snapshot?.projects.find((p) => p.id === id);
+      if (!['default', 'folder', 'terminal', 'vscode'].includes(action))
+        throw new Error('无效的项目操作');
+      const opener = action === 'vscode' ? 'vscode' : store.data.opener;
+      const project = projectById(id);
       if (!project) throw new Error('项目已不存在，请重新扫描');
       try {
         if (!(await fs.stat(project.path)).isDirectory()) throw new Error();
@@ -470,11 +592,11 @@ function registerHandlers() {
             Buffer.from(command, 'utf16le').toString('base64'),
           ]);
         }
-      } else if (action === 'folder' || store.data.opener === 'folder') {
+      } else if (action === 'folder' || opener === 'folder') {
         const error = await shell.openPath(project.path);
         if (error) throw new Error(error);
       } else {
-        const executable = await editorPath(store.data.opener);
+        const executable = await editorPath(opener);
         if (process.platform === 'darwin')
           await run('/usr/bin/open', ['-a', executable, project.path], true);
         else await run(executable, [project.path]);
@@ -484,34 +606,82 @@ function registerHandlers() {
       return state();
     },
   };
-  for (const [channel, handler] of Object.entries(handlers))
+  const scopedHandlers = {
+    'workbench:current': (event) => entryForEvent(event)?.session || null,
+    'workbench:close': (event, id) => {
+      ownWorkbench(event, id);
+      entryForEvent(event).window.close();
+    },
+    'workbench:list': (event, id, relative) =>
+      ownWorkbench(event, id).requireSession(id).files.list(relative),
+    'workbench:read': (event, id, relative) =>
+      ownWorkbench(event, id).requireSession(id).files.read(relative),
+    'terminal:start': (event, id, ...args) => ownWorkbench(event, id).startTerminal(id, ...args),
+    'terminal:input': (event, id, ...args) => ownWorkbench(event, id).write(id, ...args),
+    'terminal:resize': (event, id, ...args) => ownWorkbench(event, id).resize(id, ...args),
+    'terminal:acknowledge': (event, id, ...args) =>
+      ownWorkbench(event, id).acknowledge(id, ...args),
+    'terminal:stop': (event, id, ...args) => ownWorkbench(event, id).stopTerminal(id, ...args),
+  };
+  const projectChannels = new Set([
+    'workspace:state',
+    'settings:opener-info',
+    'project:open',
+    'project:github',
+    'manager:show',
+    ...Object.keys(scopedHandlers),
+  ]);
+  for (const channel of [...Object.keys(handlers), ...Object.keys(scopedHandlers)])
     ipcMain.handle(channel, async (event, ...args) => {
       const expected =
         process.env.ELECTRON_RENDERER_URL ||
         pathToFileURL(path.join(__dirname, '../dist/index.html')).href;
       const senderURL = event.senderFrame?.url;
+      const entry = entryForEvent(event);
+      const target = entry?.window || window;
       if (
-        event.sender !== window?.webContents ||
-        event.senderFrame !== window.webContents.mainFrame ||
+        !target ||
+        target.isDestroyed() ||
+        event.sender !== target.webContents ||
+        event.senderFrame !== target.webContents.mainFrame ||
         !senderURL ||
         new URL(senderURL).origin !== new URL(expected).origin ||
         (new URL(expected).protocol === 'file:' && senderURL.split('#')[0] !== expected)
       )
         throw new Error('无效的请求来源');
-      return handler(...args);
+      if (
+        entry &&
+        (!projectChannels.has(channel) ||
+          (['project:open', 'project:github'].includes(channel) &&
+            args[0] !== entry.session.project.id))
+      )
+        throw new Error('只能操作当前窗口的项目');
+      const result = scopedHandlers[channel]
+        ? await scopedHandlers[channel](event, ...args)
+        : await handlers[channel](...args);
+      if (result?.settings || result?.state?.settings) broadcastState();
+      return result;
     });
 }
-function createWindow() {
-  window = new BrowserWindow({
+function makeWindow(title = 'BK Project Manager', show = true) {
+  const target = new BrowserWindow({
     width: 1380,
     height: 900,
     minWidth: 980,
     minHeight: 660,
     backgroundColor: windowBackground(),
-    title: 'BK Project Manager',
+    title,
+    show,
     icon: appIcon,
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
-    ...(process.platform === 'darwin' ? { trafficLightPosition: { x: 12, y: 20 } } : {}),
+    ...(process.platform === 'darwin'
+      ? {
+          trafficLightPosition: { x: 12, y: 20 },
+          // Keep Chromium's backing surface alpha-aware, including after toggling glass.
+          transparent: true,
+          ...(store.data.glassMode === 'full' ? { vibrancy: 'sidebar' } : {}),
+        }
+      : {}),
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
@@ -519,34 +689,41 @@ function createWindow() {
       sandbox: true,
     },
   });
-  window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
-  window.webContents.on('render-process-gone', () => workbench.dispose());
-  window.webContents.on('did-start-navigation', (_event, _url, _isInPlace, isMainFrame) => {
-    if (isMainFrame) workbench.dispose();
+  applyWindowMaterial(target);
+  target.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  target.on('page-title-updated', (event) => event.preventDefault());
+  target.webContents.on('will-navigate', (event) => event.preventDefault());
+  return target;
+}
+function loadWindow(target, project = false) {
+  if (process.env.ELECTRON_RENDERER_URL)
+    return target.loadURL(`${process.env.ELECTRON_RENDERER_URL}${project ? '#project' : ''}`);
+  return target.loadFile(
+    path.join(__dirname, '../dist/index.html'),
+    project ? { hash: 'project' } : {},
+  );
+}
+function createWindow() {
+  window = makeWindow();
+  const manager = window;
+  manager.on('closed', () => {
+    if (window === manager) window = null;
   });
-  window.on('closed', () => workbench.dispose());
-  window.webContents.on('will-navigate', (event) => event.preventDefault());
-  if (process.env.ELECTRON_RENDERER_URL) window.loadURL(process.env.ELECTRON_RENDERER_URL);
-  else window.loadFile(path.join(__dirname, '../dist/index.html'));
+  void loadWindow(manager).catch((error) => dialog.showErrorBox('无法打开项目列表', error.message));
 }
 app
   .whenReady()
   .then(async () => {
     if (process.platform === 'darwin') app.dock.setIcon(appIcon);
     store = new Store(app.getPath('userData'));
-    workbench = new Workbench((event) => {
-      if (window && !window.isDestroyed()) window.webContents.send('terminal:event', event);
-    });
     await store.load();
     applyTheme(store.data.theme);
-    nativeTheme.on('updated', () => {
-      if (window && !window.isDestroyed()) window.setBackgroundColor(windowBackground());
-    });
+    nativeTheme.on('updated', updateWindowBackgrounds);
     registerHandlers();
     createMenu();
     createWindow();
     app.on('activate', () => {
-      if (BrowserWindow.getAllWindows().length === 0) createWindow();
+      if (!window || window.isDestroyed()) createWindow();
     });
   })
   .catch((error) => {
@@ -556,4 +733,7 @@ app
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
-app.on('before-quit', () => workbench?.dispose());
+app.on('before-quit', () => {
+  quitting = true;
+  for (const entry of projectWindows.values()) entry.workbench.dispose();
+});

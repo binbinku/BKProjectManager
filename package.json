@@ -38,7 +38,9 @@
     "test:workbench": "node scripts/workbench-smoke.mjs",
     "pretest:workbench": "node scripts/prepare-native.cjs",
     "prebuild": "node scripts/prepare-file-icons.mjs",
-    "test:github": "node scripts/github-smoke.mjs"
+    "test:github": "node scripts/github-smoke.mjs",
+    "test:windows": "node scripts/project-windows-smoke.mjs",
+    "test:glass": "node scripts/glass-smoke.mjs"
   },
   "dependencies": {
     "@shikijs/core": "^4.5.0",
