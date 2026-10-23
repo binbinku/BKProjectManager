@@ -179,7 +179,7 @@ npm run dev
 
 GitHub 配色参考 [Primer](https://primer.style/product/getting-started/foundations/color-usage/)，MacBook Neo 配色以 [Citrus 青柠黄色](https://www.apple.com/macbook-neo/)为灵感，采用适合长时间使用的柔和色值。
 
-主题只改变配色，不改变尺寸、间距、面板比例或悬浮按钮位置。代码高亮继续使用 VS Code Light+ / Dark+；终端背景随主题调整，程序的 ANSI 与真彩色输出保持正常。
+主题只改变配色，不改变尺寸、间距、面板比例或悬浮按钮位置。代码区、行号区与终端使用同一主题底色，左侧目录保留同色系层次；代码高亮继续使用 VS Code Light+ / Dark+，程序的 ANSI 与真彩色输出保持正常。
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/themes-dark.png" />

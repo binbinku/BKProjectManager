@@ -179,7 +179,7 @@ Open **Settings… → 配色主题** (Color theme) from the native menu, then c
 
 The GitHub palette draws from [Primer](https://primer.style/product/getting-started/foundations/color-usage/); MacBook Neo takes inspiration from [Citrus](https://www.apple.com/macbook-neo/), softened for comfortable everyday use.
 
-Themes change colors only. Sizes, spacing, panel proportions and floating controls stay in place. Syntax highlighting retains VS Code Light+ / Dark+ colors; the terminal background follows the palette while ANSI and true-color program output remain supported.
+Themes change colors only. Sizes, spacing, panel proportions and floating controls stay in place. The code viewer, line-number gutter and terminal share the palette background, while the explorer uses a related sidebar tone. Syntax highlighting retains VS Code Light+ / Dark+ colors while ANSI and true-color program output remain supported.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/themes-dark.png" />

@@ -185,15 +185,17 @@ try {
       );
       const current = await page.locator('.code-content').evaluate((element) => ({
         background: getComputedStyle(document.querySelector('.file-panel')).backgroundColor,
+        gutter: getComputedStyle(document.querySelector('.line-numbers')).backgroundColor,
         tokens: [...element.querySelectorAll('.shiki span[style]')].map(
           (span) => getComputedStyle(span).color,
         ),
       }));
-      assert.equal(current.background, mode === 'light' ? 'rgb(255, 255, 255)' : 'rgb(30, 30, 30)');
-      if (!syntax[mode]) syntax[mode] = current;
+      assert.equal(current.background, rgb(palettes[palette].colors[mode].canvas));
+      assert.equal(current.gutter, current.background);
+      if (!syntax[mode]) syntax[mode] = current.tokens;
       else
         assert.deepEqual(
-          current,
+          current.tokens,
           syntax[mode],
           'VS Code syntax colors remain independent of the UI palette',
         );
@@ -203,6 +205,7 @@ try {
           .evaluate((element) => getComputedStyle(element).backgroundColor),
         rgb(palettes[palette].colors[mode].canvas),
       );
+      await page.screenshot({ path: `artifacts/workbench-palette-${palette}-${mode}.png` });
       if (process.platform !== 'win32')
         assert.ok(
           await page

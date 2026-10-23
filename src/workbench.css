@@ -99,7 +99,7 @@
   background: var(--sidebar);
 }
 .file-panel {
-  --editor-background: light-dark(#ffffff, #1e1e1e);
+  --editor-background: var(--canvas);
   --editor-foreground: light-dark(#000000, #d4d4d4);
   background: var(--editor-background);
 }
