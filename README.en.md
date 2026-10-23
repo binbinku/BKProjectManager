@@ -22,30 +22,51 @@
 </p>
 
 <p align="center">
+  <a href="#project-manager">Project manager</a> ·
+  <a href="#editor">Editor view</a> ·
   <a href="#downloads">Downloads</a> ·
   <a href="#quick-start">Run from source</a> ·
   <a href="#features">Features</a> ·
   <a href="#controls">Controls</a> ·
-  <a href="#previews">Screenshots</a> ·
+  <a href="#previews">More screenshots</a> ·
   <a href="#scanning">Discovery rules</a> ·
   <a href="#development">Development</a>
 </p>
 
-> **Current source: v0.2.0 workbench preview.** The screenshot below shows the latest source. Published v0.1.1 installers still provide the project manager. To try the file tree, code viewer and built-in terminal, [run from source](#quick-start).
+A local project manager for **macOS and Windows 11**. Bring projects into one workspace, organize them by category and find them through search, favorites or recent activity. Open a project's editor view when you want to browse code and use its terminal.
+
+<a id="project-manager"></a>
+
+## 🗂️ Project manager · All your projects in view
+
+Scan your workspace, browse categories and quickly find projects through search, favorites and recently opened items. Switch between cards and a list, then open a project inside the app or in VS Code, Cursor or another editor.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/workbench-dark.png" />
-  <img src="docs/assets/workbench-light.png" alt="BK Project Manager workbench with Material file icons, a full-height read-only viewer and interactive terminal" width="1360" />
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/workspace-dark.png" />
+  <img src="docs/assets/workspace-light.png" alt="Project management page with workspace categories, project cards, search, favorites and recent projects" width="1360" />
 </picture>
 
 <p align="center">
-  <sub>Project files · Read-only code · Interactive terminal · Sample projects · The app UI is currently in Chinese</sub><br />
-  <a href="docs/assets/workbench-light.png">☀️ Light workbench</a> · <a href="docs/assets/workbench-dark.png">🌙 Dark workbench</a>
+  <a href="docs/assets/workspace-light.png">☀️ Light project manager</a> · <a href="docs/assets/workspace-dark.png">🌙 Dark project manager</a>
 </p>
 
-A local project workspace designed for **macOS and Windows 11**. Discover and categorize projects, then open one to browse files, preview code and use a terminal in the same window. Your preferred external editor is still one click away.
+<a id="editor"></a>
 
-A Codex-inspired interface brings together neutral colors, subtle borders, and compact layouts. Keep your directory structure and bring your project entry points together.
+## 💻 Editor view · Open a project and continue working
+
+Open a project card to enter the three-panel workbench: browse files on the left, preview code in the center and run commands in the terminal on the right. Frosted navigation, Material file icons and thin dividers keep the content clear.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/workbench-dark.png" />
+  <img src="docs/assets/workbench-light.png" alt="Editor view with Material file icons, a single-file read-only code preview and interactive terminal" width="1360" />
+</picture>
+
+<p align="center">
+  <a href="docs/assets/workbench-light.png">☀️ Light editor view</a> · <a href="docs/assets/workbench-dark.png">🌙 Dark editor view</a><br />
+  <sub>Both views use sample projects and follow your GitHub light or dark appearance. The app UI is currently in Chinese.</sub>
+</p>
+
+> **Versions:** the editor view is part of the v0.2.0 source preview. Published v0.1.1 installers provide project management. To try the complete workbench, [run from source](#quick-start). Code preview is read-only; editing and saving files are not supported.
 
 <a id="features"></a>
 
@@ -70,7 +91,7 @@ A Codex-inspired interface brings together neutral colors, subtle borders, and c
   </tr>
 </table>
 
-## 🧩 Project workbench (source preview)
+## 🧩 Using the workbench (source preview)
 
 The v0.2.0 source opens projects in a three-panel workbench. Published v0.1.1 installers do not include this feature yet.
 
@@ -139,20 +160,9 @@ Click **Rescan** after adding or moving projects. You can switch workspaces thro
 
 <a id="previews"></a>
 
-## 🖼️ Screenshots
+## 🖼️ More screenshots
 
-The main workbench preview follows your GitHub light or dark appearance. The project list, settings and first-launch views below all use sample projects.
-
-<details>
-<summary><strong>Project overview · Categories, search and favorites</strong></summary>
-
-<br />
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/workspace-dark.png" />
-  <img src="docs/assets/workspace-light.png" alt="Project overview with categories, favorites, search and cards" width="1360" />
-</picture>
-
-</details>
+The project management and editor pages are shown in full above. Below are the list view, settings and first-launch screens.
 
 <details>
 <summary><strong>List view · Browse more compactly</strong></summary>

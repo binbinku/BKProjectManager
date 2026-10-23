@@ -22,30 +22,51 @@
 </p>
 
 <p align="center">
+  <a href="#project-manager">项目管理页</a> ·
+  <a href="#editor">编辑器页</a> ·
   <a href="#downloads">下载安装</a> ·
   <a href="#quick-start">源码运行</a> ·
   <a href="#features">功能一览</a> ·
   <a href="#controls">操作与快捷键</a> ·
-  <a href="#previews">界面预览</a> ·
+  <a href="#previews">更多界面</a> ·
   <a href="#scanning">扫描规则</a> ·
   <a href="#development">开发与构建</a>
 </p>
 
-> **当前源码：v0.2.0 工作台预览。** 下图展示最新源码界面；已发布的 v0.1.1 安装包仍为项目管理版本。体验文件树、代码预览和内置终端，请[从源码启动](#quick-start)。
+面向 **macOS 与 Windows 11** 的本地项目管理器。把分散的项目归集到一个工作空间，按分类查找、搜索和收藏；需要深入查看时，再进入项目的编辑器页面，浏览代码并使用终端。
+
+<a id="project-manager"></a>
+
+## 🗂️ 项目管理页 · 所有项目，一目了然
+
+自动扫描工作空间，用分类、搜索、收藏和最近打开找到手头的项目。卡片与列表两种视图，支持在软件内打开项目，也可以直接交给 VS Code、Cursor 或其他编辑器。
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/workbench-dark.png" />
-  <img src="docs/assets/workbench-light.png" alt="BK Project Manager 工作台：Material 文件目录、全高只读代码预览和交互终端" width="1360" />
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/workspace-dark.png" />
+  <img src="docs/assets/workspace-light.png" alt="项目管理页：工作空间分类、项目卡片、搜索、收藏与最近打开" width="1360" />
 </picture>
 
 <p align="center">
-  <sub>项目目录 · 只读代码 · 交互终端 · 截图使用示例项目</sub><br />
-  <a href="docs/assets/workbench-light.png">☀️ 亮色工作台</a> · <a href="docs/assets/workbench-dark.png">🌙 暗色工作台</a>
+  <a href="docs/assets/workspace-light.png">☀️ 亮色项目管理页</a> · <a href="docs/assets/workspace-dark.png">🌙 暗色项目管理页</a>
 </p>
 
-为 **macOS 与 Windows 11** 设计的本地项目工作台。选择一个工作空间，自动发现和分类项目；打开项目后，在同一窗口浏览文件、只读查看代码并使用终端，也可以一键交给熟悉的编辑器。
+<a id="editor"></a>
 
-界面采用受 Codex 启发的中性灰阶、细边框和简洁排版。你的目录结构照旧，工作入口更集中。
+## 💻 编辑器页 · 打开项目，继续工作
+
+从项目卡片进入三栏工作台：左侧浏览目录，中间只读查看代码，右侧直接运行终端命令。毛玻璃导航、Material 文件图标和细分界线，让项目内容保持清晰。
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/workbench-dark.png" />
+  <img src="docs/assets/workbench-light.png" alt="编辑器页：Material 文件目录、单文件只读代码预览与交互终端" width="1360" />
+</picture>
+
+<p align="center">
+  <a href="docs/assets/workbench-light.png">☀️ 亮色编辑器页</a> · <a href="docs/assets/workbench-dark.png">🌙 暗色编辑器页</a><br />
+  <sub>两组截图均使用示例项目，并随 GitHub 的亮暗外观自动切换。</sub>
+</p>
+
+> **版本说明：** 编辑器页包含在 v0.2.0 源码预览中；公开的 v0.1.1 安装包提供项目管理功能。体验完整工作台，请[从源码启动](#quick-start)。代码预览为只读，不提供文件编辑保存。
 
 <a id="features"></a>
 
@@ -70,7 +91,7 @@
   </tr>
 </table>
 
-## 🧩 项目工作台（源码预览版）
+## 🧩 工作台使用说明（源码预览版）
 
 v0.2.0 源码支持在软件内打开项目，进入三栏工作台。当前已发布的 v0.1.1 安装包尚未包含此功能。
 
@@ -139,20 +160,9 @@ npm run dev
 
 <a id="previews"></a>
 
-## 🖼️ 界面预览
+## 🖼️ 更多界面
 
-首页工作台截图会随 GitHub 的亮暗外观自动切换。下面展示项目列表、设置和首次启动页面，均使用示例项目生成。
-
-<details>
-<summary><strong>项目总览 · 按分类搜索与收藏</strong></summary>
-
-<br />
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/workspace-dark.png" />
-  <img src="docs/assets/workspace-light.png" alt="项目总览：分类、收藏、搜索和项目卡片" width="1360" />
-</picture>
-
-</details>
+上方已完整展示项目管理页与编辑器页。下面补充列表视图、设置和首次启动页面。
 
 <details>
 <summary><strong>列表视图 · 更紧凑地浏览项目</strong></summary>
