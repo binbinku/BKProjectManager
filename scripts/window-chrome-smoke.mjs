@@ -110,10 +110,7 @@ try {
     win.show();
     win.focus();
   });
-  await workbench.getByRole('button', { name: '设置', exact: true }).click();
-  await manager.getByRole('dialog').waitFor();
-  await manager.getByRole('button', { name: '完成', exact: true }).click();
-  await projectWindow.evaluate((win) => win.focus());
+  assert.equal(await workbench.getByRole('button', { name: '设置', exact: true }).count(), 0);
   await workbench.getByRole('button', { name: '关闭窗口', exact: true }).click();
   await manager.waitForFunction(async () => {
     const state = await window.workspaceAPI.getState();

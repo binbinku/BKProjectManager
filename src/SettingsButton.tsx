@@ -1,21 +1,15 @@
 import { Settings } from 'lucide-react';
 
-export function SettingsButton({
-  onClick,
-  floating = false,
-}: {
-  onClick?: () => void;
-  floating?: boolean;
-}) {
+export function SettingsButton({ onClick }: { onClick: () => void }) {
   return (
     <button
-      className={`sidebar-settings${floating ? ' sidebar-settings-floating' : ''}`}
+      className="sidebar-settings"
       aria-label="设置"
       title="设置"
       aria-haspopup="dialog"
-      onClick={onClick ?? (() => void window.workspaceAPI.showSettings())}
+      onClick={onClick}
     >
-      <Settings size={floating ? 20 : 17} strokeWidth={1.7} />
+      <Settings size={17} strokeWidth={1.7} />
     </button>
   );
 }

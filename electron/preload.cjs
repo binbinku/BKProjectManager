@@ -15,7 +15,6 @@ contextBridge.exposeInMainWorld('workspaceAPI', {
   getCurrentWorkbench: () => ipcRenderer.invoke('workbench:current'),
   focusWorkbench: (id) => ipcRenderer.invoke('workbench:focus', id),
   showManager: () => ipcRenderer.invoke('manager:show'),
-  showSettings: () => ipcRenderer.invoke('settings:show'),
   onMenuAction: (callback) => {
     const listener = (_event, action) => callback(action);
     ipcRenderer.on('app:menu-action', listener);

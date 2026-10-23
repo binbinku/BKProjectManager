@@ -435,20 +435,6 @@ h3 {
   color: var(--text);
   background: var(--hover);
 }
-.sidebar-settings-floating {
-  position: fixed;
-  left: 24px;
-  bottom: 24px;
-  z-index: 12;
-  width: 44px;
-  height: 44px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: color-mix(in srgb, var(--sidebar) var(--glass-tint), transparent);
-  -webkit-backdrop-filter: blur(14px) saturate(130%);
-  backdrop-filter: blur(14px) saturate(130%);
-  box-shadow: 0 8px 30px #00000016;
-}
 .brand-mark {
   display: grid;
   place-items: center;

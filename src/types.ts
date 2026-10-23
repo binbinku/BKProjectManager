@@ -56,7 +56,6 @@ export interface WorkspaceAPI {
   getCurrentWorkbench(): Promise<WorkbenchSession | null>;
   focusWorkbench(id: string): Promise<AppState>;
   showManager(): Promise<void>;
-  showSettings(): Promise<void>;
   onMenuAction(callback: (action: MenuAction) => void): () => void;
   getOpenerInfo(): Promise<{ name: string; icon: string | null }>;
   openWorkbench(id: string): Promise<{ state: AppState }>;

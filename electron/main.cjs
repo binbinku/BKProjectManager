@@ -415,7 +415,6 @@ function registerHandlers() {
       return state();
     },
     'manager:show': async () => showManager(),
-    'settings:show': async () => menuAction('settings'),
     'workspace:state': async () => {
       if (pendingSettings) {
         pendingSettings = false;
@@ -639,7 +638,6 @@ function registerHandlers() {
   const projectChannels = new Set([
     'workspace:state',
     'settings:opener-info',
-    'settings:show',
     'project:open',
     'project:github',
     'manager:show',

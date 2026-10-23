@@ -6,7 +6,6 @@ import { FileViewer } from './FileViewer';
 import { ProjectTerminal } from './ProjectTerminal';
 import { GitHubButton } from './GitHubButton';
 import { WindowControls } from './WindowControls';
-import { SettingsButton } from './SettingsButton';
 import './workbench.css';
 
 const api = window.workspaceAPI;
@@ -221,7 +220,6 @@ export default function ProjectWorkbench({
         {separator('terminal')}
         <ProjectTerminal sessionId={session.id} />
       </div>
-      <SettingsButton floating />
     </div>
   );
 }
