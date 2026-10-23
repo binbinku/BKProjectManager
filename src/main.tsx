@@ -27,6 +27,7 @@ import {
   List,
   Loader2,
   Monitor,
+  Palette,
   Plus,
   RefreshCw,
   Search,
@@ -36,13 +37,14 @@ import {
 } from 'lucide-react';
 import type { AppState, Project, ThemePreference, WorkbenchSession } from './types';
 import { ThemeSelector } from './ThemeSelector';
+import { CategoryIcon, defaultCategoryStyle } from './categories';
+import { ProjectManagerDialog, type ManagementDialog } from './ProjectManagerDialog';
 import './styles.css';
 import { version as appVersion } from '../package.json';
 
 const logo = new URL('../docs/assets/logo.svg', import.meta.url).href;
 const ProjectWorkbench = lazy(() => import('./ProjectWorkbench'));
 const api = window.workspaceAPI;
-const palette = ['purple', 'blue', 'green', 'orange', 'pink', 'teal'];
 const typeColors: Record<string, string> = {
   Unity: 'purple',
   Unreal: 'purple',
@@ -80,6 +82,7 @@ function App() {
   const [sort, setSort] = useState('name');
   const [view, setView] = useState('grid');
   const [settings, setSettings] = useState(false);
+  const [managementDialog, setManagementDialog] = useState<ManagementDialog | null>(null);
   const [session, setSession] = useState<WorkbenchSession | null>(null);
   const theme = state?.settings.theme ?? 'system';
   const searchRef = useRef<HTMLInputElement>(null);
@@ -101,7 +104,7 @@ function App() {
   }
   useEffect(() => {
     const unsubscribeMenu = api.onMenuAction((action) => {
-      if (action === 'settings') setSettings(true);
+      if (action === 'settings' && !document.querySelector('.management-modal')) setSettings(true);
     });
     void (async () => {
       try {
@@ -188,6 +191,23 @@ function App() {
   }, [settings]);
   const projects = state?.snapshot?.projects ?? [];
   const categories = state?.snapshot?.categories ?? [];
+  const categoryStyle = (name: string) => {
+    const styles = state?.settings.categoryStyles?.[state.settings.workspace ?? ''];
+    return styles && Object.hasOwn(styles, name) ? styles[name] : defaultCategoryStyle(name);
+  };
+  const selectedCategory = selection.startsWith('category:') ? selection.slice(9) : undefined;
+  const addProject = () =>
+    setManagementDialog(
+      categories.some((item) => state?.snapshot?.projectContainers[item])
+        ? {
+            kind: 'project',
+            category:
+              selectedCategory && state?.snapshot?.projectContainers[selectedCategory]
+                ? selectedCategory
+                : undefined,
+          }
+        : { kind: 'category' },
+    );
   const favorites = state?.settings.favorites ?? [];
   const recent = state?.settings.recent ?? {};
   const favoriteCount = projects.filter((p) => favorites.includes(p.id)).length;
@@ -421,16 +441,26 @@ function App() {
           </button>
         </nav>
         <div className="nav-caption category-caption">
-          项目分类<span>{categories.length}</span>
+          <span>
+            项目分类 <small>{categories.length}</small>
+          </span>
+          <button
+            aria-label="新增分类"
+            title="新增分类"
+            disabled={busy || !state?.settings.workspace}
+            onClick={() => setManagementDialog({ kind: 'category' })}
+          >
+            <Plus size={15} />
+          </button>
         </div>
         <nav className="category-nav" aria-label="项目分类">
-          {categories.map((category, i) => (
+          {categories.map((category) => (
             <button
               key={category}
               className={`nav-item ${selection === `category:${category}` ? 'active' : ''}`}
               onClick={() => select(`category:${category}`)}
             >
-              <span className={`category-dot ${palette[i % palette.length]}`} />
+              <CategoryIcon style={categoryStyle(category)} />
               <span>{category}</span>
               <b>{projects.filter((p) => p.category === category).length}</b>
             </button>
@@ -507,7 +537,12 @@ function App() {
             <>
               <section className="page-heading">
                 <div>
-                  <h1>{title}</h1>
+                  <h1 className="category-heading">
+                    {selectedCategory && (
+                      <CategoryIcon style={categoryStyle(selectedCategory)} size={27} />
+                    )}{' '}
+                    {title}
+                  </h1>
                   <p>
                     {selection === 'favorites'
                       ? '快速访问你收藏的项目。'
@@ -516,14 +551,33 @@ function App() {
                         : '浏览和打开工作空间中的项目。'}
                   </p>
                 </div>
-                <button
-                  className="secondary-button"
-                  disabled={busy}
-                  onClick={() => perform(api.scan)}
-                >
-                  <RefreshCw size={15} className={busy ? 'spin' : ''} />
-                  {busy ? '正在扫描' : '重新扫描'}
-                </button>
+                <div className="heading-actions">
+                  {selectedCategory && (
+                    <button
+                      className="secondary-button"
+                      disabled={busy}
+                      aria-label="修改分类外观"
+                      title="修改分类外观"
+                      onClick={() =>
+                        setManagementDialog({ kind: 'appearance', category: selectedCategory })
+                      }
+                    >
+                      <Palette size={15} />
+                    </button>
+                  )}
+                  <button
+                    className="secondary-button"
+                    disabled={busy}
+                    onClick={() => perform(api.scan)}
+                  >
+                    <RefreshCw size={15} className={busy ? 'spin' : ''} />
+                    {busy ? '正在扫描' : '重新扫描'}
+                  </button>
+                  <button className="primary-button" disabled={busy} onClick={addProject}>
+                    <Plus size={16} />
+                    新建项目
+                  </button>
+                </div>
               </section>
               <section className="workspace-summary">
                 <div className="summary-icon">
@@ -622,7 +676,10 @@ function App() {
                         <span className={`project-icon ${typeColors[project.type] || 'gray'}`}>
                           <ProjectIcon type={project.type} />
                         </span>
-                        <span className="card-category">{project.category}</span>
+                        <span className={`card-category ${categoryStyle(project.category).color}`}>
+                          <CategoryIcon style={categoryStyle(project.category)} size={12} />
+                          <span>{project.category}</span>
+                        </span>
                         <button
                           className={`favorite-button ${favorites.includes(project.id) ? 'is-favorite' : ''}`}
                           aria-label={`${favorites.includes(project.id) ? '取消收藏' : '收藏'} ${project.name}`}
@@ -718,8 +775,14 @@ function App() {
                         ? '点击项目卡片右上角的星标，即可收藏。'
                         : selection === 'recent'
                           ? '打开一个项目后，就能在这里快速找回。'
-                          : '在工作空间中添加项目文件夹后，点击重新扫描。'}
+                          : '点击新建项目，创建第一个项目文件夹。'}
                   </p>
+                  {!busy && !query && selection !== 'favorites' && selection !== 'recent' && (
+                    <button className="secondary-button" onClick={addProject}>
+                      <Plus size={15} />
+                      {categories.length ? '新建项目' : '新增分类'}
+                    </button>
+                  )}
                 </div>
               )}
               <footer className="content-footer">
@@ -745,6 +808,26 @@ function App() {
         </div>
       )}
       {settingsDialog}
+      {managementDialog && state && (
+        <ProjectManagerDialog
+          dialog={managementDialog}
+          state={state}
+          getStyle={categoryStyle}
+          onClose={() => setManagementDialog(null)}
+          onSaved={(next, category) => {
+            setState(next);
+            select(`category:${category}`);
+            setMessage(
+              managementDialog.kind === 'appearance'
+                ? '分类外观已更新'
+                : managementDialog.kind === 'category'
+                  ? '分类已创建，可以新建项目了'
+                  : '空项目已创建',
+            );
+            setManagementDialog(null);
+          }}
+        />
+      )}
     </div>
   );
 }

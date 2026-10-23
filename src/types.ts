@@ -11,11 +11,16 @@ export interface Project {
 export interface Snapshot {
   workspace: string;
   categories: string[];
+  projectContainers: Record<string, string | null>;
   projects: Project[];
   warnings: string[];
   scannedAt: number;
 }
 export type ThemePreference = 'light' | 'dark' | 'system';
+export interface CategoryStyle {
+  color: string;
+  icon: string;
+}
 export interface Settings {
   workspace: string | null;
   favorites: string[];
@@ -23,6 +28,7 @@ export interface Settings {
   opener: string;
   customEditor: string | null;
   theme: ThemePreference;
+  categoryStyles: Record<string, Record<string, CategoryStyle>>;
 }
 export interface AppState {
   settings: Settings;
@@ -45,6 +51,9 @@ export interface WorkspaceAPI {
   getState(): Promise<AppState>;
   chooseWorkspace(): Promise<AppState>;
   scan(): Promise<AppState>;
+  createCategory(name: string, style: CategoryStyle): Promise<AppState>;
+  setCategoryStyle(category: string, style: CategoryStyle): Promise<AppState>;
+  createProject(category: string, name: string): Promise<AppState>;
   toggleFavorite(id: string): Promise<AppState>;
   openProject(id: string, action?: 'default' | 'folder' | 'terminal'): Promise<AppState>;
   setOpener(value: string): Promise<AppState>;

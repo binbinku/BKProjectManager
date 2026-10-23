@@ -41,6 +41,7 @@ async function scanWorkspace(input) {
   const groups = directories(await readEntries(root));
   const projects = [];
   const categories = [];
+  const projectContainers = {};
   const warnings = [];
   async function addProject(projectPath, category, name, entries) {
     try {
@@ -63,6 +64,11 @@ async function scanWorkspace(input) {
   for (const group of groups) {
     const groupPath = path.join(root, group.name);
     categories.push(group.name);
+    Object.defineProperty(projectContainers, group.name, {
+      value: null,
+      writable: true,
+      enumerable: true,
+    });
     try {
       const entries = await readEntries(groupPath);
       // A first-level directory may itself be a project.
@@ -77,6 +83,11 @@ async function scanWorkspace(input) {
       if (container && detectType(children) !== 'Folder') {
         await addProject(scanPath, group.name, group.name, children);
       } else {
+        projectContainers[group.name] = entries.some(
+          (entry) => entry.name.toLowerCase() === 'projects' && !entry.isDirectory(),
+        )
+          ? null
+          : scanPath;
         for (const child of directories(children))
           await addProject(path.join(scanPath, child.name), group.name, child.name);
       }
@@ -84,6 +95,13 @@ async function scanWorkspace(input) {
       warnings.push(`无法读取分类：${group.name}`);
     }
   }
-  return { workspace: root, categories, projects, warnings, scannedAt: Date.now() };
+  return {
+    workspace: root,
+    categories,
+    projectContainers,
+    projects,
+    warnings,
+    scannedAt: Date.now(),
+  };
 }
-module.exports = { scanWorkspace, detectType };
+module.exports = { scanWorkspace, detectType, directories };

@@ -8,6 +8,7 @@ const { scanWorkspace } = require('./scanner.cjs');
 const { Store } = require('./store.cjs');
 const { Workbench } = require('./workbench.cjs');
 const { macAppIcon } = require('./app-icon.cjs');
+const management = require('./workspace-management.cjs');
 
 app.setName('BK Project Manager');
 const appIcon = path.join(
@@ -23,6 +24,25 @@ let window,
 let scanJob;
 let workbench;
 let pendingSettings = false;
+let workspaceQueue = Promise.resolve();
+function workspaceTask(task) {
+  const job = workspaceQueue.then(task, task);
+  workspaceQueue = job.catch(() => {});
+  return job;
+}
+async function saveCategoryStyle(workspace, category, style) {
+  const previous = store.data.categoryStyles;
+  store.data.categoryStyles = {
+    ...previous,
+    [workspace]: { ...previous[workspace], [category]: style },
+  };
+  try {
+    await store.save();
+  } catch (error) {
+    store.data.categoryStyles = previous;
+    throw error;
+  }
+}
 function menuAction(action) {
   if (!window || window.isDestroyed()) {
     if (action === 'settings') {
@@ -243,23 +263,54 @@ function registerHandlers() {
       }
       return state();
     },
-    'workspace:scan': async () => {
-      await scan();
-      return state();
-    },
-    'workspace:choose': async () => {
-      const result = await dialog.showOpenDialog(window, {
-        title: '选择工作空间',
-        defaultPath: store.data.workspace || path.join(os.homedir(), 'Workspace'),
-        properties: ['openDirectory'],
-      });
-      if (result.canceled || !result.filePaths[0]) return state();
-      const next = await scanWorkspace(result.filePaths[0]);
-      store.data.workspace = next.workspace;
-      await store.save();
-      snapshot = next;
-      return state();
-    },
+    'workspace:scan': () =>
+      workspaceTask(async () => {
+        await scan();
+        return state();
+      }),
+    'category:create': (name, appearance) =>
+      workspaceTask(async () => {
+        const workspace = store.data.workspace;
+        if (!workspace) throw new Error('请先选择工作空间');
+        const style = management.validateStyle(appearance);
+        const target = await management.createCategory(workspace, name);
+        try {
+          await saveCategoryStyle(workspace, path.basename(target), style);
+        } catch (error) {
+          throw new Error(`分类文件夹已创建，但外观保存失败，请重新扫描：${error.message}`);
+        }
+        await scan();
+        return state();
+      }),
+    'category:style': (category, appearance) =>
+      workspaceTask(async () => {
+        const workspace = store.data.workspace;
+        if (!workspace) throw new Error('请先选择工作空间');
+        await management.categoryDirectory(workspace, category);
+        await saveCategoryStyle(workspace, category, management.validateStyle(appearance));
+        return state();
+      }),
+    'project:create': (category, name) =>
+      workspaceTask(async () => {
+        if (!store.data.workspace) throw new Error('请先选择工作空间');
+        await management.createProject(store.data.workspace, category, name);
+        await scan();
+        return state();
+      }),
+    'workspace:choose': () =>
+      workspaceTask(async () => {
+        const result = await dialog.showOpenDialog(window, {
+          title: '选择工作空间',
+          defaultPath: store.data.workspace || path.join(os.homedir(), 'Workspace'),
+          properties: ['openDirectory'],
+        });
+        if (result.canceled || !result.filePaths[0]) return state();
+        const next = await scanWorkspace(result.filePaths[0]);
+        store.data.workspace = next.workspace;
+        await store.save();
+        snapshot = next;
+        return state();
+      }),
     'project:favorite': async (id) => {
       if (!snapshot?.projects.some((p) => p.id === id)) throw new Error('项目已不存在，请重新扫描');
       store.data.favorites = store.data.favorites.includes(id)

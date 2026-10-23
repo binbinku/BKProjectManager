@@ -78,6 +78,10 @@ Open a project card to enter the three-panel workbench: browse files on the left
     <td width="50%"><strong>🔎 Find it quickly</strong><br />Search names, categories, technology types, or relative paths. Press ⌘ / Ctrl + K to focus search.</td>
   </tr>
   <tr>
+    <td><strong>🎨 Category identity</strong><br />Stable colors and icons for every category, with custom appearances saved separately for each workspace.</td>
+    <td><strong>➕ Start something new</strong><br />Create categories and empty projects directly in the app. New items appear automatically.</td>
+  </tr>
+  <tr>
     <td><strong>⭐ Keep favorites close</strong><br />Bookmark your regular projects and return to previous work through Recently opened.</td>
     <td><strong>🚀 Get back to work</strong><br />Open Finder / File Explorer, a project terminal, VS Code, Cursor, or a custom editor.</td>
   </tr>
@@ -155,6 +159,15 @@ npm run dev
 4. Open **设置…** (Settings) from the native menu to choose appearance and your default editor. The app icon in the header opens the project externally.
 
 Click **Rescan** after adding or moving projects. You can switch workspaces through **Settings…** in the native menu (macOS: app menu, `⌘,`; Windows: File menu, `Ctrl+,`).
+
+### Creating categories and projects (source preview)
+
+- Click **＋** beside the sidebar's category heading, enter a name and choose a color and icon. The app creates `Workspace/CategoryName/Projects/`.
+- Select a category and use the palette button beside its title to change its appearance. The sidebar, heading and project cards update together.
+- Click **新建项目** (New project), choose a category and enter a name to create an empty folder. It goes into the existing `Projects` container, or directly under the category when no container exists. The list refreshes automatically.
+- Categories that are recognized project roots cannot host new child projects. Duplicate names, invalid paths and reserved names produce an error without overwriting existing content.
+
+Category appearances stay in local preferences; no configuration files are added to existing projects. Published v0.1.1 installers do not include these additions yet.
 
 > **Validation scope:** the current workbench and local preview are tested on macOS Apple Silicon. Existing Intel installers have been tested through Rosetta 2. Windows x64 installers are cross-built on macOS and still await Windows 11 runtime testing. Dependency installation needs internet access for npm packages and Electron; bundled icons load offline at runtime.
 
@@ -251,6 +264,7 @@ For example, if `AndroidDev/Projects` contains `settings.gradle.kts`, it is trea
 | `npm test`                 | Test discovery, settings, project files and sessions           |
 | `npm run test:workbench`   | Test project browsing, file preview, real terminal and cleanup |
 | `npm run test:smoke`       | Verify key interactions in a real Electron window              |
+| `npm run test:management`  | Test category appearance, new folders and restart persistence  |
 | `npm run format:check`     | Check source formatting                                        |
 | `npm run docs:screenshots` | Build the app and regenerate screenshots with sample data      |
 

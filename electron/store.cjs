@@ -1,5 +1,21 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
+const { validateStyle } = require('./workspace-management.cjs');
+function loadCategoryStyles(saved) {
+  const workspaces = {};
+  if (!saved || typeof saved !== 'object' || Array.isArray(saved)) return workspaces;
+  for (const [workspace, categories] of Object.entries(saved)) {
+    if (!categories || typeof categories !== 'object' || Array.isArray(categories)) continue;
+    const valid = {};
+    for (const [name, style] of Object.entries(categories)) {
+      try {
+        Object.defineProperty(valid, name, { value: validateStyle(style), enumerable: true });
+      } catch {}
+    }
+    Object.defineProperty(workspaces, workspace, { value: valid, enumerable: true });
+  }
+  return workspaces;
+}
 const defaults = () => ({
   workspace: null,
   favorites: [],
@@ -7,6 +23,7 @@ const defaults = () => ({
   opener: 'folder',
   customEditor: null,
   theme: 'system',
+  categoryStyles: {},
 });
 class Store {
   constructor(directory) {
@@ -32,6 +49,7 @@ class Store {
           : 'folder',
         customEditor: typeof saved.customEditor === 'string' ? saved.customEditor : null,
         theme: ['light', 'dark', 'system'].includes(saved.theme) ? saved.theme : 'system',
+        categoryStyles: loadCategoryStyles(saved.categoryStyles),
       };
     } catch (error) {
       if (error.code !== 'ENOENT')

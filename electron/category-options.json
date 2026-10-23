@@ -1,0 +1,25 @@
+{
+  "colors": ["blue", "purple", "green", "orange", "pink", "teal", "gray"],
+  "icons": [
+    "folder",
+    "globe",
+    "gamepad",
+    "smartphone",
+    "flask",
+    "code",
+    "server",
+    "database",
+    "palette",
+    "terminal",
+    "box"
+  ],
+  "presets": [
+    { "pattern": "web|前端|网站", "color": "blue", "icon": "globe" },
+    { "pattern": "game|unity|unreal|游戏", "color": "purple", "icon": "gamepad" },
+    { "pattern": "android|安卓", "color": "green", "icon": "smartphone" },
+    { "pattern": "flutter|ios|mobile|移动", "color": "teal", "icon": "smartphone" },
+    { "pattern": "test|实验|测试", "color": "orange", "icon": "flask" },
+    { "pattern": "design|设计", "color": "pink", "icon": "palette" },
+    { "pattern": "backend|server|后端", "color": "teal", "icon": "server" }
+  ]
+}
