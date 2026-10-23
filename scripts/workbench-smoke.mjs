@@ -97,9 +97,15 @@ try {
 
   // The central viewer fills the window; hidden scrollbars must not disable scrolling.
   const assertFullHeight = async () => {
-    const bounds = await page.locator('.file-viewport').boundingBox();
-    assert.equal(bounds.y, 0);
-    assert.equal(bounds.height, await page.evaluate(() => window.innerHeight));
+    for (const selector of ['.file-viewport', '.terminal-host']) {
+      const bounds = await page.locator(selector).boundingBox();
+      assert.equal(bounds.y, 0, `${selector} must reach the top edge`);
+      assert.equal(bounds.height, await page.evaluate(() => window.innerHeight));
+    }
+    await page.waitForFunction(() => {
+      const screen = document.querySelector('.xterm-screen').getBoundingClientRect();
+      return screen.top >= 0 && screen.bottom <= window.innerHeight;
+    });
     assert.equal(await page.locator('.file-panel header, .file-panel footer').count(), 0);
   };
   await assertFullHeight();
@@ -320,7 +326,7 @@ try {
   await page.getByRole('button', { name: '返回项目列表' }).click();
   assert.deepEqual(errors, []);
   console.log(
-    'Workbench smoke passed: full-height viewer, hidden scrollbars with working tree/code/terminal scrolling, lazy tree, single-file preview, syntax highlighting, escaped content, images, binary fallback, real PTY input/cwd, Ctrl+C, panel resize, themes, terminal restart, session revocation and process cleanup.',
+    'Workbench smoke passed: full-height viewer and terminal, hidden scrollbars with working tree/code/terminal scrolling, lazy tree, single-file preview, syntax highlighting, escaped content, images, binary fallback, real PTY input/cwd, Ctrl+C, panel resize, themes, terminal restart, session revocation and process cleanup.',
   );
 } catch (error) {
   if (app) {
@@ -329,7 +335,7 @@ try {
     console.error(
       'Terminal status:',
       await page
-        .locator('.terminal-location')
+        .locator('.terminal-status')
         .textContent()
         .catch(() => 'unavailable'),
     );

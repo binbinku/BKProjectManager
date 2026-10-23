@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Terminal } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import { Circle, Eraser, RefreshCw, SquareTerminal } from 'lucide-react';
@@ -7,7 +8,13 @@ import '@xterm/xterm/css/xterm.css';
 
 const api = window.workspaceAPI;
 
-export function ProjectTerminal({ sessionId }: { sessionId: string }) {
+export function ProjectTerminal({
+  sessionId,
+  controlsContainer,
+}: {
+  sessionId: string;
+  controlsContainer: HTMLElement | null;
+}) {
   const host = useRef<HTMLDivElement>(null);
   const controls = useRef<{ restart(): void; clear(): void } | null>(null);
   const [status, setStatus] = useState('正在启动');
@@ -200,44 +207,46 @@ export function ProjectTerminal({ sessionId }: { sessionId: string }) {
 
   return (
     <section className="terminal-panel" aria-label="项目终端">
-      <div className="panel-heading">
-        <span>
-          <SquareTerminal size={15} />
-          终端 <small>{shell}</small>
-        </span>
-        <div className="panel-actions">
-          <button
-            aria-label="清空终端"
-            title="清空终端显示"
-            onClick={() => controls.current?.clear()}
-          >
-            <Eraser size={14} />
-          </button>
-          <button
-            aria-label="重新启动终端"
-            title="结束当前进程并重新启动终端"
-            disabled={starting}
-            onClick={() => controls.current?.restart()}
-          >
-            <RefreshCw size={14} className={starting ? 'spin' : ''} />
-          </button>
-        </div>
-      </div>
-      <div className="terminal-location">
-        PROJECT SHELL{' '}
-        <span>
-          <Circle size={6} fill="currentColor" />
-          {status}
-        </span>
-      </div>
-      {error && (
-        <div className="terminal-error" role="alert">
-          {error}
-        </div>
-      )}
-      <div className="terminal-host" ref={host} data-running={running} />
-      <div className="terminal-hint">
-        点击终端输入命令 <span>Ctrl C 中断 · exit 退出</span>
+      {controlsContainer &&
+        createPortal(
+          <>
+            <div className="panel-heading terminal-controls-heading">
+              <span>
+                <SquareTerminal size={15} />
+                终端 <small>{shell}</small>
+              </span>
+              <div className="panel-actions">
+                <button
+                  aria-label="清空终端"
+                  title="清空终端显示"
+                  onClick={() => controls.current?.clear()}
+                >
+                  <Eraser size={14} />
+                </button>
+                <button
+                  aria-label="重新启动终端"
+                  title="结束当前进程并重新启动终端"
+                  disabled={starting}
+                  onClick={() => controls.current?.restart()}
+                >
+                  <RefreshCw size={14} className={starting ? 'spin' : ''} />
+                </button>
+              </div>
+            </div>
+            <div className="terminal-status" role="status" title="Ctrl C 中断 · exit 退出">
+              <Circle size={6} fill="currentColor" />
+              {status}
+            </div>
+            {error && (
+              <div className="terminal-error" role="alert">
+                {error}
+              </div>
+            )}
+          </>,
+          controlsContainer,
+        )}
+      <div className="terminal-host" data-running={running}>
+        <div className="terminal-surface" ref={host} />
       </div>
     </section>
   );

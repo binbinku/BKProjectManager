@@ -70,7 +70,7 @@ The v0.2.0 source opens projects in a three-panel workbench. Published v0.1.1 in
 
 - **Left:** expand the project file tree on demand; refresh after changing files in the terminal.
 - **Center:** a viewer extending from the top to the bottom of the window, showing one read-only file at a time, with line numbers and VS Code Light+ / Dark+ syntax highlighting. No file tabs or editing controls. Common images can also be previewed.
-- **Right:** an interactive terminal starting in the project directory, with scrolling, Ctrl+C, clear and restart. macOS uses your login shell; Windows 11 uses PowerShell.
+- **Right:** an interactive terminal extending from the top to the bottom of the window, starting in the project directory, with scrolling, Ctrl+C, clear and restart. Its status and controls live in the left sidebar. macOS uses your login shell; Windows 11 uses PowerShell.
 - Resize the side panels, switch light/dark themes in Settings, return to the project list, or use the existing external opener. Returning closes the project's terminal.
 - Scrollbars are hidden throughout the app; mouse-wheel, trackpad and horizontal scrolling remain available.
 

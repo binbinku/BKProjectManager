@@ -41,6 +41,7 @@ export default function ProjectWorkbench({
   const [treeWidth, setTreeWidth] = useState(236);
   const [terminalWidth, setTerminalWidth] = useState(390);
   const [leaving, setLeaving] = useState(false);
+  const [terminalTools, setTerminalTools] = useState<HTMLDivElement | null>(null);
   const layout = useRef<HTMLDivElement>(null);
   const request = useRef(0);
   const drag = useRef<{ side: 'tree' | 'terminal'; startX: number; width: number } | null>(null);
@@ -199,6 +200,22 @@ export default function ProjectWorkbench({
             <span>{selected || session.project.category}</span>
             <small>只读预览 · 本地文件</small>
           </div>
+          <div className="workbench-terminal-tools" ref={setTerminalTools} />
+          <div className="workbench-tools">
+            <button className="external-open" aria-label="设置" onClick={onSettings} title="设置">
+              <Settings2 size={14} />
+              设置
+            </button>
+            <button
+              className="external-open"
+              onClick={onExternal}
+              disabled={busy}
+              title="使用设置中的默认打开方式"
+            >
+              <ArrowUpRight size={14} />
+              外部打开
+            </button>
+          </div>
         </aside>
         {separator('tree')}
         <FileViewer
@@ -211,26 +228,7 @@ export default function ProjectWorkbench({
           }}
         />
         {separator('terminal')}
-        <div className="terminal-column">
-          <header className="workbench-tools">
-            <div className="workbench-topbar-actions">
-              <button className="external-open" aria-label="设置" onClick={onSettings} title="设置">
-                <Settings2 size={14} />
-                设置
-              </button>
-              <button
-                className="external-open"
-                onClick={onExternal}
-                disabled={busy}
-                title="使用设置中的默认打开方式"
-              >
-                <ArrowUpRight size={14} />
-                外部打开
-              </button>
-            </div>
-          </header>
-          <ProjectTerminal sessionId={session.id} />
-        </div>
+        <ProjectTerminal sessionId={session.id} controlsContainer={terminalTools} />
       </div>
     </div>
   );
