@@ -64,6 +64,22 @@ A Codex-inspired interface brings together neutral colors, subtle borders, and c
   </tr>
 </table>
 
+## 🧩 Project workbench (source preview)
+
+The v0.2.0 source opens projects in a three-panel workbench. Published v0.1.1 installers do not include this feature yet.
+
+- **Left:** expand the project file tree on demand; refresh after changing files in the terminal.
+- **Center:** one read-only file at a time, with line numbers and syntax highlighting. No file tabs or editing controls. Common images can also be previewed.
+- **Right:** an interactive terminal starting in the project directory, with scrolling, Ctrl+C, clear and restart. macOS uses your login shell; Windows 11 uses PowerShell.
+- Resize the side panels, switch light/dark themes, return to the project list, or use the existing external opener. Returning closes the project's terminal.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/workbench-dark.png" />
+  <img src="docs/assets/workbench-light.png" alt="Project file tree, read-only code preview and interactive terminal" width="1360" />
+</picture>
+
+Preview supports UTF-8 and UTF-16 text and common images up to 2 MiB. Files over 200,000 characters use plain-text preview. Binary or unsupported files show an explanation. Project browsing stays within the selected project; symbolic links are not expandable in the tree.
+
 <a id="downloads"></a>
 
 ## 📦 Downloads
@@ -186,15 +202,16 @@ For example, if `AndroidDev/Projects` contains `settings.gradle.kts`, it is trea
 
 **Electron · React · TypeScript · Vite**
 
-| Command                    | Purpose                                                   |
-| -------------------------- | --------------------------------------------------------- |
-| `npm run dev`              | Start the development environment                         |
-| `npm run build`            | Check TypeScript and build the frontend                   |
-| `npm start`                | Launch the built desktop application                      |
-| `npm test`                 | Test scanning rules and preference persistence            |
-| `npm run test:smoke`       | Verify key interactions in a real Electron window         |
-| `npm run format:check`     | Check source formatting                                   |
-| `npm run docs:screenshots` | Build the app and regenerate screenshots with sample data |
+| Command                    | Purpose                                                        |
+| -------------------------- | -------------------------------------------------------------- |
+| `npm run dev`              | Start the development environment                              |
+| `npm run build`            | Check TypeScript and build the frontend                        |
+| `npm start`                | Launch the built desktop application                           |
+| `npm test`                 | Test discovery, settings, project files and sessions           |
+| `npm run test:workbench`   | Test project browsing, file preview, real terminal and cleanup |
+| `npm run test:smoke`       | Verify key interactions in a real Electron window              |
+| `npm run format:check`     | Check source formatting                                        |
+| `npm run docs:screenshots` | Build the app and regenerate screenshots with sample data      |
 
 Desktop interaction tests and screenshot generation require a desktop session. They use temporary workspaces and isolated settings, leaving your preferences intact. Documentation screenshots never read your project directories.
 
@@ -214,7 +231,7 @@ Output is written to `release/`. Build on the target operating system where poss
 electron/     # Windows, restricted IPC, discovery, and local settings
 src/          # React UI and themes
 scripts/      # Development launcher, desktop tests, and screenshots
-tests/        # Discovery and persistence tests
+tests/        # Discovery, persistence, project file and session tests
 docs/assets/  # Documentation SVG and demo screenshots
 ```
 

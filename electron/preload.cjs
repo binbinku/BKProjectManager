@@ -1,5 +1,22 @@
 const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('workspaceAPI', {
+  openWorkbench: (id) => ipcRenderer.invoke('workbench:open', id),
+  closeWorkbench: (id) => ipcRenderer.invoke('workbench:close', id),
+  listProjectFiles: (id, relative) => ipcRenderer.invoke('workbench:list', id, relative),
+  readProjectFile: (id, relative) => ipcRenderer.invoke('workbench:read', id, relative),
+  startTerminal: (id, cols, rows) => ipcRenderer.invoke('terminal:start', id, cols, rows),
+  writeTerminal: (id, terminalId, data) =>
+    ipcRenderer.invoke('terminal:input', id, terminalId, data),
+  resizeTerminal: (id, terminalId, cols, rows) =>
+    ipcRenderer.invoke('terminal:resize', id, terminalId, cols, rows),
+  acknowledgeTerminal: (id, terminalId, length) =>
+    ipcRenderer.invoke('terminal:acknowledge', id, terminalId, length),
+  stopTerminal: (id, terminalId) => ipcRenderer.invoke('terminal:stop', id, terminalId),
+  onTerminalEvent: (callback) => {
+    const listener = (_event, payload) => callback(payload);
+    ipcRenderer.on('terminal:event', listener);
+    return () => ipcRenderer.removeListener('terminal:event', listener);
+  },
   getState: () => ipcRenderer.invoke('workspace:state'),
   chooseWorkspace: () => ipcRenderer.invoke('workspace:choose'),
   scan: () => ipcRenderer.invoke('workspace:scan'),

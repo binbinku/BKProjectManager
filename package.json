@@ -1,6 +1,6 @@
 {
   "name": "bk-project-manager",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "private": true,
   "description": "A local workspace for all your projects",
   "main": "electron/main.cjs",
@@ -20,16 +20,26 @@
     "start": "electron .",
     "test": "node --test tests/*.test.cjs",
     "test:smoke": "node scripts/smoke.mjs",
-    "docs:screenshots": "npm run build && node scripts/readme-screenshots.mjs",
+    "docs:screenshots": "npm run build && node scripts/prepare-native.cjs && node scripts/readme-screenshots.mjs && node scripts/workbench-smoke.mjs --docs",
     "pack": "npm run build && electron-builder --dir",
     "dist:mac": "npm run build && electron-builder --mac --arm64 --x64 --publish never",
     "dist:win": "npm run build && electron-builder --win --x64 --publish never",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "icons:generate": "node scripts/generate-icons.mjs"
+    "icons:generate": "node scripts/generate-icons.mjs",
+    "postinstall": "node scripts/prepare-native.cjs",
+    "predev": "node scripts/prepare-native.cjs",
+    "prestart": "node scripts/prepare-native.cjs",
+    "pretest:smoke": "node scripts/prepare-native.cjs",
+    "test:workbench": "node scripts/workbench-smoke.mjs",
+    "pretest:workbench": "node scripts/prepare-native.cjs"
   },
   "dependencies": {
+    "@xterm/addon-fit": "^0.11.0",
+    "@xterm/xterm": "^6.0.0",
+    "highlight.js": "^11.12.0",
     "lucide-react": "^0.468.0",
+    "node-pty": "^1.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
@@ -83,7 +93,12 @@
     },
     "dmg": {
       "icon": "build/icon.icns"
-    }
+    },
+    "beforePack": "./scripts/prepare-native.cjs",
+    "npmRebuild": false,
+    "asarUnpack": [
+      "node_modules/node-pty/**/*"
+    ]
   },
   "engines": {
     "node": ">=22.12.0"

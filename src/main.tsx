@@ -1,4 +1,12 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  lazy,
+  Suspense,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   ArrowDownUp,
@@ -27,12 +35,13 @@ import {
   Terminal,
   X,
 } from 'lucide-react';
-import type { AppState, Project, ThemePreference } from './types';
+import type { AppState, Project, ThemePreference, WorkbenchSession } from './types';
 import { ThemeSelector } from './ThemeSelector';
 import './styles.css';
 import { version as appVersion } from '../package.json';
 
 const logo = new URL('../docs/assets/logo.svg', import.meta.url).href;
+const ProjectWorkbench = lazy(() => import('./ProjectWorkbench'));
 const api = window.workspaceAPI;
 const palette = ['purple', 'blue', 'green', 'orange', 'pink', 'teal'];
 const typeColors: Record<string, string> = {
@@ -72,6 +81,7 @@ function App() {
   const [sort, setSort] = useState('name');
   const [view, setView] = useState('grid');
   const [settings, setSettings] = useState(false);
+  const [session, setSession] = useState<WorkbenchSession | null>(null);
   const theme = state?.settings.theme ?? 'system';
   const searchRef = useRef<HTMLInputElement>(null);
   async function perform(task: () => Promise<AppState>, success?: string) {
@@ -211,6 +221,30 @@ function App() {
   const changeTheme = (value: ThemePreference) => perform(() => api.setTheme(value));
   const open = (project: Project, action: 'default' | 'folder' | 'terminal' = 'default') =>
     perform(() => api.openProject(project.id, action), `已打开 ${project.name}`);
+  async function enterProject(project: Project) {
+    if (busy) return;
+    setBusy(true);
+    setError('');
+    try {
+      const result = await api.openWorkbench(project.id);
+      setState(result.state);
+      setSession(result.session);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : '项目打开失败');
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function leaveProject() {
+    if (!session) return;
+    try {
+      await api.closeWorkbench(session.id);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : '项目关闭失败');
+    } finally {
+      setSession(null);
+    }
+  }
   const platform = api?.platform;
   const folderName = platform === 'darwin' ? 'Finder' : '资源管理器';
   const openerLabels: Record<string, string> = {
@@ -223,6 +257,29 @@ function App() {
     setSelection(value);
     setQuery('');
   };
+
+  if (session)
+    return (
+      <Suspense
+        fallback={
+          <div className="viewer-empty">
+            <Loader2 className="spin" size={30} />
+            正在打开项目工作台
+          </div>
+        }
+      >
+        <ProjectWorkbench
+          session={session}
+          theme={theme}
+          onTheme={changeTheme}
+          onBack={() => void leaveProject()}
+          onExternal={() => open(session.project)}
+          busy={busy}
+          actionError={error}
+          onDismissError={() => setError('')}
+        />
+      </Suspense>
+    );
 
   return (
     <div className={`app platform-${platform}`}>
@@ -493,7 +550,7 @@ function App() {
                           />
                         </button>
                       </div>
-                      <div className="card-body">
+                      <div className="card-body" onDoubleClick={() => void enterProject(project)}>
                         <h2 title={project.name}>{project.name}</h2>
                         <p className="project-path" title={project.path}>
                           {project.relativePath}
@@ -519,7 +576,7 @@ function App() {
                         <button
                           className="open-project"
                           disabled={busy}
-                          onClick={() => open(project)}
+                          onClick={() => void enterProject(project)}
                         >
                           <span>打开项目</span>
                           <ArrowUpRight size={14} />

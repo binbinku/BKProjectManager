@@ -6,6 +6,7 @@ const { spawn } = require('node:child_process');
 const { pathToFileURL } = require('node:url');
 const { scanWorkspace } = require('./scanner.cjs');
 const { Store } = require('./store.cjs');
+const { Workbench } = require('./workbench.cjs');
 
 app.setName('BK Project Manager');
 const appIcon = path.join(
@@ -19,6 +20,7 @@ let window,
   store,
   snapshot = null;
 let scanJob;
+let workbench;
 async function scan() {
   if (!store.data.workspace) return null;
   if (!scanJob)
@@ -91,6 +93,27 @@ async function editorPath(opener) {
 }
 function registerHandlers() {
   const handlers = {
+    'workbench:open': async (id) => {
+      const project = snapshot?.projects.find((item) => item.id === id);
+      if (!project) throw new Error('项目已不存在，请重新扫描');
+      const session = await workbench.open(project);
+      try {
+        store.data.recent[id] = Date.now();
+        await store.save();
+      } catch (error) {
+        workbench.close(session.id);
+        throw error;
+      }
+      return { session, state: state() };
+    },
+    'workbench:close': async (id) => workbench.close(id),
+    'workbench:list': async (id, relative) => workbench.requireSession(id).files.list(relative),
+    'workbench:read': async (id, relative) => workbench.requireSession(id).files.read(relative),
+    'terminal:start': async (...args) => workbench.startTerminal(...args),
+    'terminal:input': async (...args) => workbench.write(...args),
+    'terminal:resize': async (...args) => workbench.resize(...args),
+    'terminal:acknowledge': async (...args) => workbench.acknowledge(...args),
+    'terminal:stop': async (...args) => workbench.stopTerminal(...args),
     'workspace:state': async () => state(),
     'workspace:scan': async () => {
       await scan();
@@ -191,6 +214,7 @@ function registerHandlers() {
       const senderURL = event.senderFrame?.url;
       if (
         event.sender !== window?.webContents ||
+        event.senderFrame !== window.webContents.mainFrame ||
         !senderURL ||
         new URL(senderURL).origin !== new URL(expected).origin ||
         (new URL(expected).protocol === 'file:' && senderURL.split('#')[0] !== expected)
@@ -217,6 +241,11 @@ function createWindow() {
     },
   });
   window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  window.webContents.on('render-process-gone', () => workbench.dispose());
+  window.webContents.on('did-start-navigation', (_event, _url, _isInPlace, isMainFrame) => {
+    if (isMainFrame) workbench.dispose();
+  });
+  window.on('closed', () => workbench.dispose());
   window.webContents.on('will-navigate', (event) => event.preventDefault());
   if (process.env.ELECTRON_RENDERER_URL) window.loadURL(process.env.ELECTRON_RENDERER_URL);
   else window.loadFile(path.join(__dirname, '../dist/index.html'));
@@ -226,6 +255,9 @@ app
   .then(async () => {
     if (process.platform === 'darwin') app.dock.setIcon(appIcon);
     store = new Store(app.getPath('userData'));
+    workbench = new Workbench((event) => {
+      if (window && !window.isDestroyed()) window.webContents.send('terminal:event', event);
+    });
     await store.load();
     applyTheme(store.data.theme);
     nativeTheme.on('updated', () => {
@@ -245,3 +277,4 @@ app
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
+app.on('before-quit', () => workbench?.dispose());

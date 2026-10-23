@@ -29,6 +29,16 @@ export interface AppState {
   snapshot: Snapshot | null;
 }
 export interface WorkspaceAPI {
+  openWorkbench(id: string): Promise<{ session: WorkbenchSession; state: AppState }>;
+  closeWorkbench(id: string): Promise<void>;
+  listProjectFiles(id: string, relative: string): Promise<DirectoryListing>;
+  readProjectFile(id: string, relative: string): Promise<FilePreview>;
+  startTerminal(id: string, cols: number, rows: number): Promise<{ id: string; shell: string }>;
+  writeTerminal(id: string, terminalId: string, data: string): Promise<void>;
+  resizeTerminal(id: string, terminalId: string, cols: number, rows: number): Promise<void>;
+  acknowledgeTerminal(id: string, terminalId: string, length: number): Promise<void>;
+  stopTerminal(id: string, terminalId: string): Promise<void>;
+  onTerminalEvent(callback: (event: TerminalEvent) => void): () => void;
   platform: string;
   getState(): Promise<AppState>;
   chooseWorkspace(): Promise<AppState>;
@@ -39,6 +49,27 @@ export interface WorkspaceAPI {
   setTheme(value: ThemePreference): Promise<AppState>;
   chooseEditor(): Promise<AppState>;
 }
+export interface WorkbenchSession {
+  id: string;
+  project: Project;
+}
+export interface FileEntry {
+  name: string;
+  path: string;
+  kind: 'file' | 'directory' | 'link' | 'special';
+}
+export interface DirectoryListing {
+  entries: FileEntry[];
+  truncated: boolean;
+}
+export type FilePreview = { path: string; size: number } & (
+  | { kind: 'text'; content: string; encoding: string }
+  | { kind: 'image'; dataURL: string }
+  | { kind: 'unsupported'; reason: string }
+);
+export type TerminalEvent = { sessionId: string; terminalId: string } & (
+  { type: 'data'; data: string } | { type: 'exit'; exitCode: number }
+);
 declare global {
   interface Window {
     workspaceAPI: WorkspaceAPI;

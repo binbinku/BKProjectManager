@@ -64,6 +64,22 @@
   </tr>
 </table>
 
+## 🧩 项目工作台（源码预览版）
+
+v0.2.0 源码支持在软件内打开项目，进入三栏工作台。当前已发布的 v0.1.1 安装包尚未包含此功能。
+
+- **左侧：** 按需展开项目文件目录；通过刷新按钮查看终端修改后的文件。
+- **中间：** 一次只读预览一个文件，支持行号、代码高亮和常见图片；不显示文件标签，不提供编辑保存。
+- **右侧：** 可交互的真实终端，启动在项目目录，支持滚动、Ctrl+C 中断、清空和重启。macOS 使用登录 Shell，Windows 11 使用 PowerShell。
+- 支持拖动调整左右面板宽度、切换亮暗主题、返回项目列表，以及使用原来的外部打开方式。返回列表时会关闭当前项目终端。
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/workbench-dark.png" />
+  <img src="docs/assets/workbench-light.png" alt="项目工作台：文件目录、只读代码预览和交互终端" width="1360" />
+</picture>
+
+预览支持 2 MiB 以内的 UTF-8、UTF-16 文本与常见图片；超过 20 万字符的文本使用纯文本预览。二进制或不支持的文件会显示说明。文件浏览限定在当前项目中，文件树不展开符号链接。
+
 <a id="downloads"></a>
 
 ## 📦 下载安装
@@ -186,15 +202,16 @@ Workspace/
 
 **Electron · React · TypeScript · Vite**
 
-| 命令                       | 用途                               |
-| -------------------------- | ---------------------------------- |
-| `npm run dev`              | 启动开发环境                       |
-| `npm run build`            | TypeScript 检查并构建前端          |
-| `npm start`                | 运行已构建的桌面应用               |
-| `npm test`                 | 验证扫描规则与配置持久化           |
-| `npm run test:smoke`       | 在真实 Electron 窗口中验证主要交互 |
-| `npm run format:check`     | 检查代码格式                       |
-| `npm run docs:screenshots` | 构建应用并使用示例数据更新文档截图 |
+| 命令                       | 用途                                   |
+| -------------------------- | -------------------------------------- |
+| `npm run dev`              | 启动开发环境                           |
+| `npm run build`            | TypeScript 检查并构建前端              |
+| `npm start`                | 运行已构建的桌面应用                   |
+| `npm test`                 | 验证扫描、配置持久化、文件访问与会话   |
+| `npm run test:workbench`   | 验证项目文件、预览、真实终端与进程清理 |
+| `npm run test:smoke`       | 在真实 Electron 窗口中验证主要交互     |
+| `npm run format:check`     | 检查代码格式                           |
+| `npm run docs:screenshots` | 构建应用并使用示例数据更新文档截图     |
 
 桌面交互测试和截图生成需要可用的桌面会话。它们使用临时工作空间和独立配置，不覆盖你的使用偏好；文档截图不会读取你的项目目录。
 
@@ -214,7 +231,7 @@ npm run dist:win   # Windows：NSIS 安装包
 electron/     # 窗口、受限 IPC、目录扫描与本地配置
 src/          # React 界面与主题
 scripts/      # 开发启动、桌面测试与截图生成
-tests/        # 扫描与持久化测试
+tests/        # 扫描、持久化、文件访问与会话测试
 docs/assets/  # 文档 SVG 与演示截图
 ```
 
