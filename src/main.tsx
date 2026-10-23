@@ -21,6 +21,8 @@ import { ThemeSelector } from './ThemeSelector';
 import { GlassTransparency } from './GlassTransparency';
 import { PaletteSelector } from './PaletteSelector';
 import { GitHubButton } from './GitHubButton';
+import { WindowControls } from './WindowControls';
+import { SettingsButton } from './SettingsButton';
 import { applyPalette } from './palettes';
 import { ProjectTools } from './ProjectTools';
 import { CategoryIcon, defaultCategoryStyle } from './categories';
@@ -555,6 +557,9 @@ function App() {
   return (
     <div className={`app platform-${platform} ${state?.settings.workspace ? 'project-page' : ''}`}>
       <aside className="sidebar">
+        <div className="sidebar-titlebar">
+          <WindowControls />
+        </div>
         <header className="brand">
           <span className="brand-mark">
             <img src={logo} alt="BK Project Manager" width="22" height="22" />
@@ -562,6 +567,7 @@ function App() {
           <span className="brand-name" title="Project Manager">
             Project Manager
           </span>
+          <SettingsButton onClick={() => setSettings(true)} />
         </header>
         <div className="nav-caption">工作台</div>
         <nav aria-label="项目导航">

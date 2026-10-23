@@ -21,7 +21,8 @@
   flex-shrink: 0;
   -webkit-app-region: drag;
 }
-.platform-darwin .workbench-navigation-header {
+.platform-darwin .workbench-navigation-header,
+.platform-win32 .workbench-navigation-header {
   padding-left: 80px;
 }
 .workbench-navigation {
@@ -120,7 +121,7 @@
   overflow: auto;
   flex: 1;
   min-height: 0;
-  padding: 0 0 16px;
+  padding: 0 0 84px;
   scroll-padding-top: 56px;
 }
 .file-tree,

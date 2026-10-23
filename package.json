@@ -40,6 +40,7 @@
     "prebuild": "node scripts/prepare-file-icons.mjs",
     "test:github": "node scripts/github-smoke.mjs",
     "test:windows": "node scripts/project-windows-smoke.mjs",
+    "test:window-chrome": "node scripts/window-chrome-smoke.mjs",
     "test:glass": "node scripts/glass-smoke.mjs"
   },
   "dependencies": {

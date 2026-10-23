@@ -5,6 +5,8 @@ import { FileTree } from './FileTree';
 import { FileViewer } from './FileViewer';
 import { ProjectTerminal } from './ProjectTerminal';
 import { GitHubButton } from './GitHubButton';
+import { WindowControls } from './WindowControls';
+import { SettingsButton } from './SettingsButton';
 import './workbench.css';
 
 const api = window.workspaceAPI;
@@ -35,7 +37,7 @@ export default function ProjectWorkbench({
   const [treeWidth, setTreeWidth] = useState(236);
   const [terminalWidth, setTerminalWidth] = useState(390);
   const [openerInfo, setOpenerInfo] = useState<{ name: string; icon: string | null } | null>(null);
-  const minTreeWidth = api.platform === 'darwin' ? 220 : 160;
+  const minTreeWidth = ['darwin', 'win32'].includes(api.platform) ? 220 : 160;
   useEffect(() => {
     let current = true;
     setOpenerInfo(null);
@@ -166,6 +168,7 @@ export default function ProjectWorkbench({
       >
         <aside className="explorer-panel" aria-label="资源管理器">
           <header className="workbench-navigation-header">
+            <WindowControls />
             <div className="workbench-navigation">
               <button
                 className="back-projects"
@@ -218,6 +221,7 @@ export default function ProjectWorkbench({
         {separator('terminal')}
         <ProjectTerminal sessionId={session.id} />
       </div>
+      <SettingsButton floating />
     </div>
   );
 }

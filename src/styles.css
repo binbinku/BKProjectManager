@@ -360,20 +360,94 @@ h3 {
   inset: 0 auto 0 0;
   padding: 0 14px 12px;
 }
+.sidebar-titlebar {
+  display: none;
+  position: relative;
+  flex-shrink: 0;
+  height: 52px;
+  margin: 0 -14px;
+  -webkit-app-region: drag;
+}
+.platform-darwin .sidebar-titlebar,
+.platform-win32 .sidebar-titlebar {
+  display: block;
+}
 .brand {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
-  height: 52px;
-  min-height: 52px;
-  padding: 0 0 0 8px;
-  margin-bottom: 22px;
-  margin-right: -8px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 8px;
+  margin-bottom: 18px;
   -webkit-app-region: drag;
 }
-.platform-darwin .brand {
-  padding-left: 66px;
-  gap: 7px;
+.window-controls {
+  position: absolute;
+  left: 12px;
+  top: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  -webkit-app-region: no-drag;
+}
+.window-control {
+  display: grid;
+  place-items: center;
+  width: 12px;
+  height: 12px;
+  padding: 0;
+  border: 1px solid #0000001a;
+  border-radius: 50%;
+  color: #000000a6;
+}
+.window-close {
+  background: #ff5f57;
+}
+.window-minimize {
+  background: #febc2e;
+}
+.window-maximize {
+  background: #28c840;
+}
+.window-control svg {
+  opacity: 0;
+}
+.window-controls:hover svg,
+.window-control:focus-visible svg {
+  opacity: 1;
+}
+.window-control:active {
+  filter: brightness(0.85);
+}
+.sidebar-settings {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 6px;
+  color: var(--secondary);
+}
+.sidebar-settings:hover {
+  color: var(--text);
+  background: var(--hover);
+}
+.sidebar-settings-floating {
+  position: fixed;
+  left: 24px;
+  bottom: 24px;
+  z-index: 12;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--sidebar) var(--glass-tint), transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(130%);
+  backdrop-filter: blur(14px) saturate(130%);
+  box-shadow: 0 8px 30px #00000016;
 }
 .brand-mark {
   display: grid;
@@ -387,6 +461,7 @@ h3 {
   display: block;
 }
 .brand-name {
+  flex: 1;
   font-size: 12px;
   font-weight: 550;
   line-height: 18px;
