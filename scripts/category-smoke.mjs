@@ -45,8 +45,7 @@ try {
   }, workspace);
   await page.getByRole('button', { name: '选择工作空间', exact: true }).click();
   await page.locator('.project-card').first().waitFor();
-  await page.getByRole('textbox', { name: '搜索项目' }).fill('Project01');
-  assert.equal(await page.locator('.project-card').count(), 1);
+  assert.equal(await page.getByRole('textbox', { name: '搜索项目' }).count(), 0);
   await page
     .getByRole('navigation', { name: '项目分类', exact: true })
     .getByRole('button', { name: /WebDev/ })
@@ -54,7 +53,7 @@ try {
   assert.equal(
     await page.locator('.project-card').count(),
     27,
-    'Entering a category clears previous global search',
+    'Entering a category shows its projects',
   );
   for (const selector of [
     '.topbar',
@@ -70,7 +69,7 @@ try {
       `${selector} is absent from category pages`,
     );
   assert.equal(await page.getByRole('textbox', { name: '搜索项目' }).count(), 0);
-  await page.getByRole('toolbar', { name: '分类工具栏' }).waitFor();
+  await page.getByRole('toolbar', { name: '项目工具栏' }).waitFor();
   for (const selector of ['.workspace-switch', '.sidebar-bottom', '.local-note', '.sidebar-drag'])
     assert.equal(await page.locator(selector).count(), 0);
   assert.equal(await page.getByRole('button', { name: '管理工作空间', exact: true }).count(), 0);
@@ -81,9 +80,9 @@ try {
   );
   async function geometry() {
     const result = await page.evaluate(() => {
-      const bar = document.querySelector('.category-tools');
+      const bar = document.querySelector('.project-tools');
       const bounds = bar.getBoundingClientRect();
-      const rects = [...bar.querySelectorAll('.category-tool-button')].map((button) => {
+      const rects = [...bar.querySelectorAll('.project-tool-button')].map((button) => {
         const rect = button.getBoundingClientRect();
         return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
       });
@@ -189,7 +188,7 @@ try {
   );
   await page.getByRole('button', { name: '重新扫描', exact: true }).click();
   await page.waitForFunction(
-    () => !document.querySelector('.category-tools button[aria-label="重新扫描"]').disabled,
+    () => !document.querySelector('.project-tools button[aria-label="重新扫描"]').disabled,
   );
   await page.getByRole('button', { name: '新建项目', exact: true }).click();
   assert.equal(await page.getByLabel('所属分类').inputValue(), 'WebDev');
@@ -246,12 +245,66 @@ try {
   await page.getByRole('menuitemradio', { name: '列表视图', exact: true }).click();
   await geometry();
   await page.getByRole('button', { name: /全部项目/ }).click();
-  await page.locator('.topbar').waitFor();
-  await page.getByRole('textbox', { name: '搜索项目' }).waitFor();
-  assert.equal(await page.getByRole('toolbar', { name: '分类工具栏' }).count(), 0);
+  await page.getByRole('toolbar', { name: '项目工具栏' }).waitFor();
+  assert.equal(await page.locator('.topbar, .workspace-summary, .project-toolbar').count(), 0);
+  assert.equal(await page.getByRole('textbox', { name: '搜索项目' }).count(), 0);
+  assert.equal(await page.locator('.project-tool-button').count(), 4);
+  assert.equal(await page.getByRole('button', { name: '分类操作', exact: true }).count(), 0);
+  // Favorites and recent use the same canvas, while keeping their own filtering and recent ordering.
+  await app.evaluate(({ shell }) => {
+    shell.openPath = async () => '';
+  });
+  await page.getByRole('button', { name: '收藏 Project00', exact: true }).click();
+  await page.getByRole('button', { name: '取消收藏 Project00', exact: true }).waitFor();
+  await page.getByRole('button', { name: '收藏 Project26', exact: true }).click();
+  await page.getByRole('button', { name: '取消收藏 Project26', exact: true }).waitFor();
+  for (const name of ['Project00', 'Project26']) {
+    await page.getByRole('button', { name: `打开 ${name} 文件夹`, exact: true }).click();
+    await page.waitForFunction(
+      () => !document.querySelector('.project-tools button[aria-label="重新扫描"]').disabled,
+    );
+  }
+  for (const [label, first] of [
+    [/我的收藏/, 'Project00'],
+    [/最近打开/, 'Project26'],
+  ]) {
+    await page.getByRole('button', { name: label }).click();
+    assert.equal(await page.locator('.project-card').count(), 2);
+    assert.equal(await page.locator('.project-card h2').first().textContent(), first);
+    assert.equal(
+      await page
+        .locator('.topbar, .workspace-summary, .project-toolbar, .results-caption, .content-footer')
+        .count(),
+      0,
+    );
+    assert.equal(await page.locator('.project-tool-button').count(), 4);
+    await page.getByRole('button', { name: '显示方式', exact: true }).click();
+    await page.getByRole('menuitemradio', { name: '卡片视图', exact: true }).click();
+    await page.getByRole('button', { name: '新建项目', exact: true }).click();
+    await page.getByRole('dialog', { name: '新建项目', exact: true }).waitFor();
+    await page.getByRole('button', { name: '取消', exact: true }).click();
+  }
+  await page.getByRole('button', { name: '项目排序', exact: true }).click();
+  assert.equal(
+    await page
+      .getByRole('menuitemradio', { name: '按最近打开时间', exact: true })
+      .getAttribute('aria-checked'),
+    'true',
+  );
+  await page.getByRole('menuitemradio', { name: '按名称排序', exact: true }).click();
+  assert.equal(await page.locator('.project-card h2').first().textContent(), 'Project00');
+  await page.getByRole('button', { name: '项目排序', exact: true }).click();
+  await page.getByRole('menuitemradio', { name: '按最近打开时间', exact: true }).click();
+  assert.equal(await page.locator('.project-card h2').first().textContent(), 'Project26');
+  await page.getByRole('button', { name: '重新扫描', exact: true }).click();
+  await page.waitForFunction(
+    () => !document.querySelector('.project-tools button[aria-label="重新扫描"]').disabled,
+  );
+  await page.getByRole('button', { name: /全部项目/ }).click();
+  assert.equal(await page.locator('.project-card').count(), 27);
   assert.deepEqual(errors, []);
   console.log(
-    'Category smoke passed: minimal category canvas, vertical floating controls, sorting, grid/list views, keyboard/outside dismissal, scan/create/category actions, scroll position, empty state, minimum window, themes and unchanged overview.',
+    'Category smoke passed: minimal category canvas, vertical floating controls, sorting, grid/list views, keyboard/outside dismissal, scan/create/category actions, scroll position, empty state, minimum window, themes and unified all/favorite/recent pages with recent sorting.',
   );
 } finally {
   if (app) await app.close().catch(() => {});

@@ -132,15 +132,19 @@ try {
   await page.getByRole('button', { name: /我的收藏/ }).click();
   assert.equal(await page.locator('.project-card').count(), 1);
   await page.getByRole('button', { name: /全部项目/ }).click();
-  await page.getByRole('textbox', { name: '搜索项目' }).fill('工具箱');
+  await page
+    .getByRole('navigation', { name: '项目分类', exact: true })
+    .getByRole('button', { name: /TestDev/ })
+    .click();
   assert.equal(await page.locator('.project-card').count(), 1);
   await page.getByRole('button', { name: '打开 工具箱 文件夹' }).click();
   await page.getByRole('status').waitFor();
   assert.deepEqual(await app.evaluate(() => globalThis.__opened), [
     await realpath(path.join(fixture, 'TestDev/工具箱')),
   ]);
-  await page.getByRole('button', { name: '清空搜索' }).click();
-  await page.getByRole('button', { name: '列表视图' }).click();
+  await page.getByRole('button', { name: /全部项目/ }).click();
+  await page.getByRole('button', { name: '显示方式', exact: true }).click();
+  await page.getByRole('menuitemradio', { name: '列表视图', exact: true }).click();
   await page.locator('.list-view').waitFor();
   await clickMenu(app, 'settings');
   await page.getByRole('dialog').waitFor();
@@ -189,7 +193,7 @@ try {
   await page.screenshot({ path: 'artifacts/workspace.png' });
   assert.deepEqual(errors, []);
   console.log(
-    'Electron smoke passed: onboarding, scan, favorites, search, folder action, list, light/dark/system themes, system changes, native appearance, settings, validation, and persistence.',
+    'Electron smoke passed: onboarding, scan, favorites, category navigation, floating tools, folder action, list, light/dark/system themes, system changes, native appearance, settings, validation, and persistence.',
   );
 } finally {
   if (app) await app.close().catch(() => {});

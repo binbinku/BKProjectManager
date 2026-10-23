@@ -66,10 +66,16 @@ try {
     );
     if (openedHere) await page.getByRole('button', { name: '完成', exact: true }).click();
   }
+  async function view(value) {
+    await page.getByRole('button', { name: '显示方式', exact: true }).click();
+    await page
+      .getByRole('menuitemradio', { name: value === 'grid' ? '卡片视图' : '列表视图', exact: true })
+      .click();
+  }
   async function capture(name, selector) {
     console.log(`Capturing ${name}...`);
     // Present only a generic demo path; keep the actual scanner data intact.
-    await page.locator('.summary-path > span, .settings-path').evaluateAll((elements) => {
+    await page.locator('.settings-path').evaluateAll((elements) => {
       for (const element of elements) {
         element.textContent = '~/Workspace';
         element.title = '~/Workspace';
@@ -101,10 +107,10 @@ try {
   await capture('workspace-light.png');
   await theme('dark');
   await capture('workspace-dark.png');
-  await page.getByRole('button', { name: '列表视图' }).click();
+  await view('list');
   await page.locator('.list-view').waitFor();
   await capture('list-dark.png');
-  await page.getByRole('button', { name: '卡片视图', exact: true }).click();
+  await view('grid');
   await page
     .getByRole('navigation', { name: '项目分类', exact: true })
     .getByRole('button', { name: /WebDev/ })
@@ -113,7 +119,7 @@ try {
   await theme('light');
   await capture('category-light.png');
   await page.getByRole('button', { name: /全部项目/ }).click();
-  await page.getByRole('button', { name: '列表视图', exact: true }).click();
+  await view('list');
   await theme('dark');
   await page.getByRole('button', { name: '移除项目 AtlasWeb', exact: true }).click();
   await capture('remove-dark.png', '.remove-modal');

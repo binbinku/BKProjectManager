@@ -12,8 +12,9 @@ import {
 } from 'lucide-react';
 
 type Panel = 'category' | 'sort' | 'view';
-export function CategoryTools({
+export function ProjectTools({
   category,
+  recent,
   busy,
   obscured,
   sort,
@@ -25,7 +26,8 @@ export function CategoryTools({
   onAppearance,
   onRemove,
 }: {
-  category: string;
+  category?: string;
+  recent: boolean;
   busy: boolean;
   obscured: boolean;
   sort: string;
@@ -84,7 +86,7 @@ export function CategoryTools({
       <div
         ref={menu}
         id={menuId}
-        className="category-tool-menu"
+        className="project-tool-menu"
         role="menu"
         aria-label={panelNames[value]}
         onKeyDown={(event) => {
@@ -104,7 +106,7 @@ export function CategoryTools({
           }
         }}
       >
-        <span className="category-tool-menu-label">
+        <span className="project-tool-menu-label">
           {value === 'category' ? category : panelNames[value]}
         </span>
         {value === 'category' ? (
@@ -124,6 +126,7 @@ export function CategoryTools({
           </>
         ) : value === 'sort' ? (
           [
+            ...(recent ? [['opened', '按最近打开时间']] : []),
             ['name', '按名称排序'],
             ['modified', '按目录修改时间'],
           ].map(([value, label]) => (
@@ -158,12 +161,12 @@ export function CategoryTools({
   }
   function trigger(value: Panel, icon: ReactNode) {
     return (
-      <div className="category-tool-slot">
+      <div className="project-tool-slot">
         <button
           ref={(element) => {
             triggers.current[value] = element;
           }}
-          className="category-tool-button"
+          className="project-tool-button"
           disabled={busy}
           aria-label={panelNames[value]}
           aria-haspopup="menu"
@@ -172,7 +175,7 @@ export function CategoryTools({
           onClick={() => (panel === value ? close() : setPanel(value))}
         >
           {icon}
-          <span className="category-tool-tooltip" aria-hidden="true">
+          <span className="project-tool-tooltip" aria-hidden="true">
             {panelNames[value]}
           </span>
         </button>
@@ -183,9 +186,9 @@ export function CategoryTools({
   return (
     <div
       ref={root}
-      className={`category-tools ${panel ? 'has-menu' : ''}`}
+      className={`project-tools ${panel ? 'has-menu' : ''}`}
       role="toolbar"
-      aria-label="分类工具栏"
+      aria-label="项目工具栏"
       aria-orientation="vertical"
       onBlur={(event) => {
         if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget as Node))
@@ -196,7 +199,7 @@ export function CategoryTools({
         if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
         const buttons = [
           ...event.currentTarget.querySelectorAll<HTMLButtonElement>(
-            '.category-tool-button:not(:disabled)',
+            '.project-tool-button:not(:disabled)',
           ),
         ];
         const index = buttons.indexOf(document.activeElement as HTMLButtonElement);
@@ -206,29 +209,33 @@ export function CategoryTools({
         ]?.focus();
       }}
     >
-      {trigger('category', <MoreHorizontal size={19} />)}
-      <div className="category-tools-divider" />
+      {category && (
+        <>
+          {trigger('category', <MoreHorizontal size={19} />)}
+          <div className="project-tools-divider" />
+        </>
+      )}
       {trigger('view', view === 'grid' ? <Grid2X2 size={18} /> : <List size={19} />)}
       {trigger('sort', <ArrowDownUp size={18} />)}
       <button
-        className="category-tool-button"
+        className="project-tool-button"
         disabled={busy}
         aria-label="重新扫描"
         onClick={onScan}
       >
         <RefreshCw size={18} className={busy ? 'spin' : ''} />
-        <span className="category-tool-tooltip" aria-hidden="true">
+        <span className="project-tool-tooltip" aria-hidden="true">
           重新扫描
         </span>
       </button>
       <button
-        className="category-tool-button category-tool-primary"
+        className="project-tool-button project-tool-primary"
         disabled={busy}
         aria-label="新建项目"
         onClick={onCreate}
       >
         <Plus size={21} />
-        <span className="category-tool-tooltip" aria-hidden="true">
+        <span className="project-tool-tooltip" aria-hidden="true">
           新建项目
         </span>
       </button>

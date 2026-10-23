@@ -33,17 +33,17 @@
   <a href="#development">Development</a>
 </p>
 
-A local project manager for **macOS and Windows 11**. Bring projects into one workspace, organize them by category and find them through search, favorites or recent activity. Open a project's editor view when you want to browse code and use its terminal.
+A local project manager for **macOS and Windows 11**. Bring projects into one workspace, organize them by category and find them through categories, favorites or recent activity. Open a project's editor view when you want to browse code and use its terminal.
 
 <a id="project-manager"></a>
 
 ## 🗂️ Project manager · All your projects in view
 
-Scan your workspace, browse categories and quickly find projects through search, favorites and recently opened items. Switch between cards and a list, then open a project inside the app or in VS Code, Cursor or another editor.
+Scan your workspace, browse categories and quickly find projects through categories, favorites and recently opened items. Switch between cards and a list, then open a project inside the app or in VS Code, Cursor or another editor.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/workspace-dark.png" />
-  <img src="docs/assets/workspace-light.png" alt="Project management page with workspace categories, project cards, search, favorites and recent projects" width="1360" />
+  <img src="docs/assets/workspace-light.png" alt="Project management page with categories, project cards, favorites, recent projects and vertical floating tools" width="1360" />
 </picture>
 
 <p align="center">
@@ -75,7 +75,7 @@ Open a project card to enter the three-panel workbench: browse files on the left
 <table>
   <tr>
     <td width="50%"><strong>🗂️ Automatic organization</strong><br />Top-level folders become categories. Projects are discovered inside Projects containers or directly within a category.</td>
-    <td width="50%"><strong>🔎 Find it quickly</strong><br />Search names, categories, technology types, or relative paths. Press ⌘ / Ctrl + K to focus search.</td>
+    <td width="50%"><strong>🎛️ Lightweight controls</strong><br />A unified project canvas with vertical floating controls for view, sort, rescan and creation.</td>
   </tr>
   <tr>
     <td><strong>🎨 Category identity</strong><br />Stable colors and icons for every category, with custom appearances saved separately for each workspace.</td>
@@ -119,7 +119,8 @@ Settings, file refresh and terminal actions live in the native menu bar. Menu la
 | Refresh project files        | 查看 → 刷新文件目录                                      | `⌘R`     | `Ctrl+R`   |
 | Clear terminal output        | 终端 → 清空终端                                          | —        | —          |
 | Restart the project terminal | 终端 → 重新启动终端                                      | —        | —          |
-| Search projects              | Search box in the project list                           | `⌘K`     | `Ctrl+K`   |
+| Change project view          | Bottom-right floating toolbar → 显示方式                 | —        | —          |
+| Sort projects                | Bottom-right floating toolbar → 项目排序                 | —        | —          |
 | Interrupt a terminal command | Focus the terminal                                       | `Ctrl+C` | `Ctrl+C`   |
 
 Click the app icon in the header to open the project using your default external opener; hover to see its name. After running `exit`, restart through the Terminal menu. **Returning to the project list or restarting the terminal ends its current process.**
@@ -171,7 +172,7 @@ The sidebar starts with a single row containing the app icon and name, aligned w
 
 Category appearances stay in local preferences; no configuration files are added to existing projects. Published v0.1.1 installers do not include these additions yet.
 
-Category pages show projects directly, without a top bar, statistics, search or extra heading rows. A vertical floating toolbar in the bottom-right corner provides **view, sort, rescan and new project** controls for both card and list views. Its **…** menu contains category appearance and removal actions. All projects, Favorites and Recently opened retain their search and management tools.
+All projects, Favorites, Recently opened and category pages share a project canvas without a top bar, statistics, search or extra heading rows. A vertical floating toolbar in the bottom-right corner provides **view, sort, rescan and new project** controls for both card and list views. Category pages also have an **…** menu for category appearance and removal. Recently opened defaults to the latest opening time first, with name and directory modification time available in its sort menu.
 
 ### Removing, restoring and manual deletion (source preview)
 

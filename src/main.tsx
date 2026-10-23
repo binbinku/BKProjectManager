@@ -1,22 +1,11 @@
-import React, {
-  lazy,
-  Suspense,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
-  ArrowDownUp,
   ArrowRight,
   ArrowUpRight,
   Box,
   Braces,
   Check,
-  ChevronDown,
-  ChevronRight,
   Clock3,
   Code2,
   EyeOff,
@@ -25,19 +14,15 @@ import {
   GitBranch,
   Grid2X2,
   Layers3,
-  List,
   Loader2,
-  Monitor,
   Plus,
-  RefreshCw,
-  Search,
   Star,
   Terminal,
   X,
 } from 'lucide-react';
 import type { AppState, Project, ThemePreference, WorkbenchSession } from './types';
 import { ThemeSelector } from './ThemeSelector';
-import { CategoryTools } from './CategoryTools';
+import { ProjectTools } from './ProjectTools';
 import { CategoryIcon, defaultCategoryStyle } from './categories';
 import { ProjectManagerDialog, type ManagementDialog } from './ProjectManagerDialog';
 import { RemoveItemDialog, type RemovalTarget } from './RemoveItemDialog';
@@ -80,15 +65,14 @@ function App() {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [selection, setSelection] = useState('all');
-  const [query, setQuery] = useState('');
   const [sort, setSort] = useState('name');
+  const [recentSort, setRecentSort] = useState('opened');
   const [view, setView] = useState('grid');
   const [settings, setSettings] = useState(false);
   const [managementDialog, setManagementDialog] = useState<ManagementDialog | null>(null);
   const [removalTarget, setRemovalTarget] = useState<RemovalTarget | null>(null);
   const [session, setSession] = useState<WorkbenchSession | null>(null);
   const theme = state?.settings.theme ?? 'system';
-  const searchRef = useRef<HTMLInputElement>(null);
   async function perform(task: () => Promise<AppState>, success?: string) {
     setBusy(true);
     setError('');
@@ -121,14 +105,8 @@ function App() {
       }
     })();
     const handleKey = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
-        event.preventDefault();
-        if (document.querySelector('[role="dialog"]')) return;
-        searchRef.current?.focus();
-      }
       if (event.key === 'Escape') {
         setSettings(false);
-        searchRef.current?.blur();
       }
     };
     document.addEventListener('keydown', handleKey);
@@ -227,28 +205,28 @@ function App() {
   const removedCount = removed.categories.length + removed.projects.length;
   const favoriteCount = projects.filter((p) => favorites.includes(p.id)).length;
   const recentCount = projects.filter((p) => recent[p.id]).length;
-  const filtered = useMemo(() => {
-    const q = query.trim().toLocaleLowerCase();
-    return projects
-      .filter(
-        (p) =>
-          (selection === 'all' ||
+  const activeSort = selection === 'recent' ? recentSort : sort;
+  const filtered = useMemo(
+    () =>
+      projects
+        .filter(
+          (project) =>
+            selection === 'all' ||
             (selection === 'favorites'
-              ? favorites.includes(p.id)
+              ? favorites.includes(project.id)
               : selection === 'recent'
-                ? recent[p.id]
-                : p.category === selection.slice(9))) &&
-          (!q ||
-            `${p.name} ${p.category} ${p.type} ${p.relativePath}`.toLocaleLowerCase().includes(q)),
-      )
-      .sort((a, b) =>
-        selection === 'recent'
-          ? (recent[b.id] || 0) - (recent[a.id] || 0)
-          : sort === 'modified'
-            ? b.modifiedAt - a.modifiedAt
-            : a.name.localeCompare(b.name, 'zh-CN', { numeric: true }),
-      );
-  }, [projects, selection, query, sort, favorites, recent]);
+                ? !!recent[project.id]
+                : project.category === selection.slice(9)),
+        )
+        .sort((a, b) =>
+          activeSort === 'opened'
+            ? (recent[b.id] || 0) - (recent[a.id] || 0)
+            : activeSort === 'modified'
+              ? b.modifiedAt - a.modifiedAt
+              : a.name.localeCompare(b.name, 'zh-CN', { numeric: true }),
+        ),
+    [projects, selection, activeSort, favorites, recent],
+  );
   const title =
     selection === 'all'
       ? '全部项目'
@@ -303,7 +281,6 @@ function App() {
   };
   const select = (value: string) => {
     setSelection(value);
-    setQuery('');
   };
 
   const settingsDialog = settings && (
@@ -482,7 +459,7 @@ function App() {
     );
 
   return (
-    <div className={`app platform-${platform} ${selectedCategory ? 'category-page' : ''}`}>
+    <div className={`app platform-${platform} ${state?.settings.workspace ? 'project-page' : ''}`}>
       <aside className="sidebar">
         <header className="brand">
           <span className="brand-mark">
@@ -548,23 +525,7 @@ function App() {
         </nav>
       </aside>
       <main>
-        {!selectedCategory && (
-          <header className="topbar">
-            <div className="breadcrumb">
-              <FolderOpen size={16} />
-              <span>工作空间</span>
-              <ChevronRight size={14} />
-              <strong>{title}</strong>
-            </div>
-            <div className="topbar-right">
-              <span className="local-badge">
-                <span className="online-dot" />
-                LOCAL
-              </span>
-            </div>
-          </header>
-        )}
-        {selectedCategory && <div className="category-window-drag" aria-hidden="true" />}
+        <div className="project-window-drag" aria-hidden="true" />
         <div className="content">
           {error && (
             <div className="error-banner" role="alert">
@@ -611,123 +572,11 @@ function App() {
             </section>
           ) : (
             <>
-              {selectedCategory ? (
-                <h1 className="sr-only">{title}</h1>
-              ) : (
-                <>
-                  <section className="page-heading">
-                    <div>
-                      <h1>{title}</h1>
-                      <p>
-                        {selection === 'favorites'
-                          ? '快速访问你收藏的项目。'
-                          : selection === 'recent'
-                            ? '继续处理最近打开的项目。'
-                            : '浏览和打开工作空间中的项目。'}
-                      </p>
-                    </div>
-                    <div className="heading-actions">
-                      <button
-                        className="secondary-button"
-                        disabled={busy}
-                        onClick={() => perform(api.scan)}
-                      >
-                        <RefreshCw size={15} className={busy ? 'spin' : ''} />
-                        {busy ? '正在扫描' : '重新扫描'}
-                      </button>
-                      <button className="primary-button" disabled={busy} onClick={addProject}>
-                        <Plus size={16} />
-                        新建项目
-                      </button>
-                    </div>
-                  </section>
-                  <section className="workspace-summary">
-                    <div className="summary-icon">
-                      <FolderOpen size={23} />
-                    </div>
-                    <div className="summary-path">
-                      <strong>{state.settings.workspace.split(/[\\/]/).pop()}</strong>
-                      <span title={state.settings.workspace}>{state.settings.workspace}</span>
-                    </div>
-                    <div className="summary-stat">
-                      <strong>{projects.length}</strong>
-                      <span>个项目</span>
-                    </div>
-                    <div className="summary-stat">
-                      <strong>{categories.length}</strong>
-                      <span>个分类</span>
-                    </div>
-                  </section>
-                </>
-              )}
+              <h1 className="sr-only">{title}</h1>
               {!!state.snapshot?.warnings.length && (
                 <div className="scan-warning" role="status">
                   {state.snapshot.warnings.join('；')}
                 </div>
-              )}
-              {!selectedCategory && (
-                <>
-                  <div className="project-toolbar">
-                    <div className="search-field">
-                      <Search size={17} />
-                      <input
-                        ref={searchRef}
-                        aria-label="搜索项目"
-                        placeholder="搜索项目、分类或技术类型…"
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                      />
-                      {query ? (
-                        <button onClick={() => setQuery('')} aria-label="清空搜索">
-                          <X size={14} />
-                        </button>
-                      ) : (
-                        <kbd>{platform === 'darwin' ? '⌘' : 'Ctrl'} K</kbd>
-                      )}
-                    </div>
-                    <div className="toolbar-options">
-                      <label className="sort-control">
-                        <ArrowDownUp size={14} />
-                        <select
-                          aria-label="项目排序"
-                          value={sort}
-                          onChange={(e) => setSort(e.target.value)}
-                        >
-                          <option value="name">按名称排序</option>
-                          <option value="modified">按目录修改时间</option>
-                        </select>
-                        <ChevronDown size={13} />
-                      </label>
-                      <div className="view-toggle">
-                        <button
-                          className={view === 'grid' ? 'selected' : ''}
-                          onClick={() => setView('grid')}
-                          aria-label="卡片视图"
-                          aria-pressed={view === 'grid'}
-                        >
-                          <Grid2X2 size={16} />
-                        </button>
-                        <button
-                          className={view === 'list' ? 'selected' : ''}
-                          onClick={() => setView('list')}
-                          aria-label="列表视图"
-                          aria-pressed={view === 'list'}
-                        >
-                          <List size={17} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="results-caption">
-                    <span>
-                      {query ? `“${query}” 的搜索结果` : title}
-                      <b>{filtered.length}</b>
-                    </span>
-                    <small>
-                      {selection === 'recent' ? '按最近打开时间排列' : '项目文件保留在原目录'}
-                    </small>
-                  </div>
-                </>
               )}
               {filtered.length ? (
                 <section
@@ -829,79 +678,56 @@ function App() {
                 <div className="empty-state">
                   {busy ? (
                     <Loader2 size={32} className="spin" />
-                  ) : query ? (
-                    <Search size={32} />
                   ) : selection === 'favorites' ? (
                     <Star size={32} />
+                  ) : selection === 'recent' ? (
+                    <Clock3 size={32} />
                   ) : (
                     <FolderOpen size={32} />
                   )}
                   <h2>
                     {busy
                       ? '正在寻找你的项目'
-                      : query
-                        ? '没有找到匹配的项目'
-                        : selection === 'favorites'
-                          ? '把喜欢的项目，留在这里'
-                          : selection === 'recent'
-                            ? '还没有打开过项目'
-                            : '这个分类暂时没有项目'}
+                      : selection === 'favorites'
+                        ? '把喜欢的项目，留在这里'
+                        : selection === 'recent'
+                          ? '还没有打开过项目'
+                          : selectedCategory
+                            ? '这个分类暂时没有项目'
+                            : '工作空间中还没有项目'}
                   </h2>
                   <p>
-                    {query
-                      ? '试试其他名称、分类或技术类型。'
-                      : selection === 'favorites'
-                        ? '点击项目卡片右上角的星标，即可收藏。'
-                        : selection === 'recent'
-                          ? '打开一个项目后，就能在这里快速找回。'
-                          : '点击新建项目，创建第一个项目文件夹。'}
+                    {selection === 'favorites'
+                      ? '点击项目卡片右上角的星标，即可收藏。'
+                      : selection === 'recent'
+                        ? '打开一个项目后，就能在这里快速找回。'
+                        : '点击右下角的新建项目，创建第一个项目文件夹。'}
                   </p>
-                  {!busy &&
-                    !query &&
-                    !selectedCategory &&
-                    selection !== 'favorites' &&
-                    selection !== 'recent' && (
-                      <button className="secondary-button" onClick={addProject}>
-                        <Plus size={15} />
-                        {categories.length ? '新建项目' : '新增分类'}
-                      </button>
-                    )}
                 </div>
-              )}
-              {!selectedCategory && (
-                <footer className="content-footer">
-                  <span>
-                    <span className="online-dot" />
-                    {state.snapshot
-                      ? `上次扫描 ${new Date(state.snapshot.scannedAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}`
-                      : '等待扫描'}
-                  </span>
-                  <span>
-                    <Monitor size={13} />
-                    仅在本机管理 · 不移动项目文件
-                  </span>
-                </footer>
               )}
             </>
           )}
         </div>
       </main>
-      {selectedCategory && state?.settings.workspace && (
-        <CategoryTools
-          key={selectedCategory}
+      {state?.settings.workspace && (
+        <ProjectTools
+          key={selection}
           category={selectedCategory}
+          recent={selection === 'recent'}
           busy={busy}
           obscured={settings || !!managementDialog || !!removalTarget}
-          sort={sort}
+          sort={activeSort}
           view={view}
-          onSort={setSort}
+          onSort={selection === 'recent' ? setRecentSort : setSort}
           onView={setView}
           onScan={() => void perform(api.scan)}
           onCreate={addProject}
           onAppearance={() =>
+            selectedCategory &&
             setManagementDialog({ kind: 'appearance', category: selectedCategory })
           }
           onRemove={() =>
+            selectedCategory &&
             setRemovalTarget({
               kind: 'category',
               key: selectedCategory,
