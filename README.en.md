@@ -27,6 +27,7 @@
   <a href="#downloads">Downloads</a> ·
   <a href="#quick-start">Run from source</a> ·
   <a href="#features">Features</a> ·
+  <a href="#themes">Color themes</a> ·
   <a href="#controls">Controls</a> ·
   <a href="#previews">More screenshots</a> ·
   <a href="#scanning">Discovery rules</a> ·
@@ -54,7 +55,7 @@ Scan your workspace, browse categories and quickly find projects through categor
 
 ## 💻 Editor view · Open a project and continue working
 
-Open a project card to enter the three-panel workbench: browse files on the left, preview code in the center and run commands in the terminal on the right. Frosted navigation, Material file icons and thin dividers keep the content clear.
+Open a project card to enter the three-panel workbench: browse files on the left, preview code in the center and run commands in the terminal on the right. Frosted navigation, Material file icons and thin dividers keep the content clear. The code viewer and terminal share the palette background, with a related sidebar tone keeping all three panels coordinated.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/workbench-dark.png" />
@@ -66,7 +67,7 @@ Open a project card to enter the three-panel workbench: browse files on the left
   <sub>Both views use sample projects and follow your GitHub light or dark appearance. The app UI is currently in Chinese.</sub>
 </p>
 
-> **Versions:** the editor view is part of the v0.2.0 source preview. Published v0.1.1 installers provide project management. To try the complete workbench, [run from source](#quick-start). Code preview is read-only; editing and saving files are not supported.
+> **Versions:** the editor view, seven built-in palettes and unified floating controls are part of the v0.2.0 source preview. Published v0.1.1 installers provide basic project management. To try the complete workbench, [run from source](#quick-start). Code preview is read-only; editing and saving files are not supported.
 
 <a id="features"></a>
 
@@ -157,15 +158,17 @@ npm run dev
 1. On first launch, choose a workspace such as `~/Workspace` or `D:\Workspace`.
 2. The app reads your directory structure and builds the project categories and list.
 3. Click **打开项目** (Open project) to enter the workbench: expand folders on the left, preview files in the center and type commands in the terminal.
-4. Open **设置…** (Settings) from the native menu to choose appearance and your default editor. The app icon in the header opens the project externally.
+4. Open **设置…** (Settings) from the native menu to choose light, dark or system appearance, a color palette and your default editor. The app icon in the header opens the project externally.
 
 Click **Rescan** after adding or moving projects. You can switch workspaces through **Settings…** in the native menu (macOS: app menu, `⌘,`; Windows: File menu, `Ctrl+,`).
 
 The sidebar starts with a single row containing the app icon and name, aligned with the native traffic lights on macOS. Workspace management is available through Settings in the native menu.
 
-### Built-in color themes (source preview)
+<a id="themes"></a>
 
-Open **Settings… → 配色主题** (Color theme) from the native menu, then choose a preview card. The choice saves locally. Palette and appearance mode are independent:
+### 🎨 Built-in color themes (source preview)
+
+Open **Settings… → 配色主题** (Color theme) from the native menu, then choose a preview card. The choice saves locally. You can also open Settings with `⌘,` on macOS or `Ctrl+,` on Windows. Palette and appearance mode are independent: all seven palettes support light, dark and system appearance.
 
 | Theme            | Style                                                  |
 | ---------------- | ------------------------------------------------------ |
@@ -239,7 +242,7 @@ The project management and editor pages are shown in full above. Below are the l
 
 <p align="center">
   <br />
-  <img src="docs/assets/settings-dark.png" alt="Settings dialog with light, dark, and system themes, workspace selection, and default editor options" width="500" />
+  <img src="docs/assets/settings-dark.png" alt="Settings with light, dark and system appearance plus seven built-in palettes; scroll down for workspace and default editor options" width="500" />
 </p>
 
 </details>
