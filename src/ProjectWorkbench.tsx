@@ -1,8 +1,15 @@
-import { useRef, useState, useEffect, type PointerEvent as ReactPointerEvent } from 'react';
-import { ArrowLeft, Code2, FolderOpen } from 'lucide-react';
+import {
+  useRef,
+  useState,
+  useEffect,
+  useLayoutEffect,
+  type PointerEvent as ReactPointerEvent,
+} from 'react';
+import { Code2, FolderOpen } from 'lucide-react';
 import type { FilePreview, Settings, WorkbenchSession } from './types';
 import { FileTree } from './FileTree';
 import { FileViewer } from './FileViewer';
+import type { FileLeaveGuard } from './MarkdownFile';
 import { ProjectTerminal } from './ProjectTerminal';
 import { GitHubButton } from './GitHubButton';
 import './workbench.css';
@@ -11,7 +18,6 @@ const api = window.workspaceAPI;
 export default function ProjectWorkbench({
   session,
   opener,
-  onBack,
   onExternal,
   onGitHub,
   busy,
@@ -20,7 +26,6 @@ export default function ProjectWorkbench({
 }: {
   session: WorkbenchSession;
   opener: Pick<Settings, 'opener' | 'customEditor'>;
-  onBack(): void;
   onExternal(): void;
   onGitHub(): void;
   busy: boolean;
@@ -32,10 +37,21 @@ export default function ProjectWorkbench({
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [refresh, setRefresh] = useState(0);
-  const [treeWidth, setTreeWidth] = useState(236);
-  const [terminalWidth, setTerminalWidth] = useState(390);
+  const [preferredTreeWidth, setTreeWidth] = useState(320);
+  const [preferredTerminalWidth, setTerminalWidth] = useState(390);
+  const [layoutWidth, setLayoutWidth] = useState(window.innerWidth);
+  const header = useRef<HTMLElement>(null);
+  const projectName = useRef<HTMLSpanElement>(null);
+  const treeManuallyResized = useRef(false);
   const [openerInfo, setOpenerInfo] = useState<{ name: string; icon: string | null } | null>(null);
   const minTreeWidth = api.platform === 'darwin' ? 220 : 160;
+  // Reserve two 1px dividers, 260px for the viewer and 260px for the terminal.
+  const maxTreeWidth = Math.max(minTreeWidth, layoutWidth - 522);
+  const treeWidth = Math.max(minTreeWidth, Math.min(preferredTreeWidth, maxTreeWidth));
+  const terminalWidth = Math.max(
+    260,
+    Math.min(preferredTerminalWidth, layoutWidth - treeWidth - 262),
+  );
   useEffect(() => {
     let current = true;
     setOpenerInfo(null);
@@ -50,7 +66,49 @@ export default function ProjectWorkbench({
     };
   }, [opener.opener, opener.customEditor]);
   const layout = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    if (!layout.current) return;
+    setLayoutWidth(layout.current.clientWidth);
+    const observer = new ResizeObserver(([entry]) => setLayoutWidth(entry.contentRect.width));
+    observer.observe(layout.current);
+    return () => observer.disconnect();
+  }, []);
+  useLayoutEffect(() => {
+    const navigation = projectName.current?.parentElement;
+    if (!header.current || !projectName.current || !navigation) return;
+    let current = true;
+    const measure = () => {
+      if (!current || treeManuallyResized.current || !header.current || !projectName.current)
+        return;
+      const nameStyle = getComputedStyle(projectName.current);
+      const headerStyle = getComputedStyle(header.current);
+      const context = document.createElement('canvas').getContext('2d');
+      if (!context) return;
+      context.font = `${nameStyle.fontStyle} ${nameStyle.fontWeight} ${nameStyle.fontSize} ${nameStyle.fontFamily}`;
+      const textWidth = context.measureText(session.project.name).width;
+      const buttons = [...navigation.querySelectorAll(':scope > button')];
+      const buttonWidth = buttons.reduce(
+        (total, button) => total + button.getBoundingClientRect().width,
+        0,
+      );
+      const gap = parseFloat(getComputedStyle(navigation).columnGap) || 0;
+      const padding = parseFloat(headerStyle.paddingLeft) + parseFloat(headerStyle.paddingRight);
+      setTreeWidth(
+        Math.max(320, Math.ceil(textWidth + padding + buttonWidth + gap * buttons.length + 4)),
+      );
+    };
+    measure();
+    void document.fonts.ready.then(measure);
+    const observer = new ResizeObserver(measure);
+    observer.observe(navigation);
+    return () => {
+      current = false;
+      observer.disconnect();
+    };
+  }, [session.project.name, session.project.githubRemotes.length]);
   const request = useRef(0);
+  const fileViewer = useRef<FileLeaveGuard>(null);
+  const switchingFile = useRef(false);
   const drag = useRef<{ side: 'tree' | 'terminal'; startX: number; width: number } | null>(null);
   useEffect(
     () => () => {
@@ -59,6 +117,13 @@ export default function ProjectWorkbench({
     [],
   );
   async function read(path: string) {
+    if (switchingFile.current) return;
+    switchingFile.current = true;
+    const leave = await fileViewer.current?.beforeLeave();
+    if (leave === false) {
+      switchingFile.current = false;
+      return;
+    }
     const sequence = ++request.current;
     setSelected(path);
     setPreview(null);
@@ -72,18 +137,21 @@ export default function ProjectWorkbench({
         setError(reason instanceof Error ? reason.message : '文件读取失败');
     } finally {
       if (sequence === request.current) setLoading(false);
+      switchingFile.current = false;
     }
   }
-  useEffect(() => {
-    if (!layout.current) return;
-    const observer = new ResizeObserver(([entry]) => {
-      setTerminalWidth((value) =>
-        Math.max(260, Math.min(value, entry.contentRect.width - treeWidth - 262)),
-      );
-    });
-    observer.observe(layout.current);
-    return () => observer.disconnect();
-  }, [treeWidth]);
+  useEffect(
+    () =>
+      api.onWorkbenchCloseRequested(() => {
+        void (async () => {
+          const approved = (await fileViewer.current?.beforeLeave()) ?? true;
+          await api.resolveWorkbenchClose(session.id, approved);
+        })().catch(() => {
+          void api.resolveWorkbenchClose(session.id, false);
+        });
+      }),
+    [session.id],
+  );
   useEffect(
     () =>
       api.onMenuAction((action) => {
@@ -95,10 +163,10 @@ export default function ProjectWorkbench({
     [selected, session.id],
   );
   const resize = (side: 'tree' | 'terminal', value: number) => {
-    const total = layout.current?.clientWidth || window.innerWidth;
-    if (side === 'tree')
-      setTreeWidth(Math.max(minTreeWidth, Math.min(value, 420, total - terminalWidth - 262)));
-    else setTerminalWidth(Math.max(260, Math.min(value, total - treeWidth - 262)));
+    if (side === 'tree') {
+      treeManuallyResized.current = true;
+      setTreeWidth(Math.max(minTreeWidth, Math.min(value, maxTreeWidth)));
+    } else setTerminalWidth(Math.max(260, Math.min(value, layoutWidth - treeWidth - 262)));
   };
   function separator(side: 'tree' | 'terminal') {
     return (
@@ -109,9 +177,7 @@ export default function ProjectWorkbench({
         aria-label={side === 'tree' ? '调整文件目录宽度' : '调整终端宽度'}
         aria-valuemin={side === 'tree' ? minTreeWidth : 260}
         aria-valuemax={
-          side === 'tree'
-            ? 420
-            : Math.max(260, (layout.current?.clientWidth || window.innerWidth) - treeWidth - 262)
+          side === 'tree' ? maxTreeWidth : Math.max(260, layoutWidth - treeWidth - 262)
         }
         aria-valuenow={side === 'tree' ? treeWidth : terminalWidth}
         tabIndex={0}
@@ -165,17 +231,13 @@ export default function ProjectWorkbench({
         }}
       >
         <aside className="explorer-panel" aria-label="资源管理器">
-          <header className="workbench-navigation-header">
+          <header ref={header} className="workbench-navigation-header">
             <div className="workbench-navigation">
-              <button
-                className="back-projects"
-                aria-label="返回项目列表"
-                title="显示项目列表，项目保持运行"
-                onClick={onBack}
+              <span
+                ref={projectName}
+                className="workbench-project-name"
+                title={session.project.path}
               >
-                <ArrowLeft size={16} />
-              </button>
-              <span className="workbench-project-name" title={session.project.path}>
                 {session.project.name}
               </span>
               <GitHubButton project={session.project} busy={busy} onOpen={onGitHub} workbench />
@@ -207,10 +269,14 @@ export default function ProjectWorkbench({
         </aside>
         {separator('tree')}
         <FileViewer
+          ref={fileViewer}
+          sessionId={session.id}
           selected={selected}
           preview={preview}
           loading={loading}
           error={error}
+          onNavigate={(path) => void read(path)}
+          onSaved={setPreview}
           onReload={() => {
             if (selected) void read(selected);
           }}

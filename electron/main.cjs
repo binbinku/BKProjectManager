@@ -33,6 +33,7 @@ let scanJob;
 const projectWindows = new Map();
 const projectOpenings = new Map();
 let quitting = false;
+let quitRequested = false;
 let nativeGlass =
   process.platform === 'darwin' ||
   (process.platform === 'win32' && Number(os.release().split('.')[2]) >= 22621);
@@ -248,6 +249,11 @@ function ownWorkbench(event, id) {
   if (!entry || entry.session.id !== id) throw new Error('只能操作当前窗口的项目');
   return entry.workbench;
 }
+function requestEditorClose(entry) {
+  if (entry.closeRequested) return;
+  entry.closeRequested = true;
+  entry.window.webContents.send('workbench:close-request');
+}
 async function openProjectWindow(id) {
   const existing = projectWindows.get(id);
   if (existing?.ready && !existing.window.isDestroyed()) {
@@ -269,6 +275,16 @@ async function openProjectWindow(id) {
       projectWindow = makeWindow(project.name, false);
       const entry = { window: projectWindow, workbench, session, ready: false };
       projectWindows.set(id, entry);
+      projectWindow.on('close', (event) => {
+        if (entry.markdownDirty) {
+          event.preventDefault();
+          requestEditorClose(entry);
+        }
+      });
+      projectWindow.webContents.on('will-prevent-unload', () => {
+        quitting = false;
+        requestEditorClose(entry);
+      });
       projectWindow.on('closed', () => {
         workbench.dispose();
         if (projectWindows.get(id) === entry) projectWindows.delete(id);
@@ -616,6 +632,49 @@ function registerHandlers() {
       ownWorkbench(event, id).requireSession(id).files.list(relative),
     'workbench:read': (event, id, relative) =>
       ownWorkbench(event, id).requireSession(id).files.read(relative),
+    'workbench:save-markdown': (event, id, relative, content, revision) =>
+      ownWorkbench(event, id).requireSession(id).files.saveMarkdown(relative, content, revision),
+    'workbench:markdown-dirty': (event, id, dirty) => {
+      ownWorkbench(event, id);
+      if (typeof dirty !== 'boolean') throw new Error('无效的编辑状态');
+      entryForEvent(event).markdownDirty = dirty;
+    },
+    'workbench:confirm-markdown': async (event, id, relative) => {
+      ownWorkbench(event, id);
+      if (typeof relative !== 'string' || relative.length > 4096) throw new Error('无效的文件路径');
+      const { response } = await dialog.showMessageBox(entryForEvent(event).window, {
+        type: 'question',
+        message: `要保存对“${path.basename(relative)}”的修改吗？`,
+        detail: '未保存的修改会在离开文件后丢失。',
+        buttons: ['保存', '不保存', '取消'],
+        defaultId: 0,
+        cancelId: 2,
+        noLink: true,
+      });
+      return ['save', 'discard', 'cancel'][response] || 'cancel';
+    },
+    'workbench:resolve-close': (event, id, approved) => {
+      ownWorkbench(event, id);
+      const entry = entryForEvent(event);
+      if (!entry.closeRequested || typeof approved !== 'boolean') return;
+      entry.closeRequested = false;
+      if (!approved) {
+        quitRequested = false;
+        quitting = false;
+        return;
+      }
+      entry.markdownDirty = false;
+      if (quitRequested) app.quit();
+      else entry.window.close();
+    },
+    'workbench:open-link': async (event, id, value) => {
+      ownWorkbench(event, id);
+      if (typeof value !== 'string' || value.length > 8192) throw new Error('无效的链接');
+      const url = new URL(value);
+      if (!['https:', 'http:', 'mailto:'].includes(url.protocol) || url.username || url.password)
+        throw new Error('不支持打开此链接');
+      await shell.openExternal(url.href);
+    },
     'terminal:start': (event, id, ...args) => ownWorkbench(event, id).startTerminal(id, ...args),
     'terminal:input': (event, id, ...args) => ownWorkbench(event, id).write(id, ...args),
     'terminal:resize': (event, id, ...args) => ownWorkbench(event, id).resize(id, ...args),
@@ -733,7 +792,16 @@ app
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
-app.on('before-quit', () => {
+app.on('before-quit', (event) => {
+  quitRequested = true;
+  const dirty = [...projectWindows.values()].find((entry) => entry.markdownDirty);
+  if (dirty) {
+    event.preventDefault();
+    requestEditorClose(dirty);
+    return;
+  }
   quitting = true;
+});
+app.on('will-quit', () => {
   for (const entry of projectWindows.values()) entry.workbench.dispose();
 });

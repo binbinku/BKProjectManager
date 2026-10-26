@@ -1,7 +1,20 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  lazy,
+  Suspense,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+  type Ref,
+} from 'react';
 import { FileCode2, FolderOpen, Loader2 } from 'lucide-react';
 import { highlightCode, languageForPath } from './code-highlighter';
 import type { FilePreview } from './types';
+import type { FileLeaveGuard } from './MarkdownFile';
+const MarkdownFile = lazy(() =>
+  import('./MarkdownFile').then((module) => ({ default: module.MarkdownFile })),
+);
 
 export const formatBytes = (size: number) =>
   size < 1024
@@ -16,15 +29,28 @@ export function FileViewer({
   loading,
   error,
   onReload,
+  sessionId,
+  onNavigate,
+  onSaved,
+  ref,
 }: {
   selected: string | null;
   preview: FilePreview | null;
   loading: boolean;
   error: string;
   onReload(): void;
+  sessionId: string;
+  onNavigate(path: string): void;
+  onSaved(preview: FilePreview): void;
+  ref: Ref<FileLeaveGuard>;
 }) {
   const viewport = useRef<HTMLDivElement>(null);
-  const language = languageForPath(selected);
+  const markdown = useRef<FileLeaveGuard>(null);
+  useImperativeHandle(ref, () => ({
+    beforeLeave: () => markdown.current?.beforeLeave() || Promise.resolve(true),
+  }));
+  const isMarkdown = /\.(md|markdown)$/i.test(selected || '');
+  const language = isMarkdown ? undefined : languageForPath(selected);
   const content = preview?.kind === 'text' ? preview.content : '';
   const [highlighted, setHighlighted] = useState<{
     content: string;
@@ -116,6 +142,23 @@ export function FileViewer({
             <img src={preview.dataURL} alt={preview.path} />
             <span>{preview.path.split('/').pop()}</span>
           </div>
+        ) : isMarkdown ? (
+          <Suspense
+            fallback={
+              <div className="viewer-empty">
+                <Loader2 className="spin" size={24} />
+              </div>
+            }
+          >
+            <MarkdownFile
+              key={preview.path}
+              ref={markdown}
+              preview={preview}
+              sessionId={sessionId}
+              onNavigate={onNavigate}
+              onSaved={onSaved}
+            />
+          </Suspense>
         ) : (
           <div className="code-document" aria-label="只读代码内容">
             <pre className="line-numbers" aria-hidden="true">

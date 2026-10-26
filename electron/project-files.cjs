@@ -1,6 +1,7 @@
 const fs = require('node:fs/promises');
 const { constants } = require('node:fs');
 const path = require('node:path');
+const { createHash, randomUUID } = require('node:crypto');
 
 const MAX_FILE_BYTES = 2 * 1024 * 1024;
 const MAX_ENTRIES = 1000;
@@ -17,6 +18,7 @@ const imageTypes = {
 class ProjectFiles {
   constructor(root) {
     this.root = root;
+    this.saveQueue = Promise.resolve();
   }
 
   static async open(directory) {
@@ -102,10 +104,86 @@ class ProjectFiles {
       return { ...base, kind: 'unsupported', reason: '二进制文件暂不支持预览。' };
     try {
       const content = new TextDecoder(encoding, { fatal: true }).decode(bytes);
-      return { ...base, kind: 'text', content, encoding };
+      return {
+        ...base,
+        kind: 'text',
+        content,
+        encoding,
+        bom: encoding !== 'utf-8' || (bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf),
+        revision: createHash('sha256').update(bytes).digest('hex'),
+      };
     } catch {
       return { ...base, kind: 'unsupported', reason: '文件编码暂不支持，请使用外部编辑器查看。' };
     }
+  }
+
+  saveMarkdown(relative, content, revision) {
+    const job = this.saveQueue.then(() => this.writeMarkdown(relative, content, revision));
+    this.saveQueue = job.catch(() => {});
+    return job;
+  }
+
+  async markdownTarget(relative) {
+    const filename = await this.resolve(relative);
+    if (!/\.(md|markdown)$/i.test(relative)) throw new Error('只能编辑 Markdown 文件');
+    let current = this.root;
+    for (const part of relative.split('/')) {
+      current = path.join(current, part);
+      if ((await fs.lstat(current)).isSymbolicLink())
+        throw new Error('请直接打开原文件，不能编辑符号链接中的 Markdown');
+    }
+    const info = await fs.lstat(filename);
+    if (!info.isFile() || info.nlink > 1) throw new Error('只能编辑普通的 Markdown 文件');
+    return { filename, info };
+  }
+
+  async writeMarkdown(relative, content, revision) {
+    if (
+      typeof content !== 'string' ||
+      content.length > MAX_FILE_BYTES ||
+      typeof revision !== 'string' ||
+      !/^[a-f0-9]{64}$/.test(revision)
+    )
+      throw new Error('无效的 Markdown 保存内容（最大 2 MiB）');
+    const { filename, info } = await this.markdownTarget(relative);
+    const original = await this.read(relative);
+    const checkRevision = (current) => {
+      if (current.kind !== 'text' || current.revision !== revision)
+        throw new Error('文件已被其他程序修改。请先复制保留当前修改，再重新读取文件。');
+    };
+    checkRevision(original);
+    const newline = original.content.match(/\r\n|\r|\n/)?.[0] || '\n';
+    const normalized = content.replace(/\r\n|\r|\n/g, newline);
+    let bytes;
+    if (original.encoding === 'utf-8') {
+      bytes = Buffer.from(normalized, 'utf8');
+      if (original.bom) bytes = Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), bytes]);
+    } else {
+      bytes = Buffer.from(`\ufeff${normalized}`, 'utf16le');
+      if (original.encoding === 'utf-16be') bytes.swap16();
+    }
+    if (bytes.length > MAX_FILE_BYTES) throw new Error('文件超过 2 MiB，请使用外部编辑器编辑。');
+    await fs.access(filename, constants.W_OK);
+    const temporary = path.join(path.dirname(filename), `.bkpm-${randomUUID()}.tmp`);
+    try {
+      const handle = await fs.open(temporary, 'wx', info.mode & 0o777);
+      try {
+        await handle.chmod(info.mode & 0o777);
+        await handle.writeFile(bytes);
+        await handle.sync();
+      } finally {
+        await handle.close();
+      }
+      // Revalidate immediately before replacing; a failed save leaves the original intact.
+      const target = await this.markdownTarget(relative);
+      if (target.filename !== filename || target.info.ino !== info.ino)
+        throw new Error('文件位置已变化，请重新读取文件。');
+      checkRevision(await this.read(relative));
+      await fs.rename(temporary, filename);
+    } finally {
+      await fs.rm(temporary, { force: true });
+    }
+    return this.read(relative);
   }
 }
 

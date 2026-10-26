@@ -67,7 +67,7 @@ In v0.2.1, click the gray **启动项目** (Launch project) button to open an in
   <sub>Both views use sample projects on neutral backdrops and follow your GitHub light or dark appearance. The app UI is currently in Chinese.</sub>
 </p>
 
-> **v0.2.1 adds independent project windows, launch/running states, GitHub shortcuts and glass transparency with per-pane ratios.** [Download an installer](#downloads) or [run from source](#quick-start). Code preview is read-only; editing and saving files are not supported.
+> **v0.2.1 adds independent project windows, launch/running states, GitHub shortcuts and glass transparency with per-pane ratios.** [Download an installer](#downloads) or [run from source](#quick-start). The current source also supports Markdown reading and editing, which is not yet included in v0.2.1 installers.
 
 <a id="features"></a>
 
@@ -100,13 +100,19 @@ In v0.2.1, click the gray **启动项目** (Launch project) button to open an in
 
 Open a project to enter the three-panel workbench, available in both v0.2.1 installers and source builds.
 
-- **Left:** a fixed header contains Back, the project name and the actual icon of your default external app. The header shares the sidebar material, with the tree scrolling independently below it. GitHub and external-open controls use the same rounded button styling as project cards. Bundled Material Icon Theme icons support folder expansion and light/dark appearance.
-- **Center:** a viewer extending from the top to the bottom of the window, showing one read-only file at a time, with line numbers and VS Code Light+ / Dark+ syntax highlighting. No file tabs or editing controls. Common images can also be previewed.
+- **Left:** the current source header shows the project name, GitHub and the external app icon, with the Back button removed. Initial sidebar width starts at 320px and grows to fit the full name and buttons. Names wrap when space is limited, and manual resizing is retained for the current window. The header shares the sidebar material, with the tree scrolling independently below it. Bundled Material Icon Theme icons support folder expansion and light/dark appearance.
+- **Center:** a viewer extending from the top to the bottom of the window, showing one file at a time, with line numbers and VS Code Light+ / Dark+ syntax highlighting. No file tabs. Common images can also be previewed. Code stays read-only; the current source additionally supports Markdown reading and editing.
 - **Right:** an interactive terminal extending from the top to the bottom of the window, starting in the project directory, with scrolling, Ctrl+C, clear and restart. Clear and restart are available in the native Terminal menu. macOS uses your login shell; Windows 11 uses PowerShell.
 - **Compact layout:** the viewer and terminal extend to the top and bottom edges. Visible 1px dividers retain a wider drag area for resizing. Returning to the project list keeps the project and its terminal running; closing the project window ends its terminal.
 - **Scrolling and appearance:** scrollbars are hidden; mouse-wheel, trackpad and horizontal scrolling remain available. Light, dark and system appearance are available through Settings in the native menu.
 
 Preview supports UTF-8 and UTF-16 text and common images up to 2 MiB. Files over 200,000 characters use plain-text preview. Binary or unsupported files show an explanation. Project browsing stays within the selected project; symbolic links are not expandable in the tree.
+
+### Markdown reading and editing (current source)
+
+Open `.md` / `.markdown` files in a read-only rendered preview with headings, tables, task lists, quotes and highlighted code fences. The small floating **编辑** (Edit) button in the bottom-right corner switches to a source editor with line numbers, syntax highlighting and undo. Click **保存** (Save) or press `⌘S` / `Ctrl+S` to save and return to reading. Switching files, closing a window or quitting prompts you to save, discard or cancel if changes remain.
+
+Saves preserve UTF-8 / UTF-16 encoding, BOM and the original line-ending style. External changes block overwriting and keep your draft intact. Images support relative project paths, project-root `/` paths, HTTP / HTTPS URLs, and common README `<img>` / `<picture>` markup with light/dark variants. Width and height attributes are preserved, images fit the content area, and failed loads show a message. Project document links open inside the viewer; external links open in your browser. Embedded HTML is sanitized with an allowlist, without executing scripts or event handlers.
 
 <a id="controls"></a>
 
@@ -134,7 +140,7 @@ The **glass transparency** slider ranges from 0–100% (default: 60%); higher va
 
 ### Independent project windows (v0.2.1)
 
-Each project has its own file preview and terminal. Multiple projects can stay open together, with one window per project. Click a running card or its status button to focus that window and restore it if minimized. Favorite, GitHub, folder, VS Code, terminal and removal buttons retain their own actions. Closing the manager keeps project windows running; the Back button in a project shows or recreates the manager without stopping the project.
+Each project has its own file preview and terminal. Multiple projects can stay open together, with one window per project. Click a running card or its status button to focus that window and restore it if minimized. Favorite, GitHub, folder, VS Code, terminal and removal buttons retain their own actions. Closing the manager keeps project windows running. In the current source, opening Settings from the native menu shows or recreates the manager without stopping projects.
 
 ### GitHub repository shortcut (v0.2.1)
 
@@ -148,7 +154,7 @@ A single repository opens directly. Multiple repositories appear in a native men
 
 **Latest version: v0.2.1.** Includes independent project windows with running states, GitHub shortcuts, three glass levels and a transparency slider, alongside category management, a real terminal and seven built-in palettes. Download from the [latest release](https://github.com/binbinku/BKProjectManager/releases/latest):
 
-See the [v0.2.1 release notes](docs/releases/v0.2.1.md) for changes and upgrade instructions.
+See the [v0.2.1 release notes (Chinese)](docs/发布说明/v0.2.1发布说明.md) for changes and upgrade instructions.
 
 | Platform                         | Installer                                                                                                                 | ZIP archive                                                                                                                |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
@@ -342,10 +348,16 @@ For example, if `AndroidDev/Projects` contains `settings.gradle.kts`, it is trea
 | Command                    | Purpose                                                               |
 | -------------------------- | --------------------------------------------------------------------- |
 | `npm run dev`              | Start the development environment                                     |
+| `npm run dev:renderer`     | Start Vite only for VS Code F5 debugging                              |
 | `npm run build`            | Generate file icons, check TypeScript and build the frontend          |
+| `npm run dist`             | Create installers for the current OS and architecture                 |
+| `npm run clean`            | Remove frontend build and local package outputs                       |
+| `npm run clean:dist`       | Remove only the `dist/` frontend output                               |
+| `npm run clean:release`    | Remove only the `release/` package output                             |
 | `npm start`                | Launch the built desktop application                                  |
 | `npm test`                 | Test discovery, settings, project files and sessions                  |
 | `npm run test:workbench`   | Test project browsing, file preview, real terminal and cleanup        |
+| `npm run test:markdown`    | Test Markdown preview, images, editing, saving and unsaved guards     |
 | `npm run test:smoke`       | Verify key interactions in a real Electron window                     |
 | `npm run test:management`  | Test category appearance, new folders and restart persistence         |
 | `npm run test:removal`     | Test removal dialogs, reveal, restore and filesystem integrity        |
@@ -359,13 +371,36 @@ For example, if `AndroidDev/Projects` contains `settings.gradle.kts`, it is trea
 
 Desktop interaction tests and screenshot generation require a desktop session. They use temporary workspaces and isolated settings, leaving your preferences intact. Documentation screenshots never read your project directories.
 
+### VS Code F5 debugging
+
+See the [debugging and build configuration guide (Chinese)](docs/调试与构建配置说明.md) for configuration differences, task usage and maintenance rules.
+
+Open the repository root in VS Code, run `npm install` once, and press `F5` with **开发：启动应用（F5）** selected. Its pre-launch task prepares native terminal helpers, file icons and Vite automatically. Set main-process breakpoints directly in `electron/*.cjs`.
+
+The Run and Debug dropdown also includes these configurations, using VS Code's built-in debuggers:
+
+- **开发：完整调试（主进程 + 界面）**: debug Electron and the React / TypeScript UI together.
+- **开发：选择窗口（含工作台）**: attach to a selected window after starting the development session. For an independent project workbench, select the target whose URL contains `#project`.
+- **运行：构建版**: build first, then launch the local production build to check behavior closer to the installed app.
+- **构建：前端 / 打包：当前平台（安装包） / 清理：全部构建产物**: run build, package or clean directly from the F5 dropdown.
+
+These build, package and clean debug sessions end automatically when their command process exits; the terminal retains its output for reviewing the result.
+
+The configurations support macOS and Windows. Debug preferences use the isolated, Git-ignored `.vscode/.user-data/` directory, leaving installed-app settings intact. Vite uses port `5173`, and renderer debugging uses local port `9222`. Stopping debugging keeps the Vite background task available for the next session; terminate **开发：Vite** via **Terminal → Terminate Task** when finished. Stop an existing `npm run dev` session for this project before F5 to avoid a port conflict.
+
 ### Local packaging
+
+Press `⇧⌘B` (macOS) or `Ctrl+Shift+B` (Windows) to run the default **打包：当前平台（安装包）** task. **Terminal → Run Task** also offers unpacked application directories, both macOS architectures, Windows x64 and a sequential clean-and-package task.
 
 ```sh
 npm run pack       # Application directory for the current platform
+npm run dist       # Installers for the current OS and architecture
 npm run dist:mac   # macOS: DMG + ZIP
 npm run dist:win   # Windows: NSIS installer + ZIP
+npm run clean      # Remove dist/ and release/
 ```
+
+Cleaning removes only `dist/` and `release/`, preserving source code, application icons in `build/`, dependencies, documentation screenshots and VS Code debug preferences. Finish running build or packaging tasks before cleaning.
 
 Output is written to `release/`. All packages are built locally, without GitHub Actions. Build on the target operating system where possible. The application, Dock and installers use the project logo. Run `npm run icons:generate` on macOS or Windows to regenerate PNG, macOS ICNS and Windows ICO assets from `docs/assets/logo.svg`. Distribution packages do not yet have code signing or macOS notarization. Automatic updates are not implemented yet.
 
@@ -374,6 +409,8 @@ Output is written to `release/`. All packages are built locally, without GitHub 
 `npm run dev` and `npm run build` generate Material Icon Theme SVGs and associations from the pinned official npm package. No VS Code extension is required. Generated assets are excluded from Git and bundled with their license in production builds. See [third-party notices](THIRD_PARTY_NOTICES.md) for attribution.
 
 ### Project structure
+
+See the [project structure guide (Chinese)](docs/项目目录说明.md) for the directory tree, module responsibilities, generated files and pointers for changing specific features.
 
 ```text
 electron/     # Native menus, restricted IPC, discovery, files and PTY

@@ -10,3 +10,4 @@ artifacts/
 *.local
 public/material-icon-theme/
 src/generated/
+.vscode/.user-data/

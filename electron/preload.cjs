@@ -18,6 +18,19 @@ contextBridge.exposeInMainWorld('workspaceAPI', {
   closeWorkbench: (id) => ipcRenderer.invoke('workbench:close', id),
   listProjectFiles: (id, relative) => ipcRenderer.invoke('workbench:list', id, relative),
   readProjectFile: (id, relative) => ipcRenderer.invoke('workbench:read', id, relative),
+  saveMarkdown: (id, relative, content, revision) =>
+    ipcRenderer.invoke('workbench:save-markdown', id, relative, content, revision),
+  setMarkdownDirty: (id, dirty) => ipcRenderer.invoke('workbench:markdown-dirty', id, dirty),
+  confirmMarkdownChanges: (id, relative) =>
+    ipcRenderer.invoke('workbench:confirm-markdown', id, relative),
+  openMarkdownLink: (id, url) => ipcRenderer.invoke('workbench:open-link', id, url),
+  resolveWorkbenchClose: (id, approved) =>
+    ipcRenderer.invoke('workbench:resolve-close', id, approved),
+  onWorkbenchCloseRequested: (callback) => {
+    const listener = () => callback();
+    ipcRenderer.on('workbench:close-request', listener);
+    return () => ipcRenderer.removeListener('workbench:close-request', listener);
+  },
   startTerminal: (id, cols, rows) => ipcRenderer.invoke('terminal:start', id, cols, rows),
   writeTerminal: (id, terminalId, data) =>
     ipcRenderer.invoke('terminal:input', id, terminalId, data),

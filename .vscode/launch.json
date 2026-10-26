@@ -1,0 +1,151 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "开发：启动应用（F5）",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "${workspaceFolder}/node_modules/electron/dist/electron",
+      "osx": {
+        "runtimeExecutable": "${workspaceFolder}/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+      },
+      "windows": {
+        "runtimeExecutable": "${workspaceFolder}/node_modules/electron/dist/electron.exe"
+      },
+      "runtimeArgs": ["--remote-debugging-address=127.0.0.1", "--remote-debugging-port=9222", "."],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "ELECTRON_RENDERER_URL": "http://127.0.0.1:5173",
+        "BKPM_USER_DATA": "${workspaceFolder}/.vscode/.user-data",
+        "ELECTRON_RUN_AS_NODE": null
+      },
+      "preLaunchTask": "开发：Vite",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**"],
+      "presentation": {
+        "group": "01 开发调试",
+        "order": 20
+      }
+    },
+    {
+      "name": "开发：选择窗口（含工作台）",
+      "type": "chrome",
+      "request": "attach",
+      "address": "127.0.0.1",
+      "port": 9222,
+      "targetSelection": "pick",
+      "urlFilter": "http://127.0.0.1:5173/*",
+      "webRoot": "${workspaceFolder}",
+      "sourceMaps": true,
+      "timeout": 30000,
+      "skipFiles": ["**/node_modules/**", "**/@vite/**", "**/@react-refresh**"],
+      "presentation": {
+        "group": "01 开发调试",
+        "order": 30
+      }
+    },
+    {
+      "name": "开发：自动附加界面",
+      "type": "chrome",
+      "request": "attach",
+      "address": "127.0.0.1",
+      "port": 9222,
+      "urlFilter": "http://127.0.0.1:5173/*",
+      "webRoot": "${workspaceFolder}",
+      "sourceMaps": true,
+      "timeout": 30000,
+      "skipFiles": ["**/node_modules/**", "**/@vite/**", "**/@react-refresh**"],
+      "presentation": {
+        "group": "01 开发调试",
+        "order": 40,
+        "hidden": true
+      }
+    },
+    {
+      "name": "构建：前端",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "windows": { "runtimeExecutable": "npm.cmd" },
+      "runtimeArgs": ["run", "build"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "autoAttachChildProcesses": false,
+      "restart": false,
+      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**"],
+      "presentation": {
+        "group": "02 构建打包",
+        "order": 10
+      }
+    },
+    {
+      "name": "运行：构建版",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "${workspaceFolder}/node_modules/electron/dist/electron",
+      "osx": {
+        "runtimeExecutable": "${workspaceFolder}/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+      },
+      "windows": {
+        "runtimeExecutable": "${workspaceFolder}/node_modules/electron/dist/electron.exe"
+      },
+      "runtimeArgs": ["."],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "ELECTRON_RENDERER_URL": "",
+        "BKPM_USER_DATA": "${workspaceFolder}/.vscode/.user-data",
+        "ELECTRON_RUN_AS_NODE": null
+      },
+      "preLaunchTask": "构建：前端",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**"],
+      "presentation": {
+        "group": "02 构建打包",
+        "order": 20
+      }
+    },
+    {
+      "name": "打包：当前平台（安装包）",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "windows": { "runtimeExecutable": "npm.cmd" },
+      "runtimeArgs": ["run", "dist"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "autoAttachChildProcesses": false,
+      "restart": false,
+      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**"],
+      "presentation": {
+        "group": "02 构建打包",
+        "order": 30
+      }
+    },
+    {
+      "name": "清理：全部构建产物",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/scripts/clean.mjs",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "autoAttachChildProcesses": false,
+      "restart": false,
+      "skipFiles": ["<node_internals>/**"],
+      "presentation": {
+        "group": "03 清理产物",
+        "order": 10
+      }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "开发：完整调试（主进程 + 界面）",
+      "configurations": ["开发：启动应用（F5）", "开发：自动附加界面"],
+      "stopAll": true,
+      "presentation": {
+        "group": "01 开发调试",
+        "order": 10
+      }
+    }
+  ]
+}

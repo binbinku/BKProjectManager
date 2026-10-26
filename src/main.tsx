@@ -292,13 +292,6 @@ function App() {
       setBusy(false);
     }
   }
-  async function showProjectList() {
-    try {
-      await api.showManager();
-    } catch (reason) {
-      setError(reason instanceof Error ? reason.message : '项目列表打开失败');
-    }
-  }
   const platform = api?.platform;
   const folderName = platform === 'darwin' ? 'Finder' : '资源管理器';
   const openerLabels: Record<string, string> = {
@@ -341,7 +334,7 @@ function App() {
           {(
             [
               { value: 'off', label: '关闭', detail: '关闭全部效果' },
-              { value: 'medium', label: '中等', detail: '仅返回栏与工具栏' },
+              { value: 'medium', label: '中等', detail: '仅顶栏与工具栏' },
               { value: 'full', label: '完整', detail: '所有区域按比例开启' },
             ] as const
           ).map(({ value, label, detail }) => (
@@ -528,7 +521,6 @@ function App() {
           <ProjectWorkbench
             session={session}
             opener={state!.settings}
-            onBack={() => void showProjectList()}
             onExternal={() => open(session.project)}
             onGitHub={() => void perform(() => api.openGitHub(session.project.id))}
             busy={busy}

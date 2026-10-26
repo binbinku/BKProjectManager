@@ -11,3 +11,19 @@ The complete license is included in [licenses/material-icon-theme.LICENSE](licen
 
 The build generates the association manifest from the official npm package and
 bundles its SVGs for offline use. A license copy also accompanies the bundled icons.
+
+## Markdown preview and editor
+
+Markdown source editing uses [CodeMirror](https://codemirror.net/) and its Lezer
+syntax highlighting packages, by Marijn Haverbeke and contributors, under the MIT
+License. See [licenses/codemirror.LICENSE](licenses/codemirror.LICENSE).
+
+Rendered Markdown uses [react-markdown](https://github.com/remarkjs/react-markdown)
+and [remark-gfm](https://github.com/remarkjs/remark-gfm), under the MIT License.
+See [licenses/react-markdown.LICENSE](licenses/react-markdown.LICENSE) and
+[licenses/remark-gfm.LICENSE](licenses/remark-gfm.LICENSE).
+
+Embedded HTML is parsed with [rehype-raw](https://github.com/rehypejs/rehype-raw)
+and filtered with [rehype-sanitize](https://github.com/rehypejs/rehype-sanitize),
+under the MIT License. See [licenses/rehype-raw.LICENSE](licenses/rehype-raw.LICENSE)
+and [licenses/rehype-sanitize.LICENSE](licenses/rehype-sanitize.LICENSE).

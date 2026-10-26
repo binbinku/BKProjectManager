@@ -80,6 +80,8 @@ try {
   });
   await page.getByRole('tree', { name: '项目文件目录' }).waitFor();
   await page.locator('.terminal-host[data-running="true"]').waitFor();
+  assert.equal(await page.getByRole('button', { name: '返回项目列表', exact: true }).count(), 0);
+  assert.ok((await page.locator('.explorer-panel').boundingBox()).width >= 320);
   assert.equal(await page.getByRole('button', { name: '设置', exact: true }).count(), 0);
   assert.equal(await page.locator('.explorer-panel header').count(), 1);
   assert.equal((await page.locator('.workbench-navigation-header').boundingBox()).y, 0);
@@ -126,11 +128,10 @@ try {
   assert.equal(await page.locator('.file-panel textarea').count(), 0);
   const original = await page.locator('.code-content').textContent();
   await page.getByRole('treeitem', { name: '查看 README.md', exact: true }).click();
-  await page.waitForFunction(() =>
-    document.querySelector('.code-content')?.textContent?.includes('# Orbit'),
-  );
-  assert.equal(await page.locator('.code-document').count(), 1);
-  assert.ok(!(await page.locator('.code-content').textContent()).includes('findProjects'));
+  await page.getByRole('heading', { name: 'Orbit', exact: true }).waitFor();
+  assert.equal(await page.locator('.markdown-document').count(), 1);
+  assert.equal(await page.locator('.code-document, .markdown-editor').count(), 0);
+  assert.ok(!(await page.locator('.markdown-document').textContent()).includes('findProjects'));
   await page.getByRole('treeitem', { name: '查看 unsafe.ts', exact: true }).click();
   await page.locator('.code-content .shiki').waitFor();
   await page.waitForFunction(() =>
@@ -380,7 +381,8 @@ try {
     ),
   );
   const livePID = (await output()).match(/LIVE_PID_(\d+)/)?.[1];
-  await page.getByRole('button', { name: '返回项目列表' }).click();
+  await clickMenu(app, 'settings', page);
+  await manager.getByRole('button', { name: '完成', exact: true }).click();
   await manager.locator('.project-card.is-running').waitFor();
   await closeProject(app, page);
   page = manager;

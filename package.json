@@ -16,7 +16,12 @@
   },
   "scripts": {
     "dev": "node scripts/dev.mjs",
+    "dev:renderer": "vite",
+    "predev:renderer": "node scripts/prepare-native.cjs && node scripts/prepare-file-icons.mjs",
     "build": "tsc --noEmit && vite build",
+    "clean": "node scripts/clean.mjs",
+    "clean:dist": "node scripts/clean.mjs dist",
+    "clean:release": "node scripts/clean.mjs release",
     "start": "electron .",
     "test": "node --test tests/*.test.cjs",
     "test:smoke": "node scripts/smoke.mjs",
@@ -26,6 +31,7 @@
     "test:palettes": "node scripts/palettes-smoke.mjs",
     "docs:screenshots": "npm run build && node scripts/prepare-native.cjs && node scripts/readme-screenshots.mjs && node scripts/workbench-smoke.mjs --docs",
     "pack": "npm run build && electron-builder --dir",
+    "dist": "npm run build && electron-builder --publish never",
     "dist:mac": "npm run build && electron-builder --mac --arm64 --x64 --publish never",
     "dist:win": "npm run build && electron-builder --win --x64 --publish never",
     "format": "prettier --write .",
@@ -40,9 +46,17 @@
     "prebuild": "node scripts/prepare-file-icons.mjs",
     "test:github": "node scripts/github-smoke.mjs",
     "test:windows": "node scripts/project-windows-smoke.mjs",
-    "test:glass": "node scripts/glass-smoke.mjs"
+    "test:glass": "node scripts/glass-smoke.mjs",
+    "pretest:markdown": "node scripts/prepare-native.cjs",
+    "test:markdown": "node scripts/markdown-smoke.mjs"
   },
   "dependencies": {
+    "@codemirror/commands": "^6.11.1",
+    "@codemirror/lang-markdown": "^6.5.2",
+    "@codemirror/language": "^6.13.1",
+    "@codemirror/state": "^6.7.6",
+    "@codemirror/view": "^6.43.15",
+    "@lezer/highlight": "^1.2.5",
     "@shikijs/core": "^4.5.0",
     "@shikijs/engine-javascript": "^4.5.0",
     "@shikijs/langs": "^4.5.0",
@@ -52,7 +66,11 @@
     "lucide-react": "^0.468.0",
     "node-pty": "^1.1.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-markdown": "^10.1.0",
+    "rehype-raw": "^7.0.0",
+    "rehype-sanitize": "^6.0.0",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@resvg/resvg-js": "^2.6.2",

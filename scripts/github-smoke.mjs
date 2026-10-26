@@ -138,7 +138,8 @@ try {
   assert.ok((await page.locator('.code-content').textContent()).includes('repository'));
   await (await app.browserWindow(page)).evaluate((target) => target.setContentSize(980, 660));
   const header = await page.locator('.workbench-navigation-header').boundingBox();
-  for (const selector of ['.back-projects', '.github-open', '.external-open:not(.github-open)']) {
+  assert.equal(await page.getByRole('button', { name: '返回项目列表', exact: true }).count(), 0);
+  for (const selector of ['.github-open', '.external-open:not(.github-open)']) {
     const rect = await page.locator(selector).boundingBox();
     assert.ok(rect.x >= header.x && rect.x + rect.width <= header.x + header.width);
   }

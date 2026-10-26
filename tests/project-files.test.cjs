@@ -137,3 +137,92 @@ test('Workbench sessions cannot overlap, old IDs are revoked, and disposal cance
   await assert.rejects(pending, /已取消/);
   assert.equal(workbench.session, null);
 });
+
+test('Markdown saves preserve Unicode encoding, BOM, CRLF and permissions', async (t) => {
+  const { root, files } = await fixture(t);
+  const utf16 = Buffer.from('\ufeff# 原文\r\n', 'utf16le');
+  const cases = [
+    ['utf8.md', Buffer.from('# 原文\r\n'), Buffer.from('# 修改\r\n下一行\r\n')],
+    ['bom.MD', Buffer.from('\ufeff# 原文\r\n'), Buffer.from('\ufeff# 修改\r\n下一行\r\n')],
+    ['utf16.md', utf16, Buffer.from('\ufeff# 修改\r\n下一行\r\n', 'utf16le')],
+    [
+      'big-endian.markdown',
+      Buffer.from(utf16).swap16(),
+      Buffer.from('\ufeff# 修改\r\n下一行\r\n', 'utf16le').swap16(),
+    ],
+    ['empty.md', Buffer.alloc(0), Buffer.from('# 修改\n下一行\n')],
+  ];
+  for (const [name, before, after] of cases) {
+    const target = path.join(root, name);
+    await fs.writeFile(target, before);
+    await fs.chmod(target, 0o664);
+    const mode = (await fs.stat(target)).mode & 0o777;
+    const initial = await files.read(name);
+    const saved = await files.saveMarkdown(name, '# 修改\n下一行\n', initial.revision);
+    assert.equal(saved.kind, 'text');
+    assert.notEqual(saved.revision, initial.revision);
+    assert.deepEqual(await fs.readFile(target), after);
+    assert.equal((await fs.stat(target)).mode & 0o777, mode);
+  }
+  assert.ok(!(await fs.readdir(root)).some((name) => name.startsWith('.bkpm-')));
+});
+
+test('Markdown saves reject stale revisions, concurrent overwrites and oversized contents', async (t) => {
+  const { root, files } = await fixture(t);
+  const target = path.join(root, 'README.md');
+  await fs.writeFile(target, '# Original');
+  const first = await files.read('README.md');
+  await fs.writeFile(target, '# External change');
+  await assert.rejects(files.saveMarkdown('README.md', '# Draft', first.revision), /其他程序修改/);
+  assert.equal(await fs.readFile(target, 'utf8'), '# External change');
+  const current = await files.read('README.md');
+  const results = await Promise.allSettled([
+    files.saveMarkdown('README.md', '# First save', current.revision),
+    files.saveMarkdown('README.md', '# Stale save', current.revision),
+  ]);
+  assert.deepEqual(
+    results.map((result) => result.status),
+    ['fulfilled', 'rejected'],
+  );
+  const saved = await files.read('README.md');
+  assert.equal(saved.content, '# First save');
+  await assert.rejects(
+    files.saveMarkdown('README.md', '好'.repeat(MAX_FILE_BYTES), saved.revision),
+    /2 MiB/,
+  );
+  await assert.rejects(files.saveMarkdown('README.md', '# Draft', null), /无效/);
+  assert.equal((await files.read('README.md')).content, '# First save');
+});
+
+test('Only ordinary existing Markdown inside this project can be saved', async (t) => {
+  const { root, directory, files } = await fixture(t);
+  await fs.writeFile(path.join(directory, 'outside.md'), '# Outside');
+  await fs.writeFile(path.join(root, 'note.md'), '# Inside');
+  await fs.writeFile(path.join(root, 'code.ts'), '// Read-only');
+  const note = await files.read('note.md');
+  const code = await files.read('code.ts');
+  await assert.rejects(
+    files.saveMarkdown('code.ts', '// Changed', code.revision),
+    /只能编辑 Markdown/,
+  );
+  await assert.rejects(
+    files.saveMarkdown('../outside.md', '# Changed', note.revision),
+    /无效|只能浏览/,
+  );
+  await assert.rejects(files.saveMarkdown('new.md', '# New', note.revision), /ENOENT/);
+  await fs.link(path.join(root, 'note.md'), path.join(root, 'hardlink.md'));
+  await assert.rejects(files.saveMarkdown('hardlink.md', '# Changed', note.revision), /普通/);
+  if (process.platform !== 'win32') {
+    await fs.symlink(path.join(root, 'note.md'), path.join(root, 'link.md'));
+    await fs.symlink(path.join(root, 'src'), path.join(root, 'linked-dir'));
+    await fs.writeFile(path.join(root, 'src', 'note.md'), '# Nested');
+    const nested = await files.read('src/note.md');
+    await assert.rejects(files.saveMarkdown('link.md', '# Changed', note.revision), /符号链接/);
+    await assert.rejects(
+      files.saveMarkdown('linked-dir/note.md', '# Changed', nested.revision),
+      /符号链接/,
+    );
+  }
+  assert.equal(await fs.readFile(path.join(directory, 'outside.md'), 'utf8'), '# Outside');
+  assert.equal(await fs.readFile(path.join(root, 'code.ts'), 'utf8'), '// Read-only');
+});

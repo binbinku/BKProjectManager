@@ -10,11 +10,10 @@
   position: sticky;
   top: 0;
   z-index: 2;
-  height: 52px;
   display: flex;
   align-items: center;
   min-height: 52px;
-  padding: 0 12px;
+  padding: 10px 12px;
   background: transparent;
   -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
@@ -36,21 +35,8 @@
   min-width: 0;
   font-weight: 550;
   font-size: 12px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.back-projects {
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  flex-shrink: 0;
-  border-radius: 6px;
-  color: var(--secondary);
-}
-.back-projects:hover {
-  background: var(--hover);
+  line-height: 16px;
+  overflow-wrap: anywhere;
 }
 .external-open {
   flex-shrink: 0;
@@ -392,4 +378,300 @@
 .terminal-host .xterm-scrollable-element > .scrollbar,
 .terminal-host .xterm-scrollable-element > .shadow {
   display: none !important;
+}
+
+/* Markdown shares the viewer's surface; only its small tools float above it. */
+.markdown-surface {
+  --md-heading: light-dark(#0000ff, #569cd6);
+  --md-link: light-dark(#0451a5, #4daafc);
+  --md-string: light-dark(#a31515, #ce9178);
+  --md-comment: light-dark(#008000, #6a9955);
+  min-height: 100%;
+  color: var(--text);
+}
+.markdown-document {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 64px clamp(20px, 5vw, 48px) 110px;
+  font-size: 14px;
+  line-height: 1.85;
+  overflow-wrap: anywhere;
+}
+.markdown-document > :first-child {
+  margin-top: 0;
+}
+.markdown-document h1,
+.markdown-document h2,
+.markdown-document h3,
+.markdown-document h4,
+.markdown-document h5,
+.markdown-document h6 {
+  color: var(--text);
+  font-weight: 600;
+  line-height: 1.45;
+  margin: 1.7em 0 0.65em;
+  scroll-margin-top: 64px;
+}
+.markdown-document h1 {
+  font-size: 2em;
+  letter-spacing: -0.7px;
+}
+.markdown-document h2 {
+  font-size: 1.5em;
+  letter-spacing: -0.3px;
+}
+.markdown-document h3 {
+  font-size: 1.2em;
+}
+.markdown-document h1,
+.markdown-document h2 {
+  padding-bottom: 0.35em;
+  border-bottom: 1px solid var(--border);
+}
+.markdown-document p,
+.markdown-document ul,
+.markdown-document ol,
+.markdown-document blockquote,
+.markdown-document table,
+.markdown-document .markdown-code-block {
+  margin: 0 0 1.2em;
+}
+.markdown-document ul,
+.markdown-document ol {
+  padding-left: 1.7em;
+}
+.markdown-document li + li {
+  margin-top: 0.25em;
+}
+.markdown-document li > p {
+  margin-bottom: 0.5em;
+}
+.markdown-document li > ul,
+.markdown-document li > ol {
+  margin-bottom: 0;
+}
+.markdown-document a {
+  color: var(--md-link);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.markdown-document a:hover {
+  opacity: 0.8;
+}
+.markdown-document code {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+  font-size: 0.87em;
+  padding: 0.15em 0.4em;
+  background: var(--surface-soft);
+  border-radius: 4px;
+}
+.markdown-document .markdown-code-block {
+  overflow: auto;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-soft);
+  font:
+    12px/1.8 'SFMono-Regular',
+    Consolas,
+    'Liberation Mono',
+    monospace;
+  clip-path: none;
+}
+.markdown-code-block .shiki {
+  padding: 0;
+  margin: 0;
+  font: inherit;
+}
+.markdown-code-block code {
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  font: inherit;
+}
+.markdown-document blockquote {
+  margin-left: 0;
+  padding: 2px 0 2px 16px;
+  border-left: 3px solid var(--border);
+  color: var(--secondary);
+}
+.markdown-document blockquote > :last-child {
+  margin-bottom: 0;
+}
+.markdown-document table {
+  display: block;
+  overflow: auto;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.markdown-document th,
+.markdown-document td {
+  padding: 8px 13px;
+  border: 1px solid var(--border);
+}
+.markdown-document th {
+  font-weight: 600;
+  background: var(--surface-soft);
+}
+.markdown-document tr:nth-child(even) {
+  background: var(--hover);
+}
+.markdown-document hr {
+  height: 1px;
+  border: 0;
+  background: var(--border);
+  margin: 28px 0;
+}
+.markdown-document img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+  vertical-align: middle;
+}
+.markdown-image-fallback {
+  font-size: 12px;
+  color: var(--muted);
+}
+.markdown-document .task-list-item {
+  list-style: none;
+}
+.markdown-document input[type='checkbox'] {
+  margin: 0 7px 0 -1.35em;
+  accent-color: var(--status);
+}
+.markdown-empty {
+  color: var(--muted);
+}
+.markdown-tools {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px;
+  background: color-mix(in srgb, var(--sidebar) 75%, transparent);
+  -webkit-backdrop-filter: blur(16px) saturate(125%);
+  backdrop-filter: blur(16px) saturate(125%);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 4px 18px #0000000c;
+  -webkit-app-region: no-drag;
+}
+:root[data-glass='off'] .markdown-tools {
+  background: var(--sidebar);
+}
+.markdown-tools button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--secondary);
+}
+.markdown-tools button:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+.markdown-tools button:disabled {
+  opacity: 0.5;
+}
+.markdown-tools .markdown-save {
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.markdown-edit-status {
+  padding: 0 5px 0 7px;
+  font-size: 10px;
+  color: var(--muted);
+}
+.markdown-notice {
+  position: absolute;
+  z-index: 6;
+  left: 16px;
+  right: 16px;
+  bottom: 76px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--error-border);
+  border-radius: 8px;
+  background: var(--error-bg);
+  color: var(--error-text);
+  font-size: 12px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.markdown-notice span {
+  flex: 1;
+}
+.markdown-notice button {
+  flex-shrink: 0;
+  padding: 3px;
+}
+.file-viewport:has(.markdown-editor) {
+  overflow: hidden;
+}
+.markdown-surface.is-editing,
+.markdown-editor {
+  height: 100%;
+}
+.markdown-editor .cm-editor {
+  height: 100%;
+  background: transparent;
+  color: var(--editor-foreground);
+  font-size: 12px;
+}
+.markdown-editor .cm-editor.cm-focused {
+  outline: none;
+}
+.markdown-editor .cm-scroller {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+  line-height: 21px;
+  overflow: auto;
+}
+.markdown-editor .cm-content {
+  padding: 64px 24px 110px 12px;
+  caret-color: var(--text);
+}
+.markdown-editor .cm-line {
+  padding: 0;
+}
+.markdown-editor .cm-gutters {
+  background: transparent;
+  border-right: 1px solid var(--border);
+  color: var(--faint);
+  user-select: none;
+}
+.markdown-editor .cm-gutterElement {
+  padding: 0 12px;
+  min-width: 44px;
+}
+.markdown-editor .cm-activeLineGutter {
+  background: var(--selected);
+  color: var(--secondary);
+}
+.markdown-editor .cm-cursor {
+  border-left-color: var(--text);
+}
+.markdown-editor .cm-selectionBackground,
+.markdown-editor .cm-editor.cm-focused .cm-selectionBackground {
+  background: light-dark(#add6ff80, #264f7880);
+}
+.markdown-editor .cm-matchingBracket {
+  outline: 1px solid var(--border);
+  background: var(--hover);
+}
+.markdown-saving-mask {
+  position: absolute;
+  inset: 52px 0 60px;
+  z-index: 4;
+  cursor: wait;
 }

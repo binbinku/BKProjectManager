@@ -1,0 +1,97 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "开发：Vite",
+      "type": "npm",
+      "script": "dev:renderer",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "vite",
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+): (.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "message": 4
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*VITE v.*",
+          "endsPattern": ".*Local:.*http://127\\.0\\.0\\.1:5173/"
+        }
+      },
+      "presentation": {
+        "reveal": "silent",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      }
+    },
+    {
+      "label": "构建：前端",
+      "type": "npm",
+      "script": "build",
+      "problemMatcher": "$tsc",
+      "group": "build"
+    },
+    {
+      "label": "打包：当前平台（安装包）",
+      "type": "npm",
+      "script": "dist",
+      "problemMatcher": "$tsc",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "打包：当前平台（应用目录）",
+      "type": "npm",
+      "script": "pack",
+      "problemMatcher": "$tsc",
+      "group": "build"
+    },
+    {
+      "label": "打包：macOS（Apple Silicon + Intel）",
+      "type": "npm",
+      "script": "dist:mac",
+      "problemMatcher": "$tsc",
+      "group": "build"
+    },
+    {
+      "label": "打包：Windows（x64）",
+      "type": "npm",
+      "script": "dist:win",
+      "problemMatcher": "$tsc",
+      "group": "build"
+    },
+    {
+      "label": "清理并打包：当前平台（安装包）",
+      "dependsOrder": "sequence",
+      "dependsOn": ["清理：全部构建产物", "打包：当前平台（安装包）"],
+      "problemMatcher": [],
+      "group": "build"
+    },
+    {
+      "label": "清理：全部构建产物",
+      "type": "npm",
+      "script": "clean",
+      "problemMatcher": []
+    },
+    {
+      "label": "清理：前端构建",
+      "type": "npm",
+      "script": "clean:dist",
+      "problemMatcher": []
+    },
+    {
+      "label": "清理：打包产物",
+      "type": "npm",
+      "script": "clean:release",
+      "problemMatcher": []
+    }
+  ]
+}

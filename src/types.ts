@@ -59,6 +59,17 @@ export interface WorkspaceAPI {
   closeWorkbench(id: string): Promise<void>;
   listProjectFiles(id: string, relative: string): Promise<DirectoryListing>;
   readProjectFile(id: string, relative: string): Promise<FilePreview>;
+  saveMarkdown(
+    id: string,
+    relative: string,
+    content: string,
+    revision: string,
+  ): Promise<FilePreview>;
+  setMarkdownDirty(id: string, dirty: boolean): Promise<void>;
+  confirmMarkdownChanges(id: string, relative: string): Promise<'save' | 'discard' | 'cancel'>;
+  openMarkdownLink(id: string, url: string): Promise<void>;
+  onWorkbenchCloseRequested(callback: () => void): () => void;
+  resolveWorkbenchClose(id: string, approved: boolean): Promise<void>;
   startTerminal(id: string, cols: number, rows: number): Promise<{ id: string; shell: string }>;
   writeTerminal(id: string, terminalId: string, data: string): Promise<void>;
   resizeTerminal(id: string, terminalId: string, cols: number, rows: number): Promise<void>;
@@ -100,7 +111,7 @@ export interface DirectoryListing {
   truncated: boolean;
 }
 export type FilePreview = { path: string; size: number } & (
-  | { kind: 'text'; content: string; encoding: string }
+  | { kind: 'text'; content: string; encoding: string; revision: string; bom: boolean }
   | { kind: 'image'; dataURL: string }
   | { kind: 'unsupported'; reason: string }
 );

@@ -69,6 +69,10 @@ const { codeToHtml } = createSingletonShorthands(createHighlighter);
 export function languageForPath(path: string | null) {
   return path ? extensions[path.split('.').pop()!.toLowerCase()] : undefined;
 }
+export function languageForFence(name: string) {
+  const value = name.toLowerCase();
+  return Object.hasOwn(languages, value) ? (value as CodeLanguage) : extensions[value];
+}
 export function highlightCode(content: string, language: CodeLanguage) {
   return codeToHtml(content, {
     lang: language,

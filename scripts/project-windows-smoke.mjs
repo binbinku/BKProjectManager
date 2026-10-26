@@ -204,8 +204,10 @@ try {
       'Terminal output stays in its own window',
     );
   }
-  await alpha.getByRole('button', { name: '返回项目列表', exact: true }).click();
-  assert.equal(alpha.isClosed(), false, 'Returning to manager keeps the project running');
+  assert.equal(await alpha.getByRole('button', { name: '返回项目列表', exact: true }).count(), 0);
+  await clickMenu(app, 'settings', alpha);
+  await manager.getByRole('button', { name: '完成', exact: true }).click();
+  assert.equal(alpha.isClosed(), false, 'Showing manager settings keeps the project running');
   await running('Alpha').waitFor();
   await manager.screenshot({ path: 'artifacts/project-windows-dark.png' });
   await closeProject(app, alpha);
@@ -218,9 +220,10 @@ try {
   await closeProject(app, manager);
   assert.equal(beta.isClosed(), false, 'Closing manager does not stop projects');
   const managerOpened = app.waitForEvent('window');
-  await beta.getByRole('button', { name: '返回项目列表', exact: true }).click();
+  await clickMenu(app, 'settings', beta);
   manager = await managerOpened;
   watch(manager);
+  await manager.getByRole('button', { name: '完成', exact: true }).click();
   await running('Beta').waitFor();
   await start('Alpha').waitFor();
   await rm(path.join(workspace, 'WebDev/Projects/Gone'), { recursive: true });
@@ -251,9 +254,87 @@ try {
     await app.browserWindow(reopened)
   ).evaluate((w) => w.webContents.forcefullyCrashRenderer());
   await start('Alpha').waitFor();
+  for (const name of [
+    'BKProjectManager-项目管理与Markdown阅读编辑的跨平台工作台',
+    `BKProjectManager-${'项目名称'.repeat(13)}`,
+  ]) {
+    const folder = path.join(workspace, 'WebDev/Projects', name);
+    await mkdir(path.join(folder, '.git'), { recursive: true });
+    await writeFile(
+      path.join(folder, '.git/config'),
+      '[remote "origin"]\nurl=https://github.com/demo/workbench.git\n',
+    );
+    await manager.evaluate(() => window.workspaceAPI.scan());
+    const project = await startProject(app, manager, start(name));
+    watch(project);
+    await project.locator('.terminal-host[data-running="true"]').waitFor();
+    await project.evaluate(() => {
+      window.__originalTerminal = document.querySelector('.terminal-host');
+    });
+    const assertLayout = async () => {
+      await project.waitForFunction(() => {
+        const title = document.querySelector('.workbench-project-name');
+        const header = document.querySelector('.workbench-navigation-header');
+        const sidebar = document.querySelector('.explorer-panel');
+        const viewer = document.querySelector('.file-panel');
+        const terminal = document.querySelector('.terminal-panel');
+        const titleBounds = title.getBoundingClientRect();
+        const headerBounds = header.getBoundingClientRect();
+        return (
+          title.scrollWidth <= title.clientWidth + 1 &&
+          title.scrollHeight <= title.clientHeight + 1 &&
+          titleBounds.top >= headerBounds.top &&
+          titleBounds.bottom <= headerBounds.bottom &&
+          sidebar.getBoundingClientRect().width > 320 &&
+          viewer.getBoundingClientRect().width >= 260 &&
+          terminal.getBoundingClientRect().width >= 260 &&
+          terminal.getBoundingClientRect().right <= window.innerWidth + 1 &&
+          [...header.querySelectorAll('button')].every((button) => {
+            const bounds = button.getBoundingClientRect();
+            return (
+              bounds.left >= titleBounds.right &&
+              bounds.right <= headerBounds.right &&
+              bounds.bottom <= headerBounds.bottom
+            );
+          })
+        );
+      });
+      assert.equal(await project.locator('.workbench-project-name').textContent(), name);
+      assert.equal(
+        await project.getByRole('button', { name: '返回项目列表', exact: true }).count(),
+        0,
+      );
+    };
+    await assertLayout();
+    await (await app.browserWindow(project)).evaluate((target) => target.setContentSize(980, 660));
+    await assertLayout();
+    await project.screenshot({ path: 'artifacts/workbench-project-title.png' });
+    const before = (await project.locator('.explorer-panel').boundingBox()).width;
+    const divider = project.getByRole('separator', { name: '调整文件目录宽度', exact: true });
+    await divider.focus();
+    await project.keyboard.press('ArrowLeft');
+    await project.waitForFunction(
+      (width) =>
+        document.querySelector('.explorer-panel').getBoundingClientRect().width === width - 16,
+      before,
+    );
+    await (await app.browserWindow(project)).evaluate((target) => target.setContentSize(1700, 900));
+    await project.waitForFunction(
+      (width) =>
+        document.querySelector('.explorer-panel').getBoundingClientRect().width === width - 16,
+      before,
+    );
+    assert.equal(
+      await project.evaluate(
+        () => window.__originalTerminal === document.querySelector('.terminal-host'),
+      ),
+      true,
+    );
+    await closeProject(app, project);
+  }
   assert.deepEqual(errors, []);
   console.log(
-    'Project windows passed: independent sessions/terminals, scoped IPC, launch/focus/minimize/close/crash/reopen, concurrent deduplication, manager recreation, live theme sync, icon actions, responsive buttons and failed-start rollback.',
+    'Project windows passed: independent sessions/terminals, scoped IPC, launch/focus/minimize/close/crash/reopen, manager recreation, theme sync, icon actions, responsive cards, complete long project names, automatic sidebar widths, narrow-window wrapping and manual resize preservation.',
   );
 } finally {
   await app?.close().catch(() => {});
