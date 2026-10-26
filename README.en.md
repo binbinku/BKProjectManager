@@ -104,7 +104,7 @@ Open a project to enter the three-panel workbench, available in both v0.2.1 inst
 - **Center:** a viewer extending from the top to the bottom of the window, showing one file at a time, with line numbers and VS Code Light+ / Dark+ syntax highlighting. No file tabs. Common images can also be previewed. Code stays read-only; the current source additionally supports Markdown reading and editing.
 - **Right:** an interactive terminal extending from the top to the bottom of the window, starting in the project directory, with scrolling, Ctrl+C, clear and restart. Clear and restart are available in the native Terminal menu. macOS uses your login shell; Windows 11 uses PowerShell.
 - **Compact layout:** the viewer and terminal extend to the top and bottom edges. Visible 1px dividers retain a wider drag area for resizing. Returning to the project list keeps the project and its terminal running; closing the project window ends its terminal.
-- **Scrolling and appearance:** scrollbars are hidden; mouse-wheel, trackpad and horizontal scrolling remain available. Light, dark and system appearance are available through Settings in the native menu.
+- **Scrolling and appearance:** scrollbars are hidden; mouse-wheel, trackpad and horizontal scrolling remain available. Light, dark and system appearance are available through Settings in the native menu; the current source also provides a manager-sidebar Settings button.
 
 Preview supports UTF-8 and UTF-16 text and common images up to 2 MiB. Files over 200,000 characters use plain-text preview. Binary or unsupported files show an explanation. Project browsing stays within the selected project; symbolic links are not expandable in the tree.
 
@@ -186,7 +186,7 @@ npm run dev
 
 Click **Rescan** after adding or moving projects. You can switch workspaces through **Settings…** in the native menu (macOS: app menu, `⌘,`; Windows: File menu, `Ctrl+,`).
 
-The sidebar starts with a single row containing the app icon and name, aligned with the native traffic lights on macOS. Workspace management is available through Settings in the native menu.
+In the current source, the manager sidebar has a window-control area above a row containing the app icon, name and Settings button. macOS retains native traffic lights; Windows uses a frameless immersive title bar with custom window controls. Workspace management is available in Settings. The workbench keeps its project name and external-opening actions without an additional Settings button.
 
 <a id="themes"></a>
 
@@ -345,29 +345,30 @@ For example, if `AndroidDev/Projects` contains `settings.gradle.kts`, it is trea
 
 **Electron · React · TypeScript · Vite**
 
-| Command                    | Purpose                                                               |
-| -------------------------- | --------------------------------------------------------------------- |
-| `npm run dev`              | Start the development environment                                     |
-| `npm run dev:renderer`     | Start Vite only for VS Code F5 debugging                              |
-| `npm run build`            | Generate file icons, check TypeScript and build the frontend          |
-| `npm run dist`             | Create installers for the current OS and architecture                 |
-| `npm run clean`            | Remove frontend build and local package outputs                       |
-| `npm run clean:dist`       | Remove only the `dist/` frontend output                               |
-| `npm run clean:release`    | Remove only the `release/` package output                             |
-| `npm start`                | Launch the built desktop application                                  |
-| `npm test`                 | Test discovery, settings, project files and sessions                  |
-| `npm run test:workbench`   | Test project browsing, file preview, real terminal and cleanup        |
-| `npm run test:markdown`    | Test Markdown preview, images, editing, saving and unsaved guards     |
-| `npm run test:smoke`       | Verify key interactions in a real Electron window                     |
-| `npm run test:management`  | Test category appearance, new folders and restart persistence         |
-| `npm run test:removal`     | Test removal dialogs, reveal, restore and filesystem integrity        |
-| `npm run test:category`    | Test the minimal category page, floating tools, sort and views        |
-| `npm run test:palettes`    | Test palettes, light/dark appearance, stable layout and persistence   |
-| `npm run test:glass`       | Test glass levels, pane ratios, transparent terminals and persistence |
-| `npm run test:windows`     | Test independent windows, status, focus, isolation and cleanup        |
-| `npm run test:github`      | Test GitHub shortcuts, remote selection and workbench session         |
-| `npm run format:check`     | Check source formatting                                               |
-| `npm run docs:screenshots` | Build the app and regenerate screenshots with sample data             |
+| Command                      | Purpose                                                               |
+| ---------------------------- | --------------------------------------------------------------------- |
+| `npm run dev`                | Start the development environment                                     |
+| `npm run dev:renderer`       | Start Vite only for VS Code F5 debugging                              |
+| `npm run build`              | Generate file icons, check TypeScript and build the frontend          |
+| `npm run dist`               | Create installers for the current OS and architecture                 |
+| `npm run clean`              | Remove frontend build and local package outputs                       |
+| `npm run clean:dist`         | Remove only the `dist/` frontend output                               |
+| `npm run clean:release`      | Remove only the `release/` package output                             |
+| `npm start`                  | Launch the built desktop application                                  |
+| `npm test`                   | Test discovery, settings, project files and sessions                  |
+| `npm run test:workbench`     | Test project browsing, file preview, real terminal and cleanup        |
+| `npm run test:markdown`      | Test Markdown preview, images, editing, saving and unsaved guards     |
+| `npm run test:smoke`         | Verify key interactions in a real Electron window                     |
+| `npm run test:management`    | Test category appearance, new folders and restart persistence         |
+| `npm run test:removal`       | Test removal dialogs, reveal, restore and filesystem integrity        |
+| `npm run test:category`      | Test the minimal category page, floating tools, sort and views        |
+| `npm run test:palettes`      | Test palettes, light/dark appearance, stable layout and persistence   |
+| `npm run test:glass`         | Test glass levels, pane ratios, transparent terminals and persistence |
+| `npm run test:windows`       | Test independent windows, status, focus, isolation and cleanup        |
+| `npm run test:window-chrome` | Test frameless windows, window controls and Settings on Windows       |
+| `npm run test:github`        | Test GitHub shortcuts, remote selection and workbench session         |
+| `npm run format:check`       | Check source formatting                                               |
+| `npm run docs:screenshots`   | Build the app and regenerate screenshots with sample data             |
 
 Desktop interaction tests and screenshot generation require a desktop session. They use temporary workspaces and isolated settings, leaving your preferences intact. Documentation screenshots never read your project directories.
 

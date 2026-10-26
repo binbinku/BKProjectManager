@@ -289,7 +289,7 @@ try {
           viewer.getBoundingClientRect().width >= 260 &&
           terminal.getBoundingClientRect().width >= 260 &&
           terminal.getBoundingClientRect().right <= window.innerWidth + 1 &&
-          [...header.querySelectorAll('button')].every((button) => {
+          [...header.querySelectorAll('.workbench-navigation button')].every((button) => {
             const bounds = button.getBoundingClientRect();
             return (
               bounds.left >= titleBounds.right &&

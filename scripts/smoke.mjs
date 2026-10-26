@@ -95,7 +95,9 @@ try {
     return { empty: icon.isEmpty(), size: icon.getSize() };
   });
   assert.deepEqual(nativeIcon, { empty: false, size: { width: 1024, height: 1024 } });
-  assert.equal(await page.getByRole('button', { name: '设置', exact: true }).count(), 0);
+  await page.getByRole('button', { name: '设置', exact: true }).click();
+  await page.getByRole('dialog').waitFor();
+  await page.getByRole('button', { name: '完成', exact: true }).click();
   await chooseTheme(page, 'light');
   await page.screenshot({ path: 'artifacts/welcome.png' });
   await page.emulateMedia({ colorScheme: 'dark' });

@@ -49,6 +49,9 @@ export interface AppState {
   nativeGlass: boolean;
 }
 export interface WorkspaceAPI {
+  getWindowState(): Promise<{ maximized: boolean }>;
+  controlWindow(action: 'close' | 'minimize' | 'maximize'): Promise<void>;
+  onWindowStateChanged(callback: (state: { maximized: boolean }) => void): () => void;
   onStateChanged(callback: (state: AppState) => void): () => void;
   getCurrentWorkbench(): Promise<WorkbenchSession | null>;
   focusWorkbench(id: string): Promise<AppState>;

@@ -1,5 +1,12 @@
 const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('workspaceAPI', {
+  getWindowState: () => ipcRenderer.invoke('window:state'),
+  controlWindow: (action) => ipcRenderer.invoke('window:control', action),
+  onWindowStateChanged: (callback) => {
+    const listener = (_event, state) => callback(state);
+    ipcRenderer.on('window:state-changed', listener);
+    return () => ipcRenderer.removeListener('window:state-changed', listener);
+  },
   onStateChanged: (callback) => {
     const listener = (_event, state) => callback(state);
     ipcRenderer.on('app:state-changed', listener);

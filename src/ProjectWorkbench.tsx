@@ -12,6 +12,7 @@ import { FileViewer } from './FileViewer';
 import type { FileLeaveGuard } from './MarkdownFile';
 import { ProjectTerminal } from './ProjectTerminal';
 import { GitHubButton } from './GitHubButton';
+import { WindowControls } from './WindowControls';
 import './workbench.css';
 
 const api = window.workspaceAPI;
@@ -44,7 +45,7 @@ export default function ProjectWorkbench({
   const projectName = useRef<HTMLSpanElement>(null);
   const treeManuallyResized = useRef(false);
   const [openerInfo, setOpenerInfo] = useState<{ name: string; icon: string | null } | null>(null);
-  const minTreeWidth = api.platform === 'darwin' ? 220 : 160;
+  const minTreeWidth = ['darwin', 'win32'].includes(api.platform) ? 220 : 160;
   // Reserve two 1px dividers, 260px for the viewer and 260px for the terminal.
   const maxTreeWidth = Math.max(minTreeWidth, layoutWidth - 522);
   const treeWidth = Math.max(minTreeWidth, Math.min(preferredTreeWidth, maxTreeWidth));
@@ -232,6 +233,7 @@ export default function ProjectWorkbench({
       >
         <aside className="explorer-panel" aria-label="资源管理器">
           <header ref={header} className="workbench-navigation-header">
+            <WindowControls />
             <div className="workbench-navigation">
               <span
                 ref={projectName}

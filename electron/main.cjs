@@ -623,6 +623,18 @@ function registerHandlers() {
     },
   };
   const scopedHandlers = {
+    'window:state': (event) => ({
+      maximized: BrowserWindow.fromWebContents(event.sender).isMaximized(),
+    }),
+    'window:control': (event, action) => {
+      const target = BrowserWindow.fromWebContents(event.sender);
+      if (action === 'close') target.close();
+      else if (action === 'minimize') target.minimize();
+      else if (action === 'maximize') {
+        if (target.isMaximized()) target.unmaximize();
+        else target.maximize();
+      } else throw new Error('无效的窗口操作');
+    },
     'workbench:current': (event) => entryForEvent(event)?.session || null,
     'workbench:close': (event, id) => {
       ownWorkbench(event, id);
@@ -732,7 +744,13 @@ function makeWindow(title = 'BK Project Manager', show = true) {
     title,
     show,
     icon: appIcon,
-    titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
+    titleBarStyle:
+      process.platform === 'darwin'
+        ? 'hiddenInset'
+        : process.platform === 'win32'
+          ? 'hidden'
+          : 'default',
+    ...(process.platform === 'win32' ? { frame: false, autoHideMenuBar: true } : {}),
     ...(process.platform === 'darwin'
       ? {
           trafficLightPosition: { x: 12, y: 20 },
@@ -749,6 +767,12 @@ function makeWindow(title = 'BK Project Manager', show = true) {
     },
   });
   applyWindowMaterial(target);
+  const sendWindowState = () => {
+    if (!target.isDestroyed())
+      target.webContents.send('window:state-changed', { maximized: target.isMaximized() });
+  };
+  target.on('maximize', sendWindowState);
+  target.on('unmaximize', sendWindowState);
   target.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   target.on('page-title-updated', (event) => event.preventDefault());
   target.webContents.on('will-navigate', (event) => event.preventDefault());

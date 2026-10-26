@@ -20,7 +20,8 @@
   flex-shrink: 0;
   -webkit-app-region: drag;
 }
-.platform-darwin .workbench-navigation-header {
+.platform-darwin .workbench-navigation-header,
+.platform-win32 .workbench-navigation-header {
   padding-left: 80px;
 }
 .workbench-navigation {

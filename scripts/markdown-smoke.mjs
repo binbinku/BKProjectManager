@@ -265,13 +265,13 @@ try {
   await edit('# 窗口关闭前保存\n');
   await choice(2);
   before = await promptCount();
-  await (await app.browserWindow(page)).evaluate((target) => target.close());
+  await page.evaluate(() => window.workspaceAPI.controlWindow('close'));
   await waitPrompt(before);
   assert.equal(page.isClosed(), false);
   assert.equal(await page.locator('.terminal-host[data-running="true"]').count(), 1);
   await choice(0);
   const closed = page.waitForEvent('close');
-  await (await app.browserWindow(page)).evaluate((target) => target.close());
+  await page.evaluate(() => window.workspaceAPI.controlWindow('close'));
   await closed;
   assert.equal(await readFile(document, 'utf8'), '# 窗口关闭前保存\n');
   page = await startProject(app, manager);

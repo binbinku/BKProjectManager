@@ -97,6 +97,7 @@ try {
           const logo = document.querySelector('.brand-mark').getBoundingClientRect();
           const name = document.querySelector('.brand-name');
           const text = name.getBoundingClientRect();
+          const settings = document.querySelector('.sidebar-settings').getBoundingClientRect();
           return {
             top: header.top,
             logoLeft: logo.left,
@@ -104,6 +105,9 @@ try {
             textCenter: text.top + text.height / 2,
             textWidth: name.clientWidth,
             textScrollWidth: name.scrollWidth,
+            settingsCenter: settings.top + settings.height / 2,
+            settingsLeft: settings.left,
+            textRight: text.right,
           };
         })(),
         position: getComputedStyle(bar).position,
@@ -127,23 +131,21 @@ try {
       };
     });
     assert.equal(result.position, 'fixed');
-    assert.equal(result.brand.top, 0);
+    assert.equal(result.brand.top, ['darwin', 'win32'].includes(process.platform) ? 52 : 0);
     assert.ok(
       Math.abs(result.brand.logoCenter - result.brand.textCenter) < 1,
-      'App icon and name share the top row',
+      'App icon and name share the branding row',
     );
+    assert.ok(Math.abs(result.brand.settingsCenter - result.brand.textCenter) < 1);
+    assert.ok(result.brand.settingsLeft >= result.brand.textRight, 'Settings follows the app name');
     assert.ok(
       result.brand.textScrollWidth <= result.brand.textWidth,
       'The app name fits even at the minimum window width',
     );
     if (nativeButtons) {
       assert.ok(
-        Math.abs(result.brand.logoCenter - (nativeButtons.y + 6)) < 1,
-        'The top row aligns with the native traffic lights',
-      );
-      assert.ok(
-        result.brand.logoLeft > nativeButtons.x + 52,
-        'Branding leaves the native window buttons clear',
+        result.brand.top > nativeButtons.y + 12,
+        'Branding sits below the native traffic lights',
       );
     }
     assert.equal(result.rects.length, 5);

@@ -104,7 +104,7 @@
 - **中间：** 代码区上下延伸至窗口边缘，一次显示一个文件，支持行号、VS Code Light+ / Dark+ 代码高亮和常见图片；不显示文件标签。普通代码只读，当前源码额外支持 Markdown 阅读与编辑。
 - **右侧：** 上下延伸至窗口边缘的交互终端，启动在项目目录，支持滚动、Ctrl+C 中断、清空和重启；清空和重启操作位于系统菜单「终端」。macOS 使用登录 Shell，Windows 11 使用 PowerShell。
 - **简洁布局：** 代码与终端上下直达窗口边缘，左右仅保留 1px 分界线，拖动范围保持宽于可见线条，方便调整面板。切换到项目列表窗口时保留工作台与终端；关闭项目窗口时结束该项目终端。
-- **滚动与外观：** 所有区域隐藏滚动条，保留滚轮、触控板和横向滚动；设置通过系统菜单访问，支持亮色、暗色和跟随系统。
+- **滚动与外观：** 所有区域隐藏滚动条，保留滚轮、触控板和横向滚动；设置通过系统菜单访问，当前源码还提供主页侧栏设置按钮，支持亮色、暗色和跟随系统。
 
 预览支持 2 MiB 以内的 UTF-8、UTF-16 文本与常见图片；超过 20 万字符的文本使用纯文本预览。二进制或不支持的文件会显示说明。文件浏览限定在当前项目中，文件树不展开符号链接。
 
@@ -186,7 +186,7 @@ npm run dev
 
 新增或移动项目后，点击 **重新扫描**。更换工作空间可在系统菜单的 **设置…** 中完成（macOS：应用菜单，`⌘,`；Windows：文件菜单，`Ctrl+,`）。
 
-侧栏顶部只保留一行图标与应用名称，macOS 下与红黄绿窗口按钮对齐；工作空间管理统一放在系统菜单的设置中。
+当前源码的主页侧栏顶端是窗口控制区，下方一行排列应用图标、名称与设置按钮。macOS 使用原生红黄绿按钮，Windows 使用沉浸式无边框标题栏与自定义窗口按钮；工作空间管理在设置中完成。工作台保留项目名称与外部打开入口，不额外放置设置按钮。
 
 <a id="themes"></a>
 
@@ -345,29 +345,30 @@ Workspace/
 
 **Electron · React · TypeScript · Vite**
 
-| 命令                       | 用途                                         |
-| -------------------------- | -------------------------------------------- |
-| `npm run dev`              | 启动开发环境                                 |
-| `npm run dev:renderer`     | 仅启动 Vite，供 VS Code F5 调试复用          |
-| `npm run build`            | 生成文件图标、检查 TypeScript 并构建前端     |
-| `npm run dist`             | 为当前系统与架构生成安装包                   |
-| `npm run clean`            | 清理前端构建与本地打包产物                   |
-| `npm run clean:dist`       | 仅清理 `dist/` 前端构建目录                  |
-| `npm run clean:release`    | 仅清理 `release/` 打包目录                   |
-| `npm start`                | 运行已构建的桌面应用                         |
-| `npm test`                 | 验证扫描、配置持久化、文件访问与会话         |
-| `npm run test:workbench`   | 验证项目文件、预览、真实终端与进程清理       |
-| `npm run test:markdown`    | 验证 Markdown 预览、图片、编辑保存与退出保护 |
-| `npm run test:smoke`       | 在真实 Electron 窗口中验证主要交互           |
-| `npm run test:management`  | 验证分类外观、新建分类与空项目、重启保存     |
-| `npm run test:removal`     | 验证移除弹窗、定位、恢复和文件完整性         |
-| `npm run test:category`    | 验证精简分类页、悬浮工具、排序和视图切换     |
-| `npm run test:palettes`    | 验证七主题亮暗配色、布局不变与重启保存       |
-| `npm run test:glass`       | 验证三档毛玻璃、区域比例、透明终端与保存     |
-| `npm run test:windows`     | 验证独立窗口、运行状态、切窗、隔离与关闭清理 |
-| `npm run test:github`      | 验证 GitHub 入口、远程选择和工作台会话       |
-| `npm run format:check`     | 检查代码格式                                 |
-| `npm run docs:screenshots` | 构建应用并使用示例数据更新文档截图           |
+| 命令                         | 用途                                          |
+| ---------------------------- | --------------------------------------------- |
+| `npm run dev`                | 启动开发环境                                  |
+| `npm run dev:renderer`       | 仅启动 Vite，供 VS Code F5 调试复用           |
+| `npm run build`              | 生成文件图标、检查 TypeScript 并构建前端      |
+| `npm run dist`               | 为当前系统与架构生成安装包                    |
+| `npm run clean`              | 清理前端构建与本地打包产物                    |
+| `npm run clean:dist`         | 仅清理 `dist/` 前端构建目录                   |
+| `npm run clean:release`      | 仅清理 `release/` 打包目录                    |
+| `npm start`                  | 运行已构建的桌面应用                          |
+| `npm test`                   | 验证扫描、配置持久化、文件访问与会话          |
+| `npm run test:workbench`     | 验证项目文件、预览、真实终端与进程清理        |
+| `npm run test:markdown`      | 验证 Markdown 预览、图片、编辑保存与退出保护  |
+| `npm run test:smoke`         | 在真实 Electron 窗口中验证主要交互            |
+| `npm run test:management`    | 验证分类外观、新建分类与空项目、重启保存      |
+| `npm run test:removal`       | 验证移除弹窗、定位、恢复和文件完整性          |
+| `npm run test:category`      | 验证精简分类页、悬浮工具、排序和视图切换      |
+| `npm run test:palettes`      | 验证七主题亮暗配色、布局不变与重启保存        |
+| `npm run test:glass`         | 验证三档毛玻璃、区域比例、透明终端与保存      |
+| `npm run test:windows`       | 验证独立窗口、运行状态、切窗、隔离与关闭清理  |
+| `npm run test:window-chrome` | 在 Windows 验证无边框窗口、窗口控制与设置入口 |
+| `npm run test:github`        | 验证 GitHub 入口、远程选择和工作台会话        |
+| `npm run format:check`       | 检查代码格式                                  |
+| `npm run docs:screenshots`   | 构建应用并使用示例数据更新文档截图            |
 
 桌面交互测试和截图生成需要可用的桌面会话。它们使用临时工作空间和独立配置，不覆盖你的使用偏好；文档截图不会读取你的项目目录。
 
